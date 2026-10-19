@@ -1131,6 +1131,24 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .sfabs button{border:0;display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.25)}
 #pstxt{width:44px;height:44px;border-radius:14px;background:var(--chip);color:var(--ink)}
 #pscam{width:56px;height:56px;border-radius:18px;background:var(--out);color:#fff}
+
+/* tela de criar status (estilo WhatsApp) */
+.ced.medm .cmid{position:static;padding:0}
+.ced.medm .pv{position:absolute;inset:0;padding:0;z-index:0;background:#000}
+.ced.medm .pv .mi,.ced.medm .pv img,.ced.medm .pv video{width:100%;height:100%;max-width:none;max-height:none;border-radius:0;object-fit:cover}
+.ced.medm .ctop,.ced.medm .ccap,.ced.medm .cbot2{z-index:2}
+.ced.medm #edf,.ced.medm #edp{display:none}
+.ced.medm .ctop{background:linear-gradient(rgba(0,0,0,.45),transparent)}
+.ced .ccap{position:relative;padding:0 12px 8px}
+.ced .ccap input{height:50px;background:rgba(20,22,28,.78);font-size:16px}
+.cbot2{display:flex;align-items:center;gap:10px;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.30)}
+.ced.medm .cbot2{background:rgba(10,12,16,.92)}
+.spill{flex:1;min-width:0;height:44px;border-radius:22px;border:0;background:#12161c;color:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:15px;text-align:left}
+.spill span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spill .cdc{font-style:normal;font-size:12px;opacity:.7}
+.pubx2{flex:none;width:54px;height:54px;border-radius:50%;border:0;background:#12161c;color:#fff;display:grid;place-items:center}
+.ced.medm .pubx2{background:#fff;color:#12161c}
+.spill.lock{pointer-events:none}.spill.lock .cdc{display:none}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -1767,7 +1785,7 @@ function moreMenu(){
 
 function dropMenu(anchor,root,onClose){
   closePop2();const bg=mk('div','pbg2');bg.id='pbg2';const pop=mk('div','pop2');pop.setAttribute('role','menu');
-  const r=anchor.getBoundingClientRect();pop.style.top=(r.bottom+6)+'px';pop.style.right=Math.max(10,innerWidth-r.right)+'px';
+  const r=anchor.getBoundingClientRect();if(r.top>innerHeight*.55){pop.style.top='auto';pop.style.height='auto';pop.style.bottom=(innerHeight-r.top+6)+'px';pop.style.left=Math.max(10,r.left)+'px'}else{pop.style.top=(r.bottom+6)+'px';pop.style.right=Math.max(10,innerWidth-r.right)+'px'}
   const stack=[];let dead=false;
   const close=(resume)=>{if(dead)return;dead=true;bg.remove();if(resume&&onClose)onClose()};
   const render=(list,title)=>{
@@ -2778,7 +2796,7 @@ const EI={'🎨':'palette','💬':'chat','@':'user','✉️':'mail','🔑':'key'
 function si(ic){const s=mk('span','si'),k=EI[ic];if(k&&P[k])s.innerHTML=ico(k,20);else s.textContent=ic;return s}
 function iconsInit(){
   $('.top h1').innerHTML=logo(38,'lgt');$('#fab').innerHTML=ico('fabnew',28);$('#sbk').innerHTML=ico('back',24);$('#sxc').innerHTML=ico('x',22);$('#tcam').innerHTML=ico('fcam',28);$('#tmore').innerHTML=ico('dots',28);
-  const TI={c:'chat',l:'phone',k:'users',f:'brief'};document.querySelectorAll('.tb').forEach(b=>{b.querySelector('i').innerHTML=ico(TI[b.dataset.t],22)});
+  const TI={c:'chat',s:'statusring',l:'phone',k:'users',f:'brief'};document.querySelectorAll('.tb').forEach(b=>{b.querySelector('i').innerHTML=ico(TI[b.dataset.t],22)});
 }
 function emojiMenu(){
   const E=['😀','😂','😍','🥰','😘','😉','😎','🤔','😢','😭','😡','👍','👎','👏','🙏','💪','🎉','❤️','🔥','✨','😅','🙌','🤝','👀','😴','🤗','😇','🥳','😬','🙄','💯','✅'];
@@ -2788,6 +2806,7 @@ function emojiMenu(){
   s.querySelector('.opt').onclick=closeSheet;
 }
 Object.assign(P,{
+statusring:'<circle cx="12" cy="12" r="9" stroke-dasharray="4 3"/><circle cx="12" cy="12" r="3.5"/>',
 clip:'<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
 file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
 camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
@@ -3488,10 +3507,10 @@ function compose(target){
   clearTimeout(sv.timer);const v=$('#viewer');v.hidden=false;let dest=target&&canPostStatus(target)?target:null;const locked=!!dest&&dest.group;if(target&&target.group&&!dest)setTimeout(()=>snack('Só administradores podem postar status neste grupo'),50);
   let c=S.stBg||0,fi=0,dur=S.stDur||24,md=null,poll=null,loc='',music='';
   const FONTS=['sans','serif','hand','mono'];
-  v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="eds" aria-label="Adesivos">'+ico('sticker',20)+'</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><button class="cdest" id="eddst" aria-label="Escolher destino"><span>Para: <b id="eddn"></b></span><i class="cdc">▾</i></button><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicionar legenda..." aria-label="Legenda" autocomplete="off"></div><div class="cbot"><button class="gl wide" id="edpi">'+ico('image',20)+'<span>Galeria</span></button><button class="pubx" id="edpub">Publicar <small id="edexp"></small></button></div></div>';
-  const paint=()=>{v.style.background=sb[c%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');$('#edtx').className='edt f-'+FONTS[fi];$('#edexp').textContent='expira em '+dur+' h';$('#eddn').textContent=dest?dest.name+' · '+((dest.members||[]).length+1)+' membros':'Meus contatos';const ds0=$('#eddst');ds0.classList.toggle('lock',!!locked);const cc=ds0.querySelector('.cdc');if(cc)cc.hidden=!!locked};
+  v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="eds" aria-label="Adesivos">'+ico('sticker',20)+'</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicione uma legenda…" aria-label="Legenda" autocomplete="off"></div><div class="cbot2"><button class="gl" id="edpi" aria-label="Galeria">'+ico('image',20)+'</button><button class="spill" id="eddst" aria-label="Escolher quem vê">'+ico('statusring',18)+'<span id="eddn"></span><i class="cdc">▾</i></button><button class="pubx2" id="edpub" aria-label="Publicar">'+ico('send',24)+'</button></div></div>';
+  const paint=()=>{v.style.background=sb[c%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');$('#edtx').className='edt f-'+FONTS[fi];$('#eddn').textContent=dest?dest.name:'Status ('+(chats.filter(x=>!x.group&&!x.blocked&&!x.pending).length)+' contatos)';const ds0=$('#eddst');ds0.classList.toggle('lock',!!locked);const cc=ds0.querySelector('.cdc');if(cc)cc.hidden=!!locked};
   const stk=()=>{
-    const need=!!(md||poll),ci=$('#edci'),tx0=$('#edtx');if(need&&!tx0.hidden&&!ci.value)ci.value=tx0.value;if(!need&&tx0.hidden&&ci.value&&!tx0.value)tx0.value=ci.value;tx0.hidden=need;$('#edcap').hidden=!need;
+    const need=!!(md||poll),ci=$('#edci'),tx0=$('#edtx');if(need&&!tx0.hidden&&!ci.value)ci.value=tx0.value;if(!need&&tx0.hidden&&ci.value&&!tx0.value)tx0.value=ci.value;tx0.hidden=need;$('#edcap').hidden=!need;{const cd=document.querySelector('.ced');if(cd)cd.classList.toggle('medm',!!md);v.style.background=md?'#000':sb[c%sb.length]}
     const b=$('#edstk');b.innerHTML='';
     if(poll){const p=buildPoll(poll,{status:true,own:true});const x=mk('button','pill','Remover enquete');x.onclick=()=>{poll=null;stk()};b.append(p,x)}
     if(loc){const p=mk('button','pill');p.innerHTML=ico('pin',16)+'<span></span>';p.lastChild.textContent=loc;p.onclick=()=>{loc='';stk()};b.appendChild(p)}
