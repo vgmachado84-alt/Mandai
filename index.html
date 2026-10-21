@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2770">
+<meta name="mandai-build" content="20261021-2790">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1973,8 +1973,15 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 .pane#pc .list{overflow:visible;flex:1 0 auto;min-height:0;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .pane#pc>*{flex-shrink:0}
 .pane#pc .top{position:sticky;top:0;z-index:6;background:var(--bg)}
-.pane#pc .fab{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));right:auto;align-self:flex-end;margin:-58px 16px 0 auto;flex:none;order:9}
+.pane#pc .fab{position:sticky;bottom:18px;right:auto;align-self:flex-end;margin:-58px 16px 0 auto;flex:none;order:9}
 .pane#pc.scol .stories,.pane#pc.scol .chips{max-height:none;opacity:1;pointer-events:auto}
+/* só os filtros ficam presos sob o topo; busca e faixa rolam */
+.pane#pc .chips{position:sticky;top:var(--tph,56px);z-index:5;background:var(--bg)}
+/* círculo do status mais discreto */
+.ring{padding:1.5px!important}.ring .av{border-width:1.5px!important}
+/* botões da página do grupo: texto cabe no cartão */
+#prp:not(.pro2) .gact>*{padding:12px 0;overflow:hidden;gap:4px}
+#prp:not(.pro2) .gact>* small{font-size:11px;letter-spacing:-.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -5434,6 +5441,7 @@ setInterval(()=>{if(cur&&cur.live&&cur.live.until<Date.now())paintLive();if(cur&
 (function(){const g=chats.find(x=>x.id===4&&x.group);if(g&&!g.susp){g.susp={me:Date.now()+45*6e4,wme:'Spam'};g.msgs.push(['sys','⛔ Você foi suspenso(a) por 1 hora — Spam.'])}})();
 (function(){const g=chats.find(x=>x.id===2&&x.group);if(g&&!g.live){const m=(g.members||[]).filter(id=>{const z=chats.find(q=>q.id===id);return z&&z.online}).slice(0,2);if(m.length)g.live={video:false,ids:m,until:Date.now()+864e5,by:(chats.find(z=>z.id===m[0])||{name:'alguém'}).name.split(' ')[0]}}})();
 
+(function(){const tp=document.querySelector('#pc .top'),pc0=$('#pc');if(tp&&pc0){const f=()=>pc0.style.setProperty('--tph',tp.offsetHeight+'px');f();if(window.ResizeObserver)new ResizeObserver(f).observe(tp);addEventListener('resize',f)}})();
 (function(){const L=$('#list'),pc=$('#pc');if(!L||!pc)return;let tk=0,last=0,up=0,gain=170;
   const upd=()=>{tk=0;const st=L.scrollTop,col=pc.classList.contains('scol'),d=st-last;last=st;
     if(!col){const g=($('#stories').offsetHeight||0)+(pc.querySelector('.chips').offsetHeight||0);if(g>60)gain=g}
