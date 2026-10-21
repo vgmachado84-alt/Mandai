@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2710">
+<meta name="mandai-build" content="20261021-2730">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1968,6 +1968,12 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 #prp:not(.pro2) .gact span{background:none;width:auto;height:auto;color:var(--out)}
 #prp:not(.pro2) .gact>* small{font-size:13px;color:var(--ink)}
 .vp .vr .vlk{margin-left:auto;font-size:24px;line-height:1}
+/* lista de conversas: o topo (faixa, busca, filtros) rola junto com os contatos */
+.pane#pc{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.pane#pc .list{overflow:visible;flex:1 0 auto;min-height:0;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.pane#pc .top{position:sticky;top:0;z-index:6;background:var(--bg)}
+.pane#pc .fab{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));right:auto;align-self:flex-end;margin:-58px 16px 0 auto;flex:none;order:9}
+.pane#pc.scol .stories,.pane#pc.scol .chips{max-height:none;opacity:1;pointer-events:auto}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
