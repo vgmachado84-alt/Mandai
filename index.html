@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2200">
+<meta name="mandai-build" content="20261021-2240">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1880,6 +1880,20 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 /* botões flutuantes mais baixos (a barra de baixo agora fica fora do painel) */
 :root[data-acc="2"] .pane .fab,:root[data-acc="2"] .sfabs{bottom:18px}
 :root[data-acc="2"] .mystp .sfabs{bottom:40px}
+
+/* gravador: lixeira e pausar à esquerda, "1" e enviar colados à direita */
+.rec.lk .rbt{gap:10px}
+.rec.lk .rbt .rpz{margin-left:6px}
+.rec.lk .rbt .once{margin-left:auto!important;margin-right:0}
+.rec.lk .rbt .send{margin-left:0!important}
+.rec.lk .rbars i{height:4px;opacity:.85}
+#rec.lk,#rec.hold{width:100%;max-width:none;box-sizing:border-box;align-self:stretch}
+
+/* transcrição de áudio */
+.atr{display:block;margin:2px 0 0 4px;padding:4px 10px;border:1px solid currentColor;border-radius:14px;background:none;color:inherit;font:inherit;font-size:calc(12px*var(--fz,1));opacity:.85}
+.atr:disabled{opacity:.6}
+.atr[hidden],.atx[hidden]{display:none}
+.atx{margin:6px 6px 2px;font-size:calc(14px*var(--fz,1));line-height:1.35;white-space:pre-wrap;user-select:text}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -2019,6 +2033,7 @@ function bubble(m,anim){
   if(m[4]&&(m[4].k==='stk'||m[4].k==='gif'))d.classList.add(m[4].k==='stk'?'stkm':'gifm');
   if(m[4]&&(m[4].k==='stk'||m[4].k==='gif')&&!(m[5]&&m[5].del)){const md=m[4];d.addEventListener('click',e=>{const mn=document.getElementById('main');if(mn&&mn.classList.contains('selmode'))return;
     stkSheet(md,m)})}
+  if(m[4]&&m[4].k==='aud'&&!m[4].once&&!(m[5]&&m[5].del)){const au0=d.querySelector('.au');if(au0&&!d.querySelector('.atr')){const tb=document.createElement('button');tb.type='button';tb.className='atr';tb.textContent='Transcrever áudio';const tx=document.createElement('div');tx.className='atx';tx.hidden=true;if(m[4].tr){tx.textContent=m[4].tr;tx.hidden=false;tb.hidden=true}tb.onclick=e=>{e.stopPropagation();trAudio(m[4],tb,tx)};au0.after(tb,tx)}}
   if(m[4]&&m[4].k==='aud'&&cur&&!(m[5]&&m[5].del)){const au=d.querySelector('.au');if(au&&!au.querySelector('.aav')){
     const out=m[0]==='out',a=document.createElement('span');a.className='aav';
     if(out){a.style.background=me.photo?photoBg(me.photo):colors[0];a.textContent=me.photo?'':initials(me.name||'?')}
@@ -5630,6 +5645,28 @@ setInterval(()=>{if(!bkOk())return;const f=BKF[S.bkFreq||'d'];if(!f||!f[1])retur
 })();
 /* ao abrir o gravador, a conversa sobe junto para não esconder a última mensagem */
 (function(){const hook=()=>{const r=document.getElementById('rec'),m=document.getElementById('msgs');if(!r||!m||r._ro||!window.ResizeObserver)return;r._ro=1;new ResizeObserver(()=>{if(!r.hidden)m.scrollTop=m.scrollHeight}).observe(r)};setInterval(hook,800)})();
+const TR={p:null};
+async function trAudio(md,btn,box){
+  if(md.tr){box.textContent=md.tr;box.hidden=false;btn.hidden=true;return}
+  btn.disabled=true;btn.textContent='Preparando o áudio…';
+  try{
+    const src=await rtGet(md);if(!src)throw new Error('áudio indisponível');
+    const buf=await (await fetch(src)).arrayBuffer();
+    const AC=window.AudioContext||window.webkitAudioContext,ac=new AC();
+    const dec=await ac.decodeAudioData(buf.slice(0));try{ac.close()}catch(e){}
+    const oc=new OfflineAudioContext(1,Math.max(1,Math.ceil(dec.duration*16000)),16000),bs=oc.createBufferSource();bs.buffer=dec;bs.connect(oc.destination);bs.start();
+    const pcm=(await oc.startRendering()).getChannelData(0);
+    if(!TR.p){
+      btn.textContent='Baixando o tradutor de voz (só na 1ª vez)…';
+      const T=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2');T.env.allowLocalModels=false;
+      TR.p=await T.pipeline('automatic-speech-recognition','Xenova/whisper-tiny',{dtype:'q8',progress_callback:p=>{if(p&&p.status==='progress')btn.textContent='Baixando… '+Math.round(p.progress||0)+'%'}});
+    }
+    btn.textContent='Transcrevendo…';
+    const o=await TR.p(pcm,{language:'portuguese',task:'transcribe',chunk_length_s:30});
+    md.tr=((o&&o.text)||'').trim()||'(não consegui entender este áudio)';
+    box.textContent=md.tr;box.hidden=false;btn.hidden=true;
+  }catch(e){btn.disabled=false;btn.textContent='Transcrever áudio';snack('Não consegui transcrever: '+((e&&e.message)||e))}
+}
 async function rtLoad(){
   await bkLoad();
   try{
