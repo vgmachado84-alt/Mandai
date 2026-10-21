@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2020">
+<meta name="mandai-build" content="20261021-2050">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1852,6 +1852,18 @@ button,.row,.srow,.opt,.tb,.chip{-webkit-tap-highlight-color:transparent}
 .cap2.v3 #rsend svg{stroke:#111!important;color:#111!important}
 .cap2.v3 .once{margin-right:0}
 .dlg .dla.row2.col{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;margin-top:14px}.dlg .dla.row2.col button{width:100%;text-align:center;padding:14px 10px;white-space:normal;border-top:1px solid var(--line)}
+
+/* acessibilidade */
+:root[data-rm="1"] *,:root[data-rm="1"] *::before,:root[data-rm="1"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+:root[data-big="1"] .tb,:root[data-big="1"] .ib,:root[data-big="1"] .remo,:root[data-big="1"] .send,:root[data-big="1"] .fab{min-width:48px;min-height:48px}
+:root[data-big="1"] .opt,:root[data-big="1"] .dla button{min-height:52px;font-size:calc(17px*var(--fz,1))}
+:root[data-hc="1"]{--mute:#2c2750;--line:#7b7699}
+@media (prefers-color-scheme:dark){:root[data-hc="1"]:not([data-theme="light"]){--ink:#fff;--mute:#e4def8;--line:#8f87b8}}
+:root[data-hc="1"][data-theme="dark"]{--ink:#fff;--mute:#e4def8;--line:#8f87b8}
+:root[data-hc="1"] .tb:not(.on){opacity:1}
+:root[data-hc="1"] #msgs .m.in{outline:1px solid var(--line)}
+:root[data-hc="1"] .pane>.top,:root[data-hc="1"] .tabs{background:#2d1470!important}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid #f5a524;outline-offset:2px}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -3623,6 +3635,7 @@ function renderSettings(){
    {id:'acc',ic:'key',col:'#2b7cf6',t:'Conta',d:'Usuário, e-mail, frase de recuperação',rows:[['@','Nome de usuário','@'+me.user,usernameForm],['☁','Backup da conta',me.email||'Entre para ativar',bkMenu],['✉️','E-mail de recuperação',me.email||'Não definido',emailForm],['🔑','Frase de recuperação','Ver',phraseView],['🔎','Quem pode me encontrar por @',S.find,()=>choose('Quem pode me encontrar',['Todos','Meus contatos','Ninguém'],S.find,v=>S.find=v)],['📨','Pedidos de conversa',S.req,()=>choose('Quem pode me enviar pedidos',['Qualquer pessoa','Só com meu link ou QR'],S.req,v=>S.req=v)]]},
    {id:'priv',ic:'lock',col:'#22b573',t:'Privacidade',d:'Visto por último, foto, bloqueados, PIN',rows:[['👁','Visto por último',privacy.seen?'Todos':'Ninguém',()=>choose('Visto por último',['Todos','Ninguém'],privacy.seen?'Todos':'Ninguém',v=>privacy.seen=v==='Todos')],['🖼','Foto de perfil',S.photo,()=>choose('Quem vê minha foto',['Todos','Meus contatos','Ninguém'],S.photo,v=>S.photo=v)],['◎','Status',(S.stVis&&S.stVis.mode==='except')?'Contatos, exceto…':(S.stVis&&S.stVis.mode==='only')?'Amigos próximos':'Meus contatos',statusSettings],['✓','Confirmação de leitura',privacy.read?'Ativada':'Desativada',()=>tg('read',privacy)],['⏱','Mensagens temporárias (padrão)',(DISL[S.dis||0])+(S.dis&&S.disAll===false?' · só para mim':''),()=>disDialog(S.dis||0,(n,all)=>{S.dis=n;S.disAll=all;dlg('Aplicar às conversas que já existem?',[['Só novas'],['Aplicar a todas',()=>{chats.forEach(c=>{c.dis=n;c.disAll=all;c.disMine=false});renderList();snack('Aplicado a todas as conversas')}]],'O padrão vale para as conversas novas. Você pode mudar cada conversa depois.',true)},S.disAll)],['🔒','Bloqueio do app (PIN)',privacy.pin?'Ativado':'Desativado',pinForm],['🚫','Contatos bloqueados',String(nb),blockedList],['🔕','Status silenciados',String(chats.filter(c=>c.smute).length),mutedManager]]},
    {id:'chat',ic:'chat',col:'#14b8a6',t:'Conversas',d:'Tema, fonte, Enter envia',rows:[['🌓','Tema do app',S.theme,()=>choose('Tema do app',['Automático','Claro','Escuro'],S.theme,v=>{S.theme=v;const r=document.documentElement;if(v==='Automático')delete r.dataset.theme;else r.dataset.theme=v==='Escuro'?'dark':'light'})],['🔤','Tamanho da fonte',S.font,()=>choose('Tamanho da fonte',['Pequena','Média','Grande'],S.font,v=>{S.font=v;document.documentElement.style.setProperty('--fz',{Pequena:.9,'Média':1,Grande:1.15}[v])})],['↩','Enter envia a mensagem',S.enter?'Sim':'Não',()=>tg('enter',S)],['🎧','Velocidade dos áudios',AU[S.aud]||'1×',()=>choose('Velocidade padrão dos áudios',['1×','1,5×','2×'],AU[S.aud]||'1×',v=>S.aud={'1×':1,'1,5×':1.5,'2×':2}[v])]]},
+   {id:'a11y',ic:'eye',col:'#0ea5e9',t:'Acessibilidade',d:'Letra grande, contraste, botões maiores',rows:[['🔤','Tamanho do texto',S.font||'Média',()=>choose('Tamanho do texto',['Pequena','Média','Grande','Extra grande','Gigante'],S.font||'Média',v=>{S.font=v;applyPrefs()})],['👁','Alto contraste',S.hc?'Ligado':'Desligado',()=>choose('Alto contraste',['Ligado','Desligado'],S.hc?'Ligado':'Desligado',v=>{S.hc=v==='Ligado';applyPrefs()})],['⏳','Reduzir animações',S.rm?'Ligado':'Desligado',()=>choose('Reduzir animações',['Ligado','Desligado'],S.rm?'Ligado':'Desligado',v=>{S.rm=v==='Ligado';applyPrefs()})],['🖼','Botões maiores',S.big?'Ligado':'Desligado',()=>choose('Botões maiores',['Ligado','Desligado'],S.big?'Ligado':'Desligado',v=>{S.big=v==='Ligado';applyPrefs()})],['🎧','Ouvir mensagens em voz alta','Segure uma mensagem > Mais > Ouvir',()=>infoModal('Ouvir mensagens','Segure uma mensagem de texto, toque nos três pontinhos e escolha "Ouvir". O celular lê a mensagem em voz alta.')],['🔎','Leitor de tela (TalkBack)','Todos os botões têm nome',()=>infoModal('Leitor de tela','Os botões do app têm nome para o TalkBack do Android ler. Se algum botão for lido sem nome, me avise qual é.')]]},
    {id:'fav',ic:'star',col:'#f5a524',t:'Favoritas',d:'Mensagens salvas',go:starredView},
    {id:'not',ic:'bell',col:'#e5484d',t:'Notificações',d:notifS.on?'Ativadas':'Desativadas',rows:[['🔔','Notificações de mensagens',notifS.on?'Ativadas':'Desativadas',notifMenu]]},
    {id:'dev',ic:'monitor',col:'#8a5cf0',t:'Dispositivos conectados',d:sessions.length+' conectado'+(sessions.length===1?'':'s'),go:devicesMenu},
@@ -3860,7 +3873,7 @@ function renderStories(){
   }
   const h=$('.head .av');if(h&&cur)ringify(h,cur)
 }
-function applyPrefs(){const r=document.documentElement;if(S.theme==='Automático')delete r.dataset.theme;else r.dataset.theme=S.theme==='Escuro'?'dark':'light';r.dataset.acc=(S.accent==null?2:S.accent);r.style.setProperty('--fz',{Pequena:.9,'Média':1,Grande:1.15}[S.font]||1)}
+function applyPrefs(){const r=document.documentElement;if(S.theme==='Automático')delete r.dataset.theme;else r.dataset.theme=S.theme==='Escuro'?'dark':'light';r.dataset.acc=(S.accent==null?2:S.accent);r.style.setProperty('--fz',{Pequena:.9,'Média':1,Grande:1.15,'Extra grande':1.3,'Gigante':1.5}[S.font]||1);r.dataset.hc=S.hc?'1':'0';r.dataset.rm=S.rm?'1':'0';r.dataset.big=S.big?'1':'0'}
 function snapshot(n){
   const cl=chats.map(c=>{const o={};for(const k in c){if(k!=='photo')o[k]=c[k]}o.hasPhoto=!!c.photo;
     o.msgs=c.msgs.slice(-n).map(m=>(m[4]&&m[4].k!=='file'&&typeof m[4].src==='string'&&m[4].src.startsWith('blob:'))?[m[0],(m[1]?m[1]+' ':'')+'[mídia não guardada]',m[2],m[3],null,m[5]||null]:m);return o});
@@ -4127,7 +4140,7 @@ inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 
 corner:'<path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
 link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'
 };
-function ico(n,s){return '<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(P[n]||'')+'</svg>'}
+function ico(n,s){return '<svg viewBox="0 0 24 24" width="'+(s||22)+'" height="'+(s||22)+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-i="'+n+'">'+(P[n]||'')+'</svg>'}
 function logo(h,id){return '<svg viewBox="0 0 140 44" height="'+h+'" role="img" aria-label="Mandaí" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="140" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1f6fe8"/><stop offset="1" stop-color="#38c8ff"/></linearGradient></defs><g stroke="url(#'+id+')"><path d="M8 38V6l22 32V6"/><path d="M62 6H42v32h20M42 22h16"/><path d="M70 6l22 32"/><circle cx="116" cy="22" r="15"/></g><path d="M92 6L70 38" stroke="#38c8ff"/></svg>'}
 const EI={'📞':'phone','📄':'file','🎤':'mic','🔗':'link','🎨':'palette','💬':'chat','@':'user','✉️':'mail','🔑':'key','🔎':'search','📨':'inbox','👁':'eye','🖼':'image','✓':'check','⏳':'clock','🚫':'slash','🔒':'lock','💻':'monitor','🌐':'globe','🎧':'headphones','🌓':'moon','🔤':'type','↩':'corner','★':'star','🔔':'bell','💾':'database','📥':'download','📉':'trend','🎁':'gift','❓':'help','ℹ️':'info','🚪':'logout','👥':'users','👤':'user','🏘':'users','💬':'chat','🔗':'link','✎':'edit','🔕':'bell'};
 function si(ic){const s=mk('span','si'),k=EI[ic];if(k&&P[k])s.innerHTML=ico(k,20);else s.textContent=ic;return s}
@@ -4218,7 +4231,7 @@ fwd:'<path d="M15 14l5-5-5-5"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>',
 plus:'<path d="M12 5v14M5 12h14"/>'
 });
 let sel=[],justSel=0,skipClick=false;
-function snack(t){const s=mk('div','snack',t);document.body.appendChild(s);setTimeout(()=>s.remove(),2200)}
+function snack(t){const s=mk('div','snack',t);s.setAttribute('role','status');s.setAttribute('aria-live','polite');document.body.appendChild(s);setTimeout(()=>s.remove(),2200)}
 function closePop(){const p=$('#pop');if(p)p.remove()}
 function copyText(t){if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>snack('Copiado'),()=>snack('Não foi possível copiar'));else snack('Não foi possível copiar')}
 function paintMsgs(){
@@ -4299,6 +4312,7 @@ function selMore(){
   if(one&&!(m[5]&&m[5].del))it.push([(m[5]&&m[5].pin)?'Desafixar':'Fixar',()=>{const o=m[5]=m[5]||{};o.pin=!o.pin;endSel()}]);
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<18e4&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
+  if(one&&m[1]&&!m[4]&&window.speechSynthesis)it.push(['Ouvir',()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(m[1]));u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}endSel()}]);
   it.push(['Copiar',()=>{copyText(sel.map(x=>x[1]||'').filter(Boolean).join('\n'));endSel()}]);
   it.forEach(([lb,fn])=>{const b=mk('button',0,lb);b.onclick=()=>{closePop();fn()};pop.appendChild(b)});
   $('#main').appendChild(pop);setTimeout(()=>document.addEventListener('click',closePop,{once:true}),0);
@@ -5576,6 +5590,15 @@ async function bkLoad(){
   }catch(e){}
 }
 setInterval(()=>{if(!bkOk())return;const f=BKF[S.bkFreq||'d'];if(!f||!f[1])return;if(Date.now()-(S.bkAt||0)<f[1])return;S.bkAt=Date.now();const back=()=>{S.bkAt=Date.now()-f[1]+36e5};bkRun().then(x=>{if(x&&x.err)back()},back)},30000);
+
+/* acessibilidade: dá nome aos botões só com ícone (leitor de tela) */
+(function(){const N={x:'Fechar',send:'Enviar',mic:'Gravar áudio',phone:'Ligar',video:'Chamada de vídeo',more:'Mais opções',search:'Buscar',smile:'Emojis',plus:'Adicionar',back:'Voltar',fwd:'Encaminhar',image:'Galeria',camera:'Câmera',clip:'Anexar',trash:'Apagar',edit:'Editar',star:'Favoritar',pin:'Fixar',pushpin:'Fixar',gear:'Configurações',bell:'Notificações',lock:'Privacidade',check:'Confirmar',download:'Baixar',link:'Link',eye:'Ver',moon:'Tema',chev:'Abrir',refresh:'Atualizar',locate:'Localização',live:'Ao vivo',user:'Pessoa',users:'Pessoas',chat:'Conversas',keyboard:'Teclado',backspace:'Apagar letra',gift:'Presente',poll:'Enquete',more2:'Mais',pause:'Pausar',play:'Tocar',scissors:'Cortar',palette:'Cor',sticker:'Adesivos',flipcam:'Virar câmera',bolt:'Flash',musicn:'Música',statusring:'Status',clock:'Tempo',info:'Informações',help:'Ajuda',file:'Arquivo',inbox:'Caixa de entrada',mail:'E-mail',globe:'Idioma',monitor:'Dispositivos',key:'Conta',slash:'Bloquear',logout:'Sair',headphones:'Áudio',thumb:'Curtir',heart:'Curtir',corner:'Responder',swipe:'Deslizar',type:'Texto'};
+  const name=b=>{if(b.getAttribute('aria-label')||b.getAttribute('aria-labelledby'))return;if((b.textContent||'').trim())return;const t=b.getAttribute('title');if(t){b.setAttribute('aria-label',t);return}const sv=b.querySelector('svg[data-i]');if(sv&&N[sv.dataset.i])b.setAttribute('aria-label',N[sv.dataset.i])};
+  const pass=r=>{try{(r.matches&&r.matches('button')?[r]:[]).concat([...(r.querySelectorAll?r.querySelectorAll('button'):[])]).forEach(name)}catch(e){}};
+  let q=null;const go=()=>{if(q)return;q=setTimeout(()=>{q=null;pass(document.body)},250)};
+  new MutationObserver(go).observe(document.documentElement,{childList:true,subtree:true});go();
+  document.addEventListener('DOMContentLoaded',go);
+})();
 async function rtLoad(){
   await bkLoad();
   try{
