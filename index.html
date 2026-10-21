@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2870">
+<meta name="mandai-build" content="20261021-2890">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1974,6 +1974,7 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 .pane#pc>*{flex-shrink:0}
 .pane#pc .top{position:sticky;top:0;z-index:8;background:var(--panel)}
 .pane#pc .hero{position:sticky;top:var(--tph,56px);z-index:7}
+.pane#pc .hero::before{content:"";position:absolute;left:0;right:0;top:0;height:40px;background:linear-gradient(var(--panel),transparent);z-index:0;pointer-events:none}
 .pane#pc .sbar{position:sticky!important;top:calc(var(--tph,56px) + var(--hh,0px));z-index:6!important;background:var(--bg)!important}
 .pane#pc .fab{position:sticky;bottom:18px;right:auto;align-self:flex-end;margin:-58px 16px 0 auto;flex:none;order:9}
 .pane#pc.scol .stories,.pane#pc.scol .chips{max-height:none;opacity:1;pointer-events:auto}
