@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2510">
+<meta name="mandai-build" content="20261021-2550">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2222,7 +2222,7 @@ function show(){
 }
 function statusReply(text){
   const c=chats.find(z=>String(z.id)===sv.key),st=sv.list&&sv.list[sv.i];if(!c||!st||!text)return;
-  const nm=['out',text,hhmm(),exp(c),null,{st:'sent',reply:stReply(st)}];c.msgs.push(nm);track(nm,c);renderList();snack('Resposta enviada');
+  const nm=['out',text,hhmm(),exp(c),null,{st:'sent',ts:Date.now(),reply:stReply(st)}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,text,nm);renderList();snack('Resposta enviada');
 }
 function floatEmoji(e,el){
   const v=$('#viewer'),r=v.getBoundingClientRect(),b=el.getBoundingClientRect();
@@ -2357,6 +2357,7 @@ setTimeout(()=>{try{renderChips()}catch(e){}},0);
 $('#theme').onclick=()=>{
   const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
   r.dataset.theme=dark?'light':'dark';
+  try{S.theme=dark?'Claro':'Escuro';persist()}catch(e){}
 };
 $('#main').innerHTML='<p class="empty">Selecione uma conversa para começar.<br>Cada uma pode ter o seu próprio tema.</p>';
 const me={name:'Você',about:'Disponível',photo:null};
@@ -2982,7 +2983,7 @@ function moreMenu(){
   const more=[...(!g?[{t:'Denunciar',fn:()=>reportChat(c)},{t:c.blocked?'Desbloquear':'Bloquear',fn:()=>{c.blocked=!c.blocked;syncBlock(c);snack(c.blocked?'Contato bloqueado':'Contato desbloqueado')}}]:[]),
     {t:'Limpar conversa',fn:()=>clearChat(c)},{t:'Exportar conversa',fn:()=>exportChat(c)},
     ...(stat[c.id]?[{t:c.smute?'Reativar status':'Silenciar status',fn:()=>{c.smute=!c.smute;renderStories()}}]:[]),
-    '-',{t:c.msgs.length?'Excluir conversa':'Remover da tela de mensagens',danger:true,fn:()=>askSoftDel(c)}];
+    '-',...(!g?[{t:'Remover contato',danger:true,fn:()=>confirmDel(c)}]:[]),{t:c.msgs.length?'Excluir conversa':'Remover da tela de mensagens',danger:true,fn:()=>askSoftDel(c)}];
   const it=[{t:g?'Dados do grupo':'Dados do contato',fn:()=>g?profileOf(c):editContact(c)},
     ...(canPostStatus(c)?[{t:'Adicionar status ao grupo',fn:()=>compose(c)}]:[]),
     {t:'Listas',fn:()=>listAddTo([c],()=>{renderList()})},{t:'Pesquisar',fn:chatSearch},{t:'Mídia, links e docs',fn:()=>mediaDocs(c)},
@@ -4098,10 +4099,11 @@ function mediaPage(c){
 }
 function contactPrivacy(c){
   const dl=v=>v?(v===24?'24 horas':'7 dias'):'Desativadas';
-  showModal('<h3>Privacidade com '+c.name.split(' ')[0].replace(/[<>&]/g,'')+'</h3><button class="opt" id="cp1"></button><button class="opt" id="cp3"></button><button class="btn ghost" id="cpx">Fechar</button>');
+  showModal('<h3>Privacidade com '+c.name.split(' ')[0].replace(/[<>&]/g,'')+'</h3><button class="opt" id="cp1"></button><button class="opt" id="cp3"></button><button class="opt" id="cp4" style="color:#e5484d">🗑 Remover contato</button><button class="btn ghost" id="cpx">Fechar</button>');
   const f=()=>{$('#cp1').textContent=(c.hideMine?'👁 Mostrar':'🙈 Ocultar')+' meu status para este contato';$('#cp3').textContent=c.blocked?'✅ Desbloquear contato':'🚫 Bloquear contato'};f();
   $('#cp1').onclick=()=>{c.hideMine=!c.hideMine;f();snack(c.hideMine?'Seu status não aparece mais para este contato':'Seu status volta a aparecer')};
   $('#cp3').onclick=()=>{c.blocked=!c.blocked;closeModal();syncBlock(c);profileOf(c)};
+  $('#cp4').onclick=()=>{closeModal();$('#prp').hidden=true;confirmDel(c)};
   $('#cpx').onclick=()=>{closeModal();profileOf(c)};
 }
 function profileOf(c){if(c.group)return groupPage(c);
@@ -4119,6 +4121,12 @@ function profileOf(c){if(c.group)return groupPage(c);
   row('💬','Sobre',ab,()=>infoModal('Sobre '+c.name.split(' ')[0],ab),g1);
   if(c.user)row('@','Usuário','@'+c.user,()=>{const t='@'+c.user;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>snack('Usuário copiado: '+t),()=>infoModal('Usuário',t))},g1);
   if(c.phone)row('📞','Telefone',c.phone,()=>{const t=c.phone;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>snack('Telefone copiado'),()=>infoModal('Telefone',t))},g1);
+  const cg=chats.filter(z=>z.group&&(z.members||[]).includes(c.id));
+  row('👥','Grupos em comum',cg.length?String(cg.length):'Nenhum',()=>{
+    if(!cg.length)return infoModal('Grupos em comum','Você e '+c.name.split(' ')[0]+' não estão juntos em nenhum grupo.');
+    showModal('<h3>Grupos em comum ('+cg.length+')</h3><div id="gcl"></div><button class="btn ghost" id="gcx">Fechar</button>');
+    cg.forEach(z=>{const b=mk('button','opt',null);b.textContent='👥 '+z.name;b.onclick=()=>{closeModal();el.hidden=true;openChat(z.id)};$('#gcl').appendChild(b)});
+    $('#gcx').onclick=closeModal},g1);
   const ms=mediaStats(c),fv=c.msgs.filter(m=>m[5]&&m[5].star&&!m[5].del).length;
   row('🖼','Mídia, links e documentos',String(ms.total),()=>mediaPage(c),g2);
   row('★','Mensagens favoritas',String(fv),()=>starredView(c),g2);
@@ -5356,7 +5364,7 @@ function profile(){
   const cv=mk('div','mcov'),bk=bkb('cb');bk.classList.add('mbk');
   const paintCv=()=>{cv.style.background=me.cover?coverCss(me.cover):'linear-gradient(135deg,var(--out),color-mix(in srgb,var(--out) 45%,#000))'};paintCv();
   const cb=mk('button','mcb');cb.type='button';cb.innerHTML=ico('camera',16)+'<span>Capa</span>';cb.onclick=()=>coverPicker(paintCv);
-  cv.append(bk,cb);
+  cv.append(bk);
   const aw=mk('div','mavw'),av=mk('div','mav'),ac=mk('button','mavc');ac.type='button';ac.setAttribute('aria-label','Alterar foto');ac.innerHTML=ico('camera',18);
   const paintAv=()=>{av.style.background=me.photo?photoBg(me.photo):'linear-gradient(135deg,var(--out),color-mix(in srgb,var(--out) 60%,#000))';av.textContent=me.photo?'':initials((($('#fn')||{}).value||me.name||'?').trim()||'?')};
   ac.onclick=av.onclick=()=>pickPhoto(ph=>{me.photo=ph;saveAcc();paintAv();renderMe();renderStories()});
