@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2670">
+<meta name="mandai-build" content="20261021-2690">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -3461,6 +3461,7 @@ function pollDetails(md,op){
   },{onClose:()=>{if(op&&op.status&&typeof resumeSv==='function')resumeSv()}});
 }
 function pollForm(cb,op){
+  if(cur&&cur.group&&!isAdmin(cur)){snack('Só administradores podem criar enquetes neste grupo.');return}
   op=op||{};const st={opts:[{t:''},{t:''}],multi:false,anon:false,hrs:0};
   glassSheet('Nova enquete',(c,close)=>{
     const q=mk('input','pgq');q.placeholder='Faça uma pergunta';q.maxLength=100;q.autocomplete='off';q.setAttribute('aria-label','Pergunta');
@@ -4308,7 +4309,7 @@ poll:'<path d="M18 20V10M12 20V4M6 20v-6"/>'
 function attachMenu(){
   showModal('<div class="agrid"></div>');
   const mc=$('#modal .mc');mc.classList.add('am','amf');const g=mc.querySelector('.agrid');
-  [['k','camera','Câmera','#e8467c'],['i','image','Foto','#8a5cf0'],['v','video','Vídeo','#f08a24'],['f','file','Arquivo','#2b7cf6'],['l','pin','Localização','#22b573'],['p','poll','Enquete','#12a4b3'],['c','user','Contato','#4f6bed']].forEach(([a,ic,lb,col])=>{
+  [['k','camera','Câmera','#e8467c'],['i','image','Foto','#8a5cf0'],['v','video','Vídeo','#f08a24'],['f','file','Arquivo','#2b7cf6'],['l','pin','Localização','#22b573'],['p','poll','Enquete','#12a4b3'],['c','user','Contato','#4f6bed']].filter(x=>x[0]!=='p'||!cur||!cur.group||isAdmin(cur)).forEach(([a,ic,lb,col])=>{
     const b=mk('button','ai'),s=mk('span');s.style.background=col;s.innerHTML=ico(ic,24);b.append(s,mk('small',0,lb));
     b.onclick=()=>{closeModal();
       if(a==='k')openCam((m,c)=>{$('#txt').value=c||'';send(m)});
@@ -5792,7 +5793,7 @@ async function rtLoad(){
       ids.length?SB.from('participantes').select('conversa_id,perfis(id,usuario,nome,telefone)').in('conversa_id',ids).neq('usuario_id',RT.uid):none,
       SB.from('mensagens').select(rtCols).in('conversa_id',all).order('criado_em',{ascending:false}).limit(1000),
       gids.length?SB.from('conversas').select('*').in('id',gids):none,
-      gids.length?SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,perfis(id,usuario,nome,telefone)').in('conversa_id',gids):none]);
+      gids.length?SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,suspenso_ate,perfis(id,usuario,nome,telefone)').in('conversa_id',gids):none]);
     if(o.error)throw o.error;
     (o.data||[]).forEach(x=>{if(x.perfis){const c=rtChat(x.conversa_id,x.perfis),seg=(rows.find(z=>z.conversa_id===x.conversa_id).conversas||{}).mensagens_temporarias_seg;c.dis=seg?seg/3600:0;c._srv=rtGSnap(c)}});
     (gc.data||[]).forEach(cv=>rtGroupApply(cv,(gp.data||[]).filter(q=>q.conversa_id===cv.id)));
@@ -5837,7 +5838,7 @@ async function rtFetchPerson(pp){try{const r=await SB.from('perfis').select('id,
 function rtGSnap(c){if(!c.group)return{dis:c.disMine?0:(c.dis||0)};
   const uid=id=>id==='me'?RT.uid:((chats.find(z=>z.id===id)||{}).uid);
   return{name:c.name||'',desc:c.desc||'',photo:c.photo||'',perm:JSON.stringify(gperm(c)),dis:c.disMine?0:(c.dis||0),
-    mem:(c.members||[]).map(uid).filter(Boolean).sort(),adm:(c.admins||[]).map(uid).filter(Boolean).sort()}}
+    mem:(c.members||[]).map(uid).filter(Boolean).sort(),adm:(c.admins||[]).map(uid).filter(Boolean).sort(),sus:JSON.stringify(Object.keys(c.susp||{}).filter(k=>k==='me'||/^\d+$/.test(k)).map(k=>[uid(k==='me'?'me':Number(k)),c.susp[k]>Date.now()?(c.susp[k]>=9e14?4102444800000:Math.round(c.susp[k]/1000)*1000):0]).filter(x=>x[0]&&x[1]).sort())}}
 function rtGroupApply(cv,parts){
   let c=chats.find(x=>x.rid===cv.id);const act=parts.filter(p=>!p.saiu_em),mr=act.find(p=>p.usuario_id===RT.uid);
   if(!mr){if(c){const i=chats.indexOf(c);if(i>=0)chats.splice(i,1);if(cur===c){cur=null;try{closePages();$('#app').classList.remove('open')}catch(e){}}try{renderList()}catch(e){}}return null}
@@ -5847,11 +5848,13 @@ function rtGroupApply(cv,parts){
   const cp=act.find(p=>p.usuario_id===cv.criado_por);c.creator=cv.criado_por===RT.uid?'me':(cp&&person(cp)?person(cp).id:null);
   c.members=act.filter(p=>p.usuario_id!==RT.uid).map(person).filter(Boolean).map(x=>x.id);
   c.admins=act.filter(p=>p.papel==='admin').map(p=>p.usuario_id===RT.uid?'me':(person(p)||{}).id).filter(v=>v!=null);
+  {const su=c.susp=c.susp||{};Object.keys(su).forEach(k=>{if(k==='me'||/^\d+$/.test(k))delete su[k]});
+   act.forEach(p=>{const t=p.suspenso_ate?Date.parse(p.suspenso_ate):0;if(t>Date.now()){const k=p.usuario_id===RT.uid?'me':(person(p)||{}).id;if(k!=null){su[k]=t>=4102444800000?9e14+1:t;if(!su['w'+k])su['w'+k]='Violou as regras'}}})}
   const cfg=(cv.config&&cv.config.perm)||{};c.perm=Object.assign({send:'all',edit:'admins',add:'admins',status:'admins',approve:false,slow:0},cfg);c.perm.send=cv.so_admin_posta?'admins':'all';
   const dh=cv.mensagens_temporarias_seg?cv.mensagens_temporarias_seg/3600:0;if(dh!==(c.dis||0)&&c._srv){c.msgs.push(['sys',dh?'Mensagens temporárias ativadas.':'Mensagens temporárias desativadas.'])}c.dis=dh;c.disAll=true;c.disMine=false;
   c._srv=rtGSnap(c);return c}
 async function rtGroupLoad(cid,withMsgs){
-  const [a,b]=await Promise.all([SB.from('conversas').select('*').eq('id',cid).maybeSingle(),SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,perfis(id,usuario,nome,telefone)').eq('conversa_id',cid)]);
+  const [a,b]=await Promise.all([SB.from('conversas').select('*').eq('id',cid).maybeSingle(),SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,suspenso_ate,perfis(id,usuario,nome,telefone)').eq('conversa_id',cid)]);
   if(!a.data||a.data.tipo!=='grupo')return null;
   const was=chats.some(x=>x.rid===cid),c=rtGroupApply(a.data,b.data||[]);
   if(c&&!was&&withMsgs){const m=await SB.from('mensagens').select(rtCols).eq('conversa_id',cid).order('criado_em').limit(300);(m.data||[]).forEach(r=>rtPush(r,true))}
@@ -5884,6 +5887,10 @@ async function rtGroupWatch(){
         for(const u of rm){const r=await SB.rpc('remover_membro',{cid:c.rid,u});if(r.error)throw r.error}
         for(const u of b.adm.filter(u=>!a.adm.includes(u))){const r=await SB.rpc('definir_admin',{cid:c.rid,u,tornar:true});if(r.error)throw r.error}
         for(const u of a.adm.filter(u=>!b.adm.includes(u)&&b.mem.includes(u))){const r=await SB.rpc('definir_admin',{cid:c.rid,u,tornar:false});if(r.error)throw r.error}
+        if(a.sus!==b.sus){const A=Object.fromEntries(JSON.parse(a.sus||'[]')),B=Object.fromEntries(JSON.parse(b.sus||'[]'));
+          for(const u of new Set([...Object.keys(A),...Object.keys(B)])){if(A[u]===B[u])continue;
+            const r=await SB.from('participantes').update({suspenso_ate:B[u]?new Date(B[u]).toISOString():null}).eq('conversa_id',c.rid).eq('usuario_id',u).select('usuario_id');
+            if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('Só administradores podem suspender.')}}
         const up={};if(a.name!==b.name)up.nome=b.name;if(a.desc!==b.desc)up.descricao=b.desc;
         if(a.photo!==b.photo)up.foto_url=String(b.photo).startsWith('data:')&&b.photo.length<400000?b.photo:null;
         if(a.perm!==b.perm){const pm=gperm(c);up.config={perm:pm};up.so_admin_posta=pm.send==='admins'}
