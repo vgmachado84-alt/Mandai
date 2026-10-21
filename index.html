@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2420">
+<meta name="mandai-build" content="20261021-2510">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1930,6 +1930,28 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 :root{--rgseen:#dcd5f3}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rgseen:#ffffff}}
 :root[data-theme="dark"]{--rgseen:#ffffff}
+
+/* horário do lembrete (seletor próprio, não corta no celular) */
+.tpv{font-size:calc(34px*var(--fz,1));font-weight:300;text-align:center;letter-spacing:2px;margin:6px 0 2px;color:var(--ink)}
+.tpl{font-size:12px;color:var(--mute);margin:8px 0 4px}
+.tph{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.tpm{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.tph button,.tpm button{padding:9px 0;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:14px}
+.tph button.on,.tpm button.on{background:var(--out);border-color:var(--out);color:#fff}
+.ltw{max-height:46vh;overflow:auto}
+
+/* permitir acesso */
+.perm{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:calc(48px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));text-align:center;background:var(--bg);color:var(--ink);box-sizing:border-box}
+.perm h2{font-size:calc(24px*var(--fz,1));font-weight:500;margin:22px 0 10px}
+.perm .pzt{color:var(--mute);margin:0 0 22px;line-height:1.4;font-size:calc(15px*var(--fz,1))}
+.perm .pzl{width:100%;max-width:380px;text-align:left;display:flex;flex-direction:column;gap:18px}
+.perm .pzl>div{display:flex;gap:16px;align-items:flex-start}.perm .pzl i{color:var(--mute);margin-top:2px}
+.perm .pzl b{display:block;font-weight:500;font-size:calc(16px*var(--fz,1))}.perm .pzl small{color:var(--mute);font-size:calc(14px*var(--fz,1));line-height:1.35}
+.perm .pzn{color:var(--mute);font-size:12px;margin:26px 0 0;max-width:320px}
+.perm .pzb{margin-top:auto;width:100%;max-width:420px;display:flex;flex-direction:column;gap:6px;padding-top:24px}
+.perm .pzb .obp{height:auto;box-shadow:none;width:100%;padding:15px;border-radius:30px;border:0;background:var(--out);color:#fff;font:inherit;font-size:16px;font-weight:500}
+.perm .pzb .obp:disabled{opacity:.6}
+.perm .pzb .lnk{background:none;border:0;color:var(--out);font:inherit;padding:12px}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -2450,11 +2472,16 @@ function laterFor(c0,after){
   const hm=ts=>t(new Date(ts).getHours(),new Date(ts).getMinutes());
   const O=[['Em 1 hora',Date.now()+36e5]];if(at(20,0)>Date.now()+6e4)O.push(['Hoje às 20h',at(20,0)]);O.push(['Amanhã de manhã',at(8,0,1)]);
   let sel=0,custom=false;
-  showModal('<div class="dlt big">Responder depois</div><div class="dlb soft">Vou te lembrar na hora escolhida. A conversa fica marcada na lista até você concluir.</div><div class="rds"></div><div class="ltw" hidden><input type="time" id="ltm" aria-label="Escolher horário"></div><div class="dla row2"><button id="lxc">Cancelar</button><button id="lxo">Criar lembrete</button></div>');
+  showModal('<div class="dlt big">Responder depois</div><div class="dlb soft">Vou te lembrar na hora escolhida. A conversa fica marcada na lista até você concluir.</div><div class="rds"></div><div class="ltw" hidden><input type="hidden" id="ltm"><div class="tpv" id="tpv" aria-live="polite">--:--</div><div class="tpl">Hora</div><div class="tph" id="tph"></div><div class="tpl">Minutos</div><div class="tpm" id="tpm"></div></div><div class="dla row2"><button id="lxc">Cancelar</button><button id="lxo">Criar lembrete</button></div>');
   const mc=$('#modal .mc');mc.classList.add('dlg');const box=mc.querySelector('.rds'),tw=mc.querySelector('.ltw');
   const paint=()=>box.querySelectorAll('.rd').forEach((x,k)=>x.classList.toggle('on',k===sel));
   O.concat([['Escolher horário…',0]]).forEach(([lb,ts],k)=>{const r=mk('button','rd'+(k===0?' on':''));r.type='button';r.innerHTML='<i></i><span></span>';r.lastChild.textContent=lb+(ts?'  ·  '+hm(ts):'');
     r.onclick=()=>{sel=k;custom=!ts;tw.hidden=!custom;paint();if(custom)setTimeout(()=>$('#ltm').focus(),50)};box.appendChild(r)});
+  {let H=null,M=null;const d0=new Date(Date.now()+36e5);H=d0.getHours();M=Math.round(d0.getMinutes()/5)*5;if(M===60){M=0;H=(H+1)%24}
+    const two=n=>String(n).padStart(2,'0'),up=()=>{$('#tpv').textContent=two(H)+':'+two(M);$('#ltm').value=two(H)+':'+two(M);$('#tph').querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===H));$('#tpm').querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i*5===M))};
+    for(let h=0;h<24;h++){const b=mk('button',0,two(h));b.type='button';b.onclick=()=>{H=h;up()};$('#tph').appendChild(b)}
+    for(let m=0;m<60;m+=5){const b=mk('button',0,two(m));b.type='button';b.onclick=()=>{M=m;up()};$('#tpm').appendChild(b)}
+    up()}
   $('#lxc').onclick=closeModal;
   const set=(label,ts)=>{T.forEach(c=>{c.later=label;c.laterAt=ts;c.laterFired=false});if(Array.isArray(S.flt)&&!S.flt.includes('later')){S.flt.push('later');try{renderChips()}catch(e){}}closeModal();renderList();if(cur)renderLater();if(after)after();laterSave();try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}snack('Lembrete criado: '+label+(T.length>1?' ('+T.length+' conversas)':''))};
   $('#lxo').onclick=()=>{
@@ -2693,8 +2720,10 @@ async function startRec(ev){
     $('#ro').onclick=e=>{once=!once;e.currentTarget.classList.toggle('on',once);snack(once?'Áudio de visualização única':'Visualização única desativada')};
     $('#rp').onclick=()=>{paused=!paused;if(paused){acc+=Date.now()-seg;if(mr&&mr.state==='recording')mr.pause()}else{seg=Date.now();if(mr&&mr.state==='paused')mr.resume()}
       const b=$('#rp');b.querySelector('i').innerHTML=ico(paused?'play':'pause',16);b.querySelector('span').textContent=paused?'Continuar':'Pausar';r.classList.toggle('paused',paused);rtAct(paused?'stop':'rec',1)}};
+  let micDenied=null;
   try{stream=await navigator.mediaDevices.getUserMedia({audio:{noiseSuppression:true,echoCancellation:true,autoGainControl:true}});mr=new MediaRecorder(stream);mr.ondataavailable=e=>chunks.push(e.data);mr.start();
-    try{ac=new (window.AudioContext||window.webkitAudioContext)();an=ac.createAnalyser();an.fftSize=256;ac.createMediaStreamSource(stream).connect(an);buf=new Uint8Array(an.fftSize)}catch(e){ac=null;an=null}}catch(e){stream=null;mr=null}
+    try{ac=new (window.AudioContext||window.webkitAudioContext)();an=ac.createAnalyser();an.fftSize=256;ac.createMediaStreamSource(stream).connect(an);buf=new Uint8Array(an.fftSize)}catch(e){ac=null;an=null}}catch(e){stream=null;mr=null;micDenied=e}
+  if(micDenied&&/NotAllowed|Security|NotFound/.test(micDenied.name||'')){gone=true;document.removeEventListener('pointermove',moveH);document.removeEventListener('pointerup',upH);document.removeEventListener('pointercancel',upH);['rlock','rmic'].forEach(i=>{const e=document.getElementById(i);if(e)e.remove()});r.hidden=true;r.className='rec';r.innerHTML='';const cp0=$('.compose');if(cp0)cp0.hidden=false;try{rtAct('stop')}catch(e){}permHelp('mic',micDenied);return}
   if(gone)return;
   seg=Date.now();
   $('.compose').hidden=true;r.hidden=false;rtAct('rec',1);const ai=setInterval(()=>{if(!paused)rtAct('rec',1)},2500);
@@ -3042,7 +3071,7 @@ function openCam(cb,m0,opts){
   async function start(){
     stopS();const v=$('#cv');
     try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});el.classList.toggle('mir',facing==='user');if(v)v.srcObject=stream;else stopS()}
-    catch(e){const m=$('#cerr');if(m)m.hidden=false}
+    catch(e){const m=$('#cerr');if(m){m.hidden=false;if(/NotAllowed|Security/.test((e&&e.name)||''))m.textContent=permText('cam')}}
   }
   async function shutter(){
     const v=$('#cv');
@@ -3676,15 +3705,29 @@ function onboarding(){
   welcome();
   function enterReal(n,u,e){
     me.name=n;me.user=u;me.email=e;me.pass=false;me.sb=true;me.phrase=undefined;if(photo)me.photo=photo;
-    o.hidden=true;o.innerHTML='';saveAcc();renderMe();renderStories();renderList();if(typeof realStart==='function')realStart();
+    o.hidden=true;o.innerHTML='';saveAcc();renderMe();renderStories();renderList();if(typeof realStart==='function')realStart();permScreen();
   }
   function finish(n,u,e,pass){
     me.name=n;me.user=u;me.email=e;me.pass=pass;me.phrase=newPhrase();if(photo)me.photo=photo;
     o.innerHTML='<div class="ob"><div class="obl">🔑</div><h2>Sua frase de recuperação</h2><p class="note">Anote estas 12 palavras em um lugar seguro. Elas recuperam sua conta se você trocar de aparelho.</p><div class="phr" id="ph12"></div><label class="mr"><input type="checkbox" id="onk"><b>Anotei minha frase</b></label><button class="btn" id="onf">Continuar</button></div>';
     me.phrase.forEach(w=>$('#ph12').appendChild(mk('span',0,w)));
-    $('#onf').onclick=()=>{if(!$('#onk').checked)return;o.hidden=true;o.innerHTML='';saveAcc();renderMe();renderStories();renderList()};
+    $('#onf').onclick=()=>{if(!$('#onk').checked)return;o.hidden=true;o.innerHTML='';saveAcc();renderMe();renderStories();renderList();permScreen()};
   }
 }
+/* tela "Permitir acesso" (como no WhatsApp): explica e pede notificações, câmera e microfone uma vez */
+function permScreen(force){
+  try{if(!force&&localStorage.getItem('mandai.perm'))return}catch(e){}
+  const o=$('#onb');if(!o)return;o.hidden=false;
+  o.innerHTML='<div class="perm"><div class="pzh"><svg viewBox="0 0 120 120" width="92" height="92" aria-hidden="true"><defs><linearGradient id="pmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9566ff"/><stop offset="1" stop-color="#5a2fd6"/></linearGradient></defs><rect x="8" y="8" width="104" height="104" rx="30" fill="url(#pmg)"/><path d="M60 30a20 20 0 0 0-20 20v14l-8 12h56l-8-12V50a20 20 0 0 0-20-20Z" fill="#fff"/><path d="M52 84a8 8 0 0 0 16 0Z" fill="#fff"/></svg></div><h2>Permitir acesso</h2><p class="pzt">Para uma melhor experiência no Mandaí, permita o acesso nas próximas telas:</p><div class="pzl"><div><i>'+ico('bell',22)+'</i><span><b>Notificações</b><small>Receba avisos de mensagens e lembretes.</small></span></div><div><i>'+ico('camera',22)+'</i><span><b>Câmera e microfone</b><small>Tire fotos, grave vídeos e áudios e faça chamadas.</small></span></div></div><p class="pzn">A localização só é pedida quando você escolher enviar onde está.</p><div class="pzb"><button class="obp" id="pmgo">Continuar</button><button class="lnk" id="pmsk">Pular</button></div></div>';
+  const done=()=>{try{localStorage.setItem('mandai.perm','1')}catch(e){}o.hidden=true;o.innerHTML=''};
+  $('#pmsk').onclick=done;
+  $('#pmgo').onclick=async()=>{const b=$('#pmgo');b.disabled=true;b.textContent='Aguarde…';
+    try{if(window.Notification&&Notification.permission==='default')await Notification.requestPermission()}catch(e){}
+    try{if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){let st;try{st=await navigator.mediaDevices.getUserMedia({audio:true,video:true})}catch(e){st=await navigator.mediaDevices.getUserMedia({audio:true})}st.getTracks().forEach(t=>t.stop())}}catch(e){}
+    done()};
+}
+function permText(k){const n=k==='mic'?'o microfone':'a câmera';return 'Sem permissão para usar '+n+'. Abra o cadeado ao lado do endereço do app (ou Configurações do Android > Apps > Permissões), permita '+n+' e tente de novo.'}
+function permHelp(k,e){infoModal(k==='mic'?'Microfone bloqueado':'Câmera bloqueada',permText(k))}
 function openSettings(sub){$('#set').hidden=false;setSub=sub||null;$('#set').scrollTop=0;renderSettings()}
 let setSub=null;
 function choose(title,opts,curv,cb){
@@ -3762,7 +3805,7 @@ async function boot(){
     }
   }catch(e){}
   if(had&&me.sb&&SB){try{const ss=await SB.auth.getSession();if(!ss.data.session){me.user=null;me.sb=false;try{localStorage.removeItem('prosa.acc')}catch(e){}had=false}}catch(e){}}
-  if(had||found){await restoreState();o.hidden=true;o.innerHTML='';renderMe();renderStories();renderList();stateReady=true;if(me.sb&&SB&&typeof realStart==='function')realStart();return}
+  if(had||found){await restoreState();o.hidden=true;o.innerHTML='';renderMe();renderStories();renderList();stateReady=true;if(me.sb&&SB&&typeof realStart==='function')realStart();permScreen();return}
   stateReady=true;
   onboarding();
 }
