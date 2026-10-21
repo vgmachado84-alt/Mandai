@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2340">
+<meta name="mandai-build" content="20261021-2420">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1914,6 +1914,22 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 /* escuro do Roxo: violeta profundo (a regra cinza geral estava vencendo) */
 @media (prefers-color-scheme:dark){html:root[data-acc="2"]:not([data-theme="light"]){--bg:#0a0719;--panel:#110c27;--ink:#f1edff;--mute:#a198c8;--line:#261c50;--in:#1a1238;--chip:#241a4a;--bi:#1a1238;--wp:#0a0719}}
 html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f1edff;--mute:#a198c8;--line:#261c50;--in:#1a1238;--chip:#241a4a;--bi:#1a1238;--wp:#0a0719}
+
+/* câmera frontal espelhada (como um espelho) e foto igual ao que se vê */
+.camv.mir:not(.note) #cv{transform:scaleX(-1)}
+.camv.mir.note #cv{transform:translate(-50%,-50%) scaleX(-1)}
+/* botão de nova ligação/conversa fica dentro do painel, acima da barra de baixo */
+.pane{position:relative}
+/* sem o ícone de listas no topo (as listas ficam no "+" dos filtros) */
+.pane#pc .top #tlft{display:none!important}
+
+/* anel do status: violeta; depois de visto, branco */
+:root[data-acc="2"] .ring.rg-un,:root[data-acc="2"] .ring.rg-me,:root[data-acc="2"] .ring.rg-c0,:root[data-acc="2"] .ring.rg-c1,:root[data-acc="2"] .ring.rg-c2,:root[data-acc="2"] .ring.rg-c3{background:linear-gradient(145deg,#b197ff,#7a4ff0)!important;animation:none!important;box-shadow:0 0 12px rgba(124,77,255,.4)!important}
+:root[data-acc="2"] .ring.rg-seen{background:#fff!important;box-shadow:0 0 0 1px color-mix(in srgb,var(--mute) 40%,transparent)!important}
+.av.hasrg::before,.pav.hasrg::before{}
+:root{--rgseen:#dcd5f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rgseen:#ffffff}}
+:root[data-theme="dark"]{--rgseen:#ffffff}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -3025,12 +3041,12 @@ function openCam(cb,m0,opts){
   const close=()=>{clearInterval(tk);if(mr&&mr.state!=='inactive'){mr.onstop=null;mr.stop()}rec=false;stopS();el.hidden=true;el.innerHTML=''};
   async function start(){
     stopS();const v=$('#cv');
-    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});if(v)v.srcObject=stream;else stopS()}
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});el.classList.toggle('mir',facing==='user');if(v)v.srcObject=stream;else stopS()}
     catch(e){const m=$('#cerr');if(m)m.hidden=false}
   }
   async function shutter(){
     const v=$('#cv');
-    if(mode==='foto'){if(!stream)return;const vw=v.videoWidth||640,vh=v.videoHeight||480,rr=v.getBoundingClientRect(),ar=(rr.width/rr.height)||(vw/vh);let sw=vw,sh=vh,sx=0,sy=0;if(vw/vh>ar){sw=vh*ar;sx=(vw-sw)/2}else{sh=vw/ar;sy=(vh-sh)/2}const k=Math.min(1,1440/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);c.getContext('2d').drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);c.toBlob(b=>review({k:'img',src:URL.createObjectURL(b),name:'foto.jpg',size:fmtSize(b.size)}),'image/jpeg',.9);return}
+    if(mode==='foto'){if(!stream)return;const vw=v.videoWidth||640,vh=v.videoHeight||480,rr=v.getBoundingClientRect(),ar=(rr.width/rr.height)||(vw/vh);let sw=vw,sh=vh,sx=0,sy=0;if(vw/vh>ar){sw=vh*ar;sx=(vw-sw)/2}else{sh=vw/ar;sy=(vh-sh)/2}const k=Math.min(1,1440/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);const cx=c.getContext('2d');if(facing==='user'){cx.translate(c.width,0);cx.scale(-1,1)}cx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);c.toBlob(b=>review({k:'img',src:URL.createObjectURL(b),name:'foto.jpg',size:fmtSize(b.size)}),'image/jpeg',.9);return}
     if(rec){mr.stop();return}
     if(!stream)return;
     let tracks=[...stream.getVideoTracks()];
@@ -4906,7 +4922,7 @@ const seenCnt={};
 function seenN(key,n){return seen[key]&&seenCnt[key]===undefined?n:Math.min(seenCnt[key]||0,n)}
 function markSeen(key,n,upto){const cur=seenN(key,n);seenCnt[key]=Math.max(cur,upto);seen[key]=seenCnt[key]>=n}
 function ringBg(n,v){
-  const B='var(--out)',G='#c3ccd6';if(n<1)return 'transparent';if(n===1)return v>=1?G:B;
+  const B='var(--out)',G='var(--rgseen,#fff)';if(n<1)return 'transparent';if(n===1)return v>=1?G:B;
   n=Math.min(n,14);const gap=n>8?6:12,sg=360/n,p=[];
   for(let i=0;i<n;i++){const a=i*sg+gap/2,b=(i+1)*sg-gap/2,c=i<v?G:B;p.push(`transparent ${i*sg}deg ${a}deg`,`${c} ${a}deg ${b}deg`,`transparent ${b}deg ${(i+1)*sg}deg`)}
   return 'conic-gradient(from 0deg,'+p.join(',')+')';
