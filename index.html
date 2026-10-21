@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2690">
+<meta name="mandai-build" content="20261021-2710">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -4006,6 +4006,7 @@ function renderStories(){
   }
   const h=$('.head .av');if(h&&cur)ringify(h,cur)
 }
+function thLS(){try{const t=localStorage.getItem('mandai.theme');if(t!==null)S.theme=t==='dark'?'Escuro':t==='light'?'Claro':'Automático'}catch(e){}}
 function applyPrefs(){const r=document.documentElement;let th=S.theme;try{if(window._thOk)localStorage.setItem('mandai.theme',th==='Escuro'?'dark':th==='Claro'?'light':'');else{const t=localStorage.getItem('mandai.theme');th=t==='dark'?'Escuro':t==='light'?'Claro':'Automático'}}catch(e){}if(th==='Automático')delete r.dataset.theme;else r.dataset.theme=th==='Escuro'?'dark':'light';r.dataset.acc=(S.accent==null?2:S.accent);r.style.setProperty('--fz',Math.max({Pequena:.9,'Média':1,Grande:1.15,'Extra grande':1.3,'Gigante':1.5}[S.font]||1,S.simple?1.3:0));r.dataset.hc=S.hc?'1':'0';r.dataset.rm=(S.rm||S.simple)?'1':'0';r.dataset.big=(S.big||S.simple)?'1':'0';r.dataset.simple=S.simple?'1':'0';r.dataset.z=(parseFloat(r.style.getPropertyValue('--fz'))>1.01)?'1':'0'}
 function snapshot(n){
   const cl=chats.map(c=>{const o={};for(const k in c){if(k!=='photo')o[k]=c[k]}o.hasPhoto=!!c.photo;
@@ -4019,7 +4020,7 @@ async function restoreState(){
   if(!st){try{st=JSON.parse(localStorage.getItem('prosa.state')||'null')}catch(e){}}
   if(!st||!Array.isArray(st.chats)||(st.v||1)<2)return;
   try{
-    Object.assign(S,st.S||{});Object.assign(privacy,st.privacy||{});Object.assign(notifS,st.notifS||{});
+    Object.assign(S,st.S||{});thLS();Object.assign(privacy,st.privacy||{});Object.assign(notifS,st.notifS||{});
     Object.keys(seen).forEach(k=>delete seen[k]);Object.assign(seen,st.seen||{});
     mine.length=0;(st.mine||[]).forEach(x=>mine.push(x));requests.length=0;(st.requests||[]).forEach(x=>requests.push(x));sessions.length=0;(st.sessions||[]).forEach(x=>sessions.push(x));
     chats.length=0;st.chats.forEach(c=>{c.pending=false;chats.push(c)});
@@ -5738,7 +5739,7 @@ async function bkLoad(){
     (r.data||[]).forEach(x=>{if(chats.some(c=>!c.group&&c.name===x.nome&&(c.phone||null)===(x.telefone||null)))return;
       chats.push({id:Math.max(0,...chats.map(z=>+z.id||0))+1,name:x.nome,phone:x.telefone||'',dis:0,online:false,unread:0,msgs:[],reply:['Oi! Tudo bem?','Combinado!','Vou ver e te respondo!','🙂']})});
     const k=await SB.from('backup_app').select('config').eq('usuario_id',RT.uid).maybeSingle();
-    if(k.data&&k.data.config){Object.assign(S,k.data.config)}
+    if(k.data&&k.data.config){Object.assign(S,k.data.config);thLS()}
     BK.last=JSON.stringify(S);
     await bkAll();
   }catch(e){}
