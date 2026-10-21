@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2750">
+<meta name="mandai-build" content="20261021-2770">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -5809,12 +5809,30 @@ async function rtLoad(){
     renderList();rtOnceSync();try{renderChips()}catch(e){}
   }catch(e){rtErr(e);snack('Sem conexão para carregar as conversas.')}
 }
+let _gpb=0;
+async function rtGroupPoll(){
+  if(_gpb||!rtOn())return;const gs=chats.filter(c=>c.rid&&c.group&&!c.creating);if(!gs.length)return;_gpb=1;
+  try{const ids=gs.map(c=>c.rid);
+    const [a,b]=await Promise.all([SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,suspenso_ate').in('conversa_id',ids),SB.from('conversas').select('id,nome,descricao,so_admin_posta,config,mensagens_temporarias_seg').in('id',ids)]);
+    if(a.error||b.error||!a.data||!b.data)return;
+    RT.gfp=RT.gfp||{};
+    for(const c of gs){
+      const fp=JSON.stringify([a.data.filter(x=>x.conversa_id===c.rid).map(x=>[x.usuario_id,x.papel,x.saiu_em,x.suspenso_ate]).sort(),b.data.filter(x=>x.id===c.rid).map(x=>[x.nome,x.descricao,x.so_admin_posta,x.config,x.mensagens_temporarias_seg])]);
+      const old=RT.gfp[c.rid];RT.gfp[c.rid]=fp;
+      if(old===undefined||old===fp)continue;
+      if(c._srv&&JSON.stringify(c._srv)!==JSON.stringify(rtGSnap(c)))continue;
+      await rtGroupLoad(c.rid,false);
+      try{if(cur===c){paintCompose();if(typeof paintSusp==='function')paintSusp()}}catch(e){}
+    }
+  }catch(e){}finally{_gpb=0}
+}
 async function rtSync(){
   try{let q=SB.from('mensagens').select(rtCols).order('criado_em').limit(500);if(RT.last)q=q.gt('criado_em',RT.last);
     const r=await q;if(r.error||!r.data)return;
     const miss=[...new Set(r.data.map(x=>x.conversa_id).filter(id=>!chats.some(c=>c.rid===id)))];
     for(const id of miss)await rtFetchConv(id);
     r.data.forEach(x=>rtPush(x,false));rtOnceSync();
+    rtGroupPoll();
     RT.tk=(RT.tk||0)+1;if(RT.tk%6===0){rtRcptLoad();rtGroupsSync();rtSeenLoad()}
   }catch(e){}
 }
