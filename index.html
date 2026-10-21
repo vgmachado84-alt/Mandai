@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2300">
+<meta name="mandai-build" content="20261021-2340">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1823,23 +1823,7 @@ button,.row,.srow,.opt,.tb,.chip{-webkit-tap-highlight-color:transparent}
 :root[data-acc="2"] .chip.on{box-shadow:0 0 14px rgba(122,79,240,.35)}
 :root[data-acc="2"] .row .av{box-shadow:0 0 0 2px color-mix(in srgb,var(--out) 45%,transparent)}
 
-:root[data-acc="2"] .pane>.top{position:relative;background:#5a30cc;color:#fff;margin:0 0 22px;border-radius:0;border:0;box-shadow:none;z-index:3}
-:root[data-acc="2"] .pane>.top::before,:root[data-acc="2"] .pane>.top::after{content:"";position:absolute;bottom:-22px;width:22px;height:22px;pointer-events:none}
-:root[data-acc="2"] .pane>.top::before{left:0;background:radial-gradient(circle at 100% 100%,transparent 21.5px,#5a30cc 22px)}
-:root[data-acc="2"] .pane>.top::after{right:0;background:radial-gradient(circle at 0 100%,transparent 21.5px,#5a30cc 22px)}
-:root[data-acc="2"] .pane>.top h1,:root[data-acc="2"] .pane>.top h1.logo,:root[data-acc="2"] .pane>.top .ib,:root[data-acc="2"] .pane>.top button{color:#fff!important}
-:root[data-acc="2"] .pane>.top svg{stroke:currentColor}
-:root[data-acc="2"] .pane>.top h1.logo svg{stroke:none}
-:root[data-acc="2"] .pane>.top h1.logo *:not(svg):not(path):not(defs):not(stop){color:#fff!important}
-:root[data-acc="2"] .pane>.top .lgw span{color:#fff!important;-webkit-text-fill-color:#fff!important;background:none!important}
-:root[data-acc="2"] .tabs{position:relative;background:#5a30cc;border:0;margin:22px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);border-radius:0;box-shadow:none;overflow:visible}
-:root[data-acc="2"] .tabs::before,:root[data-acc="2"] .tabs::after{content:"";position:absolute;top:-22px;width:22px;height:22px;pointer-events:none}
-:root[data-acc="2"] .tabs::before{left:0;background:radial-gradient(circle at 100% 0,transparent 21.5px,#5a30cc 22px)}
-:root[data-acc="2"] .tabs::after{right:0;background:radial-gradient(circle at 0 0,transparent 21.5px,#5a30cc 22px)}
-:root[data-acc="2"] .tb.on::after{top:0}
-:root[data-acc="2"] .tb{color:rgba(255,255,255,.68)!important}
-:root[data-acc="2"] .tb.on{color:#fff!important}
-:root[data-acc="2"] .tb.on::after{background:#fff!important}
+
 
 /* pré-visualização de foto/vídeo estilo WhatsApp: legenda em barra acima, destinatário + enviar embaixo */
 .cap2.v3{flex-direction:column;align-items:stretch;gap:0;padding:0;background:#0b0f14;position:relative}
@@ -1862,7 +1846,6 @@ button,.row,.srow,.opt,.tb,.chip{-webkit-tap-highlight-color:transparent}
 :root[data-hc="1"][data-theme="dark"]{--ink:#fff;--mute:#e4def8;--line:#8f87b8}
 :root[data-hc="1"] .tb:not(.on){opacity:1}
 :root[data-hc="1"] #msgs .m.in{outline:1px solid var(--line)}
-:root[data-hc="1"] .pane>.top,:root[data-hc="1"] .tabs{background:#2d1470!important}
 button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid #f5a524;outline-offset:2px}
 
 /* respostas rápidas */
@@ -1895,6 +1878,42 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 .atr[hidden],.atx[hidden]{display:none}
 .atre{margin-top:4px;padding:2px 10px;border:1px solid currentColor;border-radius:12px;background:none;color:inherit;font:inherit;font-size:calc(11px*var(--fz,1));opacity:.7}
 .atx{margin:6px 6px 2px;font-size:calc(14px*var(--fz,1));line-height:1.35;white-space:pre-wrap;user-select:text}
+
+
+
+/* ===== visual Roxo (como o desenho): topo claro com logo à esquerda, faixa de boas-vindas, aba ativa em bloco ===== */
+:root[data-acc="2"] .pane>.top{background:var(--panel);color:var(--ink);margin:0;border:0;border-radius:0;box-shadow:none;position:relative;z-index:2}
+:root[data-acc="2"] .pane>.top h1,:root[data-acc="2"] .pane>.top .ib,:root[data-acc="2"] .pane>.top button{color:var(--ink)}
+.pane#pc .top{display:flex;align-items:center}
+.pane#pc .top h1.logo{position:static!important;transform:none!important;flex:none;justify-content:flex-start;pointer-events:auto;margin:0 auto 0 0;order:0}
+.pane#pc .top #tlft{order:1}.pane#pc .top #tcam{order:2}.pane#pc .top #tmore{order:3}.pane#pc .top #theme{order:4}
+.lgw .wm{color:var(--ink)}
+.hero{position:relative;height:104px;margin-bottom:-22px;overflow:hidden;background:linear-gradient(120deg,#f1ebff,#ddd0ff 70%,#cdbcff)}
+:root[data-theme="dark"] .hero{background:linear-gradient(120deg,#120a33,#241468 70%,#2f1b86)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero{background:linear-gradient(120deg,#120a33,#241468 70%,#2f1b86)}}
+.hero .hh{position:absolute;left:20px;top:16px;display:flex;flex-direction:column;font-size:calc(17px*var(--fz,1));line-height:1.28;color:var(--ink);z-index:1}
+.hero .hh b{font-weight:400}
+.hero .hh i{display:block;width:44px;height:3px;border-radius:3px;background:var(--out);margin-top:8px}
+.hero .hw{position:absolute;right:0;bottom:0;width:62%;height:100%}
+.srch .hero,.srching .hero{display:none}
+:root[data-simple="1"] .hero{display:none}
+:root[data-acc="2"] .pane#pc .stories,:root[data-acc="2"] .pane#pc .sbar{position:relative;z-index:1;background:var(--bg)}
+:root[data-acc="2"] .pane#pc .stories:not(:empty),:root[data-acc="2"] .pane#pc .hero+.sbar{border-radius:26px 26px 0 0;padding-top:16px}
+:root[data-acc="2"] .chip{background:color-mix(in srgb,var(--out) 9%,var(--bg));color:var(--mute);border:0}
+:root[data-acc="2"] .chip.on{background:var(--out)!important;color:#fff!important;font-weight:500;box-shadow:0 4px 14px color-mix(in srgb,var(--out) 40%,transparent)}
+:root[data-acc="2"] .tabs{background:var(--panel);border-top:1px solid var(--line);margin:0;padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px))}
+:root[data-acc="2"] .tb{margin:2px 3px;padding:7px 0 5px;border-radius:18px;color:var(--mute)!important;transition:background .25s,box-shadow .25s,color .2s}
+:root[data-acc="2"] .tb.on{background:color-mix(in srgb,var(--out) 16%,transparent);color:var(--out)!important;font-weight:500!important;box-shadow:0 0 0 1px color-mix(in srgb,var(--out) 30%,transparent) inset,0 4px 16px color-mix(in srgb,var(--out) 30%,transparent)}
+:root[data-acc="2"] .tb.on::after{display:none!important}
+:root[data-acc="2"] .fab,:root[data-acc="2"] .send,:root[data-acc="2"] #mic{background:linear-gradient(145deg,#9468f8,#6c3fe2)!important;color:#fff!important;box-shadow:0 8px 20px rgba(108,63,226,.4)!important}
+:root[data-acc="2"] .fab svg,:root[data-acc="2"] .send svg,:root[data-acc="2"] #mic svg{color:#fff!important;stroke:#fff!important}
+:root[data-acc="2"] .fab{border-radius:20px}
+:root[data-acc="2"] .cap2.v3 #rsend{background:#fff!important}
+:root[data-acc="2"] .cap2.v3 #rsend svg{stroke:#111!important}
+
+/* escuro do Roxo: violeta profundo (a regra cinza geral estava vencendo) */
+@media (prefers-color-scheme:dark){html:root[data-acc="2"]:not([data-theme="light"]){--bg:#0a0719;--panel:#110c27;--ink:#f1edff;--mute:#a198c8;--line:#261c50;--in:#1a1238;--chip:#241a4a;--bi:#1a1238;--wp:#0a0719}}
+html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f1edff;--mute:#a198c8;--line:#261c50;--in:#1a1238;--chip:#241a4a;--bi:#1a1238;--wp:#0a0719}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -1904,6 +1923,7 @@ html{background:var(--panel)}
 <div class="app" id="app">
   <section class="side"><div class="pane" id="pc">
     <div class="top"><button class="ib tcb" id="tlft" aria-label="Listas e filtros"></button><button class="me" id="meBtn" aria-label="Meu perfil" style="display:none"></button><h1 class="logo" aria-label="Mandaí">Mandaí</h1><button class="ib tcb" id="tcam" aria-label="Câmera"></button><button class="ib tcb" id="tmore" aria-label="Mais opções"></button><button class="ib" id="theme" aria-label="Alternar tema" style="display:none">◐</button></div>
+    <div class="hero" id="hero" aria-hidden="true"><div class="hh"><b>Boas conversas</b><b>tornam tudo melhor</b><i></i></div><svg class="hw" viewBox="0 0 220 110" preserveAspectRatio="xMaxYMax slice"><defs><linearGradient id="hwg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b79bff"/><stop offset="1" stop-color="#6d3fe6"/></linearGradient><linearGradient id="hwg2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7c4dff" stop-opacity=".25"/><stop offset="1" stop-color="#c8b6ff" stop-opacity=".85"/></linearGradient></defs><path d="M70 110C90 60 130 90 160 50C185 18 205 30 220 8V110Z" fill="url(#hwg2)"/><path d="M110 110C130 80 170 100 190 66C203 44 212 52 220 40V110Z" fill="url(#hwg1)" opacity=".85"/></svg></div>
     <div class="stories" id="stories"></div>
     <div class="sbar" id="sbar"><button class="sbk" id="sbk" aria-label="Voltar" hidden></button><input class="search" id="q" placeholder="Pesquisar conversas..." aria-label="Pesquisar conversas"><button class="sxc" id="sxc" aria-label="Limpar" hidden></button></div><div class="sfc" id="sfc" hidden></div>
     <div class="chips"><button class="chip on" data-f="all">Todas</button><button class="chip" data-f="unread">Não lidas</button><button class="chip" data-f="groups">Grupos</button></div>
@@ -5069,7 +5089,7 @@ dots:'<circle cx="12" cy="5" r="2" fill="currentColor" stroke="none"/><circle cx
 brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
 arrout:'<path d="M7 17L17 7M8 7h9v9"/>',arrin:'<path d="M17 7L7 17M16 17H7V8"/>'
 });
-function logo(h,id){const i=Math.round(h*.78),g='lgi'+(id||'x');return '<span class="lgw"><svg class="lgi" viewBox="0 0 120 120" width="'+i+'" height="'+i+'" aria-hidden="true"><defs><linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f6bff"/><stop offset="1" stop-color="#18d4ff"/></linearGradient></defs><path d="M34 8H86A26 26 0 0 1 112 34V66A26 26 0 0 1 86 92L100 114L70 92H34A26 26 0 0 1 8 66V34A26 26 0 0 1 34 8Z" fill="url(#'+g+')"/><path d="M36 70V36L60 58L84 36V70" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wm" style="font-size:'+Math.round(h*.72)+'px">Mandaí</span></span>'}
+function logo(h,id){const i=Math.round(h*.95),g='lgi'+(id||'x');return '<span class="lgw"><svg class="lgi" viewBox="0 0 120 120" width="'+i+'" height="'+i+'" aria-hidden="true"><defs><linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9566ff"/><stop offset="1" stop-color="#5a2fd6"/></linearGradient></defs><path d="M34 6H86A28 28 0 0 1 114 34V74A28 28 0 0 1 86 102H46L22 118V98A28 28 0 0 1 6 74V34A28 28 0 0 1 34 6Z" fill="url(#'+g+')"/><path d="M33 76V40L60 64L87 40V76" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wm" style="font-size:'+Math.round(h*.72)+'px">Mandaí</span></span>'}
 let _tab2='c';
 function tab(n){
   if(n!=='c')exitSel();const hi=(n==='m'||n==='a')?'f':n;
@@ -5533,7 +5553,7 @@ function legalPage(k){
     var onb=document.getElementById('onb');
     if(onb&&!onb.hidden)return isDark()?'#0d1b2e':'#ebf2ff';
     var e=document.elementFromPoint(Math.floor(window.innerWidth/2),4),c;
-    if(document.documentElement.dataset.acc==='2'&&e&&e.closest&&e.closest('.pane>.top'))return '#5a30cc';
+    
     while(e){c=getComputedStyle(e).backgroundColor;if(c&&c!=='rgba(0, 0, 0, 0)'&&c!=='transparent')return c;e=e.parentElement}
     return getComputedStyle(document.body).backgroundColor;
   }
