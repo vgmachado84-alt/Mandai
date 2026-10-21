@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2240">
+<meta name="mandai-build" content="20261021-2300">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1893,6 +1893,7 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 .atr{display:block;margin:2px 0 0 4px;padding:4px 10px;border:1px solid currentColor;border-radius:14px;background:none;color:inherit;font:inherit;font-size:calc(12px*var(--fz,1));opacity:.85}
 .atr:disabled{opacity:.6}
 .atr[hidden],.atx[hidden]{display:none}
+.atre{margin-top:4px;padding:2px 10px;border:1px solid currentColor;border-radius:12px;background:none;color:inherit;font:inherit;font-size:calc(11px*var(--fz,1));opacity:.7}
 .atx{margin:6px 6px 2px;font-size:calc(14px*var(--fz,1));line-height:1.35;white-space:pre-wrap;user-select:text}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
@@ -2033,7 +2034,7 @@ function bubble(m,anim){
   if(m[4]&&(m[4].k==='stk'||m[4].k==='gif'))d.classList.add(m[4].k==='stk'?'stkm':'gifm');
   if(m[4]&&(m[4].k==='stk'||m[4].k==='gif')&&!(m[5]&&m[5].del)){const md=m[4];d.addEventListener('click',e=>{const mn=document.getElementById('main');if(mn&&mn.classList.contains('selmode'))return;
     stkSheet(md,m)})}
-  if(m[4]&&m[4].k==='aud'&&!m[4].once&&!(m[5]&&m[5].del)){const au0=d.querySelector('.au');if(au0&&!d.querySelector('.atr')){const tb=document.createElement('button');tb.type='button';tb.className='atr';tb.textContent='Transcrever áudio';const tx=document.createElement('div');tx.className='atx';tx.hidden=true;if(m[4].tr){tx.textContent=m[4].tr;tx.hidden=false;tb.hidden=true}tb.onclick=e=>{e.stopPropagation();trAudio(m[4],tb,tx)};au0.after(tb,tx)}}
+  if(m[4]&&m[4].k==='aud'&&!m[4].once&&!(m[5]&&m[5].del)){const au0=d.querySelector('.au');if(au0&&!d.querySelector('.atr')){const tb=document.createElement('button');tb.type='button';tb.className='atr';tb.textContent='Transcrever áudio';const tx=document.createElement('div');tx.className='atx';tx.hidden=true;tb.onclick=e=>{e.stopPropagation();trAudio(m[4],tb,tx)};au0.after(tb,tx);if(m[4].tr)trShow(m[4],tb,tx)}}
   if(m[4]&&m[4].k==='aud'&&cur&&!(m[5]&&m[5].del)){const au=d.querySelector('.au');if(au&&!au.querySelector('.aav')){
     const out=m[0]==='out',a=document.createElement('span');a.className='aav';
     if(out){a.style.background=me.photo?photoBg(me.photo):colors[0];a.textContent=me.photo?'':initials(me.name||'?')}
@@ -3666,7 +3667,7 @@ function renderSettings(){
    {id:'acc',ic:'key',col:'#2b7cf6',t:'Conta',d:'Usuário, e-mail, frase de recuperação',rows:[['@','Nome de usuário','@'+me.user,usernameForm],['☁','Backup da conta',me.email||'Entre para ativar',bkMenu],['✉️','E-mail de recuperação',me.email||'Não definido',emailForm],['🔑','Frase de recuperação','Ver',phraseView],['🔎','Quem pode me encontrar por @',S.find,()=>choose('Quem pode me encontrar',['Todos','Meus contatos','Ninguém'],S.find,v=>S.find=v)],['📨','Pedidos de conversa',S.req,()=>choose('Quem pode me enviar pedidos',['Qualquer pessoa','Só com meu link ou QR'],S.req,v=>S.req=v)]]},
    {id:'priv',ic:'lock',col:'#22b573',t:'Privacidade',d:'Visto por último, foto, bloqueados, PIN',rows:[['👁','Visto por último',privacy.seen?'Todos':'Ninguém',()=>choose('Visto por último',['Todos','Ninguém'],privacy.seen?'Todos':'Ninguém',v=>privacy.seen=v==='Todos')],['🖼','Foto de perfil',S.photo,()=>choose('Quem vê minha foto',['Todos','Meus contatos','Ninguém'],S.photo,v=>S.photo=v)],['◎','Status',(S.stVis&&S.stVis.mode==='except')?'Contatos, exceto…':(S.stVis&&S.stVis.mode==='only')?'Amigos próximos':'Meus contatos',statusSettings],['✓','Confirmação de leitura',privacy.read?'Ativada':'Desativada',()=>tg('read',privacy)],['⏱','Mensagens temporárias (padrão)',(DISL[S.dis||0])+(S.dis&&S.disAll===false?' · só para mim':''),()=>disDialog(S.dis||0,(n,all)=>{S.dis=n;S.disAll=all;dlg('Aplicar às conversas que já existem?',[['Só novas'],['Aplicar a todas',()=>{chats.forEach(c=>{c.dis=n;c.disAll=all;c.disMine=false});renderList();snack('Aplicado a todas as conversas')}]],'O padrão vale para as conversas novas. Você pode mudar cada conversa depois.',true)},S.disAll)],['🔒','Bloqueio do app (PIN)',privacy.pin?'Ativado':'Desativado',pinForm],['🚫','Contatos bloqueados',String(nb),blockedList],['🔕','Status silenciados',String(chats.filter(c=>c.smute).length),mutedManager]]},
    {id:'chat',ic:'chat',col:'#14b8a6',t:'Conversas',d:'Tema, fonte, Enter envia',rows:[['🌓','Tema do app',S.theme,()=>choose('Tema do app',['Automático','Claro','Escuro'],S.theme,v=>{S.theme=v;const r=document.documentElement;if(v==='Automático')delete r.dataset.theme;else r.dataset.theme=v==='Escuro'?'dark':'light'})],['🔤','Tamanho da fonte',S.font,()=>choose('Tamanho da fonte',['Pequena','Média','Grande'],S.font,v=>{S.font=v;document.documentElement.style.setProperty('--fz',{Pequena:.9,'Média':1,Grande:1.15}[v])})],['↩','Enter envia a mensagem',S.enter?'Sim':'Não',()=>tg('enter',S)],['🎧','Velocidade dos áudios',AU[S.aud]||'1×',()=>choose('Velocidade padrão dos áudios',['1×','1,5×','2×'],AU[S.aud]||'1×',v=>S.aud={'1×':1,'1,5×':1.5,'2×':2}[v])]]},
-   {id:'a11y',ic:'eye',col:'#0ea5e9',t:'Acessibilidade',d:'Letra grande, contraste, botões maiores',rows:[['👁','Modo simples',S.simple?'Ligado':'Desligado',()=>choose('Modo simples (letra grande, poucos botões)',['Ligado','Desligado'],S.simple?'Ligado':'Desligado',v=>{S.simple=v==='Ligado';applyPrefs()})],['🔤','Tamanho do texto',S.font||'Média',()=>choose('Tamanho do texto',['Pequena','Média','Grande','Extra grande','Gigante'],S.font||'Média',v=>{S.font=v;applyPrefs()})],['👁','Alto contraste',S.hc?'Ligado':'Desligado',()=>choose('Alto contraste',['Ligado','Desligado'],S.hc?'Ligado':'Desligado',v=>{S.hc=v==='Ligado';applyPrefs()})],['⏳','Reduzir animações',S.rm?'Ligado':'Desligado',()=>choose('Reduzir animações',['Ligado','Desligado'],S.rm?'Ligado':'Desligado',v=>{S.rm=v==='Ligado';applyPrefs()})],['🖼','Botões maiores',S.big?'Ligado':'Desligado',()=>choose('Botões maiores',['Ligado','Desligado'],S.big?'Ligado':'Desligado',v=>{S.big=v==='Ligado';applyPrefs()})],['🎧','Ouvir mensagens em voz alta','Segure uma mensagem > Mais > Ouvir',()=>infoModal('Ouvir mensagens','Segure uma mensagem de texto, toque nos três pontinhos e escolha "Ouvir". O celular lê a mensagem em voz alta.')],['🔎','Leitor de tela (TalkBack)','Todos os botões têm nome',()=>infoModal('Leitor de tela','Os botões do app têm nome para o TalkBack do Android ler. Se algum botão for lido sem nome, me avise qual é.')]]},
+   {id:'a11y',ic:'eye',col:'#0ea5e9',t:'Acessibilidade',d:'Letra grande, contraste, botões maiores',rows:[['👁','Modo simples',S.simple?'Ligado':'Desligado',()=>choose('Modo simples (letra grande, poucos botões)',['Ligado','Desligado'],S.simple?'Ligado':'Desligado',v=>{S.simple=v==='Ligado';applyPrefs()})],['🔤','Tamanho do texto',S.font||'Média',()=>choose('Tamanho do texto',['Pequena','Média','Grande','Extra grande','Gigante'],S.font||'Média',v=>{S.font=v;applyPrefs()})],['👁','Alto contraste',S.hc?'Ligado':'Desligado',()=>choose('Alto contraste',['Ligado','Desligado'],S.hc?'Ligado':'Desligado',v=>{S.hc=v==='Ligado';applyPrefs()})],['⏳','Reduzir animações',S.rm?'Ligado':'Desligado',()=>choose('Reduzir animações',['Ligado','Desligado'],S.rm?'Ligado':'Desligado',v=>{S.rm=v==='Ligado';applyPrefs()})],['🖼','Botões maiores',S.big?'Ligado':'Desligado',()=>choose('Botões maiores',['Ligado','Desligado'],S.big?'Ligado':'Desligado',v=>{S.big=v==='Ligado';applyPrefs()})],['🎧','Qualidade da transcrição de áudio',S.trq||'Melhor (80 MB)',()=>choose('Qualidade da transcrição (maior = acerta mais, baixa mais)',Object.keys(TRQ),S.trq||'Melhor (80 MB)',v=>{S.trq=v})],['🎧','Ouvir mensagens em voz alta','Segure uma mensagem > Mais > Ouvir',()=>infoModal('Ouvir mensagens','Segure uma mensagem de texto, toque nos três pontinhos e escolha "Ouvir". O celular lê a mensagem em voz alta.')],['🔎','Leitor de tela (TalkBack)','Todos os botões têm nome',()=>infoModal('Leitor de tela','Os botões do app têm nome para o TalkBack do Android ler. Se algum botão for lido sem nome, me avise qual é.')]]},
    {id:'fav',ic:'star',col:'#f5a524',t:'Favoritas',d:'Mensagens salvas',go:starredView},
    {id:'not',ic:'bell',col:'#e5484d',t:'Notificações',d:notifS.on?'Ativadas':'Desativadas',rows:[['🔔','Notificações de mensagens',notifS.on?'Ativadas':'Desativadas',notifMenu]]},
    {id:'dev',ic:'monitor',col:'#8a5cf0',t:'Dispositivos conectados',d:sessions.length+' conectado'+(sessions.length===1?'':'s'),go:devicesMenu},
@@ -5645,9 +5646,11 @@ setInterval(()=>{if(!bkOk())return;const f=BKF[S.bkFreq||'d'];if(!f||!f[1])retur
 })();
 /* ao abrir o gravador, a conversa sobe junto para não esconder a última mensagem */
 (function(){const hook=()=>{const r=document.getElementById('rec'),m=document.getElementById('msgs');if(!r||!m||r._ro||!window.ResizeObserver)return;r._ro=1;new ResizeObserver(()=>{if(!r.hidden)m.scrollTop=m.scrollHeight}).observe(r)};setInterval(hook,800)})();
-const TR={p:null};
+const TR={p:null,m:''};
+const TRQ={'Rápida (40 MB)':'Xenova/whisper-tiny','Melhor (80 MB)':'Xenova/whisper-base','Ótima (250 MB, mais lenta)':'Xenova/whisper-small'};
+function trShow(md,btn,box){box.textContent='';const t=document.createElement('span');t.textContent=md.tr;const r=document.createElement('button');r.type='button';r.className='atre';r.textContent='Refazer';r.onclick=e=>{e.stopPropagation();md.tr=null;box.hidden=true;btn.hidden=false;btn.disabled=false;trAudio(md,btn,box)};box.append(t,document.createElement('br'),r);box.hidden=false;btn.hidden=true}
 async function trAudio(md,btn,box){
-  if(md.tr){box.textContent=md.tr;box.hidden=false;btn.hidden=true;return}
+  if(md.tr){trShow(md,btn,box);return}
   btn.disabled=true;btn.textContent='Preparando o áudio…';
   try{
     const src=await rtGet(md);if(!src)throw new Error('áudio indisponível');
@@ -5656,15 +5659,16 @@ async function trAudio(md,btn,box){
     const dec=await ac.decodeAudioData(buf.slice(0));try{ac.close()}catch(e){}
     const oc=new OfflineAudioContext(1,Math.max(1,Math.ceil(dec.duration*16000)),16000),bs=oc.createBufferSource();bs.buffer=dec;bs.connect(oc.destination);bs.start();
     const pcm=(await oc.startRendering()).getChannelData(0);
-    if(!TR.p){
+    const mn=TRQ[S.trq||'Melhor (80 MB)']||'Xenova/whisper-base';
+    if(!TR.p||TR.m!==mn){
       btn.textContent='Baixando o tradutor de voz (só na 1ª vez)…';
       const T=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2');T.env.allowLocalModels=false;
-      TR.p=await T.pipeline('automatic-speech-recognition','Xenova/whisper-tiny',{dtype:'q8',progress_callback:p=>{if(p&&p.status==='progress')btn.textContent='Baixando… '+Math.round(p.progress||0)+'%'}});
+      TR.p=null;TR.p=await T.pipeline('automatic-speech-recognition',mn,{dtype:'q8',progress_callback:p=>{if(p&&p.status==='progress')btn.textContent='Baixando… '+Math.round(p.progress||0)+'%'}});TR.m=mn;
     }
     btn.textContent='Transcrevendo…';
     const o=await TR.p(pcm,{language:'portuguese',task:'transcribe',chunk_length_s:30});
     md.tr=((o&&o.text)||'').trim()||'(não consegui entender este áudio)';
-    box.textContent=md.tr;box.hidden=false;btn.hidden=true;
+    trShow(md,btn,box);
   }catch(e){btn.disabled=false;btn.textContent='Transcrever áudio';snack('Não consegui transcrever: '+((e&&e.message)||e))}
 }
 async function rtLoad(){
