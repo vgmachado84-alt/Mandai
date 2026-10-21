@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2610">
+<meta name="mandai-build" content="20261021-2630">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -305,7 +305,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--out);outline-of
 .emg2{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
 .eme{font-size:27px;height:42px;border-radius:12px;transition:transform .1s}
 .eme:active{background:var(--chip);transform:scale(1.25)}
-.eme.pop{animation:pop .25s}
+.eme.epop{animation:pop .25s}
 .emh{grid-column:1/-1;color:var(--mute);font-size:14px;padding:18px 6px}
 .tw.flash input{animation:fl .5s}
 @keyframes fl{0%{box-shadow:0 0 0 0 rgba(47,125,246,.55)}100%{box-shadow:0 0 0 8px rgba(47,125,246,0)}}
@@ -4360,7 +4360,7 @@ function emoAdd(e,b){
   const s=t.selectionStart==null?t.value.length:t.selectionStart,en=t.selectionEnd==null?s:t.selectionEnd;
   t.setRangeText(e,s,en,'end');t.dispatchEvent(new Event('input'));
   S.emo=[e,...(S.emo||[]).filter(x=>x!==e)].slice(0,24);
-  b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');
+  b.classList.remove('epop');void b.offsetWidth;b.classList.add('epop');
   const w=t.parentElement;w.classList.remove('flash');void w.offsetWidth;w.classList.add('flash');
 }
 function emoDel(){
