@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2140">
+<meta name="mandai-build" content="20261021-2200">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1876,6 +1876,10 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 
 .emc .dit{width:100%;margin:6px 0 10px}
 :root[data-z="1"] .pane>:not(.top):not(.tabs):not(.fab),:root[data-z="1"] #set,:root[data-z="1"] .mc{zoom:var(--fz)}
+
+/* botões flutuantes mais baixos (a barra de baixo agora fica fora do painel) */
+:root[data-acc="2"] .pane .fab,:root[data-acc="2"] .sfabs{bottom:18px}
+:root[data-acc="2"] .mystp .sfabs{bottom:40px}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -5624,6 +5628,8 @@ setInterval(()=>{if(!bkOk())return;const f=BKF[S.bkFreq||'d'];if(!f||!f[1])retur
   new MutationObserver(go).observe(document.documentElement,{childList:true,subtree:true});go();
   document.addEventListener('DOMContentLoaded',go);
 })();
+/* ao abrir o gravador, a conversa sobe junto para não esconder a última mensagem */
+(function(){const hook=()=>{const r=document.getElementById('rec'),m=document.getElementById('msgs');if(!r||!m||r._ro||!window.ResizeObserver)return;r._ro=1;new ResizeObserver(()=>{if(!r.hidden)m.scrollTop=m.scrollHeight}).observe(r)};setInterval(hook,800)})();
 async function rtLoad(){
   await bkLoad();
   try{
