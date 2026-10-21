@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2790">
+<meta name="mandai-build" content="20261021-2850">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1972,11 +1972,12 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 .pane#pc{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .pane#pc .list{overflow:visible;flex:1 0 auto;min-height:0;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .pane#pc>*{flex-shrink:0}
-.pane#pc .top{position:sticky;top:0;z-index:6;background:var(--bg)}
+.pane#pc .top{position:sticky;top:0;z-index:7;background:var(--bg)}
+.pane#pc .sbar{position:sticky!important;top:var(--tph,56px);z-index:6!important;background:var(--bg)!important}
 .pane#pc .fab{position:sticky;bottom:18px;right:auto;align-self:flex-end;margin:-58px 16px 0 auto;flex:none;order:9}
 .pane#pc.scol .stories,.pane#pc.scol .chips{max-height:none;opacity:1;pointer-events:auto}
 /* só os filtros ficam presos sob o topo; busca e faixa rolam */
-.pane#pc .chips{position:sticky;top:var(--tph,56px);z-index:5;background:var(--bg)}
+.pane#pc .chips{position:relative;z-index:1}
 /* círculo do status mais discreto */
 .ring{padding:1.5px!important}.ring .av{border-width:1.5px!important}
 /* botões da página do grupo: texto cabe no cartão */
@@ -6165,7 +6166,7 @@ addEventListener('online',()=>{if(RT.on)rtSync()});
 /* atualização automática: se existir uma versão nova publicada, limpa o cache e recarrega uma vez */
 (function(){try{if(!/^https?:/.test(location.protocol))return;var cur=(document.querySelector('meta[name="mandai-build"]')||{}).content;if(!cur)return;
 fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="mandai-build" content="([^"]+)"/);if(!m||m[1]===cur)return;var k='mandai.reloaded';if(sessionStorage.getItem(k)===m[1])return;sessionStorage.setItem(k,m[1]);
-var done=function(){location.reload()};var cl=self.caches?caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}):Promise.resolve();
+var done=function(){try{location.replace(location.pathname+'?b='+m[1])}catch(e){location.reload()}};var cl=self.caches?caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}):Promise.resolve();
 cl.then(function(){return navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}):0}).then(done,done)}).catch(function(){})}catch(e){}})();
 </script>
 </body>
