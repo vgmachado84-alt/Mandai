@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-4160">
+<meta name="mandai-build" content="20261022-4190">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2355,12 +2355,14 @@ function wireReply(){
   const hb=$('#vhb');hb.onclick=e=>{e.stopPropagation();const r=hb.getBoundingClientRect(),sx=sv.list[sv.i];hb.classList.add('on');heartAt(r.left+r.width/2,r.top)};
 }
 function next(){if(sv.i<sv.list.length-1){sv.i++;show();return}seen[sv.key]=true;if(sv.q&&sv.qi<sv.q.length-1){sv.qi++;load(sv.qi,0);show()}else closeV()}
-function stLike(m){const q=m&&m[0]==='in'&&m[5]&&m[5].reply;if(!q||q.who!=='Status'||!q.sid)return '';const t=String(m[1]||'').trim();return t&&t.length<=12&&!/[\p{L}\p{N}]/u.test(t)?t:''}
+function stLike(m){const q=m&&m[0]==='in'&&m[5]&&m[5].reply;if(!q||q.who!=='Status'||!q.sid)return '';const t=String(m[1]||'').trim();return t&&t.length<=16&&/^(?:[\u2763\u2764\u{1F90D}\u{1F90E}\u{1F9E1}\u{1F5A4}\u{1F493}-\u{1F49F}]\uFE0F?)+$/u.test(t)?t:''}
+function stReplied(m){const q=m&&m[0]==='in'&&m[5]&&m[5].reply;return !!(q&&q.who==='Status'&&q.sid&&!stLike(m))}
+function stReplies(st){const o=new Set();if(!st||!st.sid)return o;chats.forEach(c=>{if(c.group)return;c.msgs.forEach(m=>{if(m[5]&&m[5].reply&&m[5].reply.sid===st.sid&&stReplied(m))o.add(c.id)})});return o}
 function stLikes(st){const o=new Map();if(!st||!st.sid)return o;chats.forEach(c=>{if(c.group)return;c.msgs.forEach(m=>{if(m[5]&&m[5].reply&&m[5].reply.sid===st.sid){const e=stLike(m);if(e)o.set(c.id,e)}})});return o}
 function viewers(){
   clearTimeout(sv.timer);const v=$('#viewer');v.classList.add('paused');$('#vp')?.remove();
-  const lk=stLikes(sv.list[sv.i]),vs=(sv.list[sv.i][3]||[]).slice();lk.forEach((e,id)=>{if(!vs.some(x=>x[0]===id))vs.push([id,'curtiu'])});vs.sort((a,b)=>(lk.has(b[0])?1:0)-(lk.has(a[0])?1:0));const p=document.createElement('div');p.className='vp';p.id='vp';
-  p.innerHTML=`<h3>Visto por ${vs.length}${lk.size?' · '+lk.size+(lk.size>1?' curtidas':' curtida'):''}</h3>`+(vs.length?vs.map(x=>{const c=chats.find(y=>y.id===x[0]);return `<div class="vr"><span class="av" style="background:${ad(c)}">${ini(c.name)}</span><b>${c.name}</b><small>${x[1]}</small>${lk.has(x[0])?'<span class="vlk">'+lk.get(x[0])+'</span>':''}</div>`}).join(''):'<p style="color:var(--mute)">Ninguém viu ainda. Os contatos aparecem aqui assim que abrirem.</p>')+'<button class="opt" id="vc">Fechar</button>';
+  const lk=stLikes(sv.list[sv.i]),rp=stReplies(sv.list[sv.i]),vs=(sv.list[sv.i][3]||[]).slice();lk.forEach((e,id)=>{if(!vs.some(x=>x[0]===id))vs.push([id,'curtiu'])});vs.sort((a,b)=>(lk.has(b[0])?1:0)-(lk.has(a[0])?1:0));const p=document.createElement('div');p.className='vp';p.id='vp';
+  p.innerHTML=`<h3>Visto por ${vs.length}${lk.size?' · '+lk.size+(lk.size>1?' curtidas':' curtida'):''}</h3>`+(vs.length?vs.map(x=>{const c=chats.find(y=>y.id===x[0]);return `<div class="vr"><span class="av" style="background:${ad(c)}">${ini(c.name)}</span><b>${c.name}</b><small>${x[1]}</small>${lk.has(x[0])?'<span class="vlk">'+lk.get(x[0])+'</span>':(rp.has(x[0])?'<span class="vlk" title="respondeu">💬</span>':'')}</div>`}).join(''):'<p style="color:var(--mute)">Ninguém viu ainda. Os contatos aparecem aqui assim que abrirem.</p>')+'<button class="opt" id="vc">Fechar</button>';
   v.appendChild(p);
   $('#vc').onclick=()=>{v.classList.remove('paused');show()};
 }
@@ -3711,7 +3713,8 @@ function notify(c,m){
   card.className='nt';card._c=c;h.className='nh';av.className='av';av.style.background=ad(c);av.textContent=ini(c.name);nm.className='nm';nb.textContent=c.name;ns.textContent='agora';nm.append(nb,ns);h.append(av,nm);
   body.className='nb';
   const lkE=stLike(m);
-  if(lkE)body.textContent=notifS.prev?'curtiu seu status '+lkE:'🔒 curtiu seu status';
+  if(lkE)body.textContent=notifS.prev?c.name.split(' ')[0]+' curtiu seu status '+lkE:'🔒 curtiu seu status';
+  else if(stReplied(m))body.textContent=notifS.prev?c.name.split(' ')[0]+' respondeu ao seu status: '+(m[1]||''):'🔒 respondeu ao seu status';
   else if(!notifS.prev)body.textContent='🔒 Nova mensagem';
   else if(m[4]&&m[4].k==='aud')body.appendChild(mediaEl(m[4]));
   else body.textContent=m[4]?lt(m)+(m[1]?': '+m[1]:''):m[1];
@@ -5382,11 +5385,11 @@ function openQR(){
   const bd=mk('div','qrb'),p=mk('div','qrp');bd.onclick=()=>show();p.id='qrp';
   p.innerHTML='<div class="qrh"></div><div class="qre"></div><div class="qrr"><input id="qri" maxlength="300" autocomplete="off" aria-label="Responder ao status"><button id="qrs" aria-label="Enviar"></button></div>';
   $('#qri',p);const qi=p.querySelector('#qri'),qs=p.querySelector('#qrs');qi.placeholder='Responder a '+c.name.split(' ')[0]+'…';qs.innerHTML=ico('send',20);
-  ['😂','😮','😍','😢','👏','🔥'].forEach(e=>{const b=mk('button',0,e);b.onclick=()=>sendSR(c,s,e);p.querySelector('.qre').appendChild(b)});
+  ['❤️','😂','😮','😢','👏','🔥'].forEach(e=>{const b=mk('button',0,e);b.onclick=()=>sendSR(c,s,e);p.querySelector('.qre').appendChild(b)});
   v.append(bd,p);qi.focus();
   qs.onclick=()=>{const tx=qi.value.trim();if(tx)sendSR(c,s,tx)};qi.onkeydown=e=>{if(e.key==='Enter'){const tx=qi.value.trim();if(tx)sendSR(c,s,tx)}};
 }
-function sendSR(c,s,txt){const nm=['out',txt,hhmm(),exp(c),null,{st:'sent',reply:stReply(s)}];c.msgs.push(nm);track(nm,c);renderList();snack('Resposta enviada');show()}
+function sendSR(c,s,txt){const nm=['out',txt,hhmm(),exp(c),null,{st:'sent',ts:Date.now(),reply:stReply(s)}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,txt,nm);renderList();snack('Resposta enviada');show()}
 function addExtras(vt,s){
   const x=s[5];if(!x)return;if(x.f)vt.classList.add('f-'+x.f);
   const w=mk('div','stk');
