@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3410">
+<meta name="mandai-build" content="20261021-3450">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2227,14 +2227,19 @@ function bubble0(m,anim){
   return d;
 }
 function openChat(id){const r=open0(id);try{applyLook()}catch(e){}setTimeout(()=>{paintLive();paintSusp();paintLocShare()},0);return r}
+function msgWin(box){const c=cur,n=c._win||80,st=Math.max(0,c.msgs.length-n);
+  if(st>0){const b=mk('button','older','↑ Mensagens anteriores ('+st+')');b.style.cssText='display:block;margin:8px auto;padding:8px 16px;border-radius:16px;background:var(--chip);color:var(--out);font-weight:600;font-size:14px';
+    b.onclick=()=>{const h=box.scrollHeight;c._win=(c._win||80)+100;paintMsgs();box.scrollTop=box.scrollHeight-h};box.appendChild(b)}
+  c.msgs.slice(st).forEach(m=>box.appendChild(bubble(m)))}
+function showMsg(m){if(!cur)return;const i=cur.msgs.indexOf(m);if(i<0)return;const st=Math.max(0,cur.msgs.length-(cur._win||80));if(i<st){cur._win=cur.msgs.length-i+10;const y=0;paintMsgs()}}
 function open0(id){
   chatFrom=null;closePages();purge();cur=chats.find(c=>c.id===id);cur.unread=0;cur.hidden=false;if(cur.rid&&typeof RT!=='undefined'){RT.seen[cur.rid]=new Date().toISOString();rtSaveSeen();try{rtReadSoon();rtSeenLoad()}catch(e){}}
   $('#app').classList.add('open');
   $('#main').innerHTML=`<div class="selbar" id="selbar" hidden></div><div class="rxpill" id="rxpill" hidden></div><div class="head"><button class="ib back" id="back" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="av ${cur.online?'online':''} ${sr(cur)}" style="background:${ad(cur)};${rgs(cur)}">${ini(cur.name)}${cur.dis?'<i class="tmb">'+ico('timer',13)+'</i>':''}</div><div class="meta"><b>${cur.name}</b><span id="st">${esc(sub(cur))}</span></div><button class="ib" id="tCall" aria-label="Ligar">${ico('phone',22)}</button><button class="ib" id="tVid" aria-label="Chamada de vídeo">${ico('video',22)}</button><button class="ib" id="tMore" aria-label="Mais opções">${ico('more',22)}</button></div><div id="later"></div><div id="sbar"></div><div id="pinbar"></div><div class="msgs" id="msgs"></div><div class="rpl" id="rpl" hidden></div><div class="compose"><button class="att" id="att" aria-label="Anexar">${ico('clip',22)}</button><div class="tw"><textarea id="txt" rows="1" placeholder="Mensagem" aria-label="Mensagem" autocomplete="off"></textarea><button class="emo" id="emo" aria-label="Emojis">${ico('smile',22)}</button><button class="emo cc" id="ccam" aria-label="Câmera">${ico('camera',22)}</button></div><button class="send" id="send" aria-label="Enviar"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.5-7.5a1 1 0 000-1.8L3.4 3.6a1 1 0 00-1.4 1.2L4 11l9 1-9 1-2 6.2a1 1 0 001.4 1.2z"/></svg></button><button class="send" id="mic" aria-label="Gravar áudio">${ico('mic',22)}</button></div><div class="emp" id="emp" hidden></div><div class="rec" id="rec" hidden></div><div class="sheet" id="sheet" hidden></div>`;
   const box=$('#msgs');
   const dd=document.createElement('div');dd.className='day';dd.textContent='Toque numa mensagem para responder, reagir ou apagar';box.appendChild(dd);
-  cur.msgs.forEach(m=>box.appendChild(bubble(m)));
-  box.scrollTop=box.scrollHeight;
+  cur._win=80;msgWin(box);
+  box.scrollTop=box.scrollHeight;try{rtOpenAuto(cur)}catch(e){}
   $('#back').onclick=()=>{const cf=chatFrom;chatFrom=null;$('#app').classList.remove('open');cur=null;renderList();if(cf)commPage(cf)};
   $('#send').onpointerdown=e=>e.preventDefault();$('#send').onmousedown=e=>e.preventDefault();
   $('#send').onclick=()=>{send();$('#txt').focus()};
@@ -2452,7 +2457,7 @@ setTimeout(()=>{try{renderChips()}catch(e){}},0);
 $('#theme').onclick=()=>{
   const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
   r.dataset.theme=dark?'light':'dark';
-  try{S.theme=dark?'Claro':'Escuro';window._thOk=1;localStorage.setItem('mandai.theme',dark?'light':'dark');persist()}catch(e){}
+  try{S.theme=dark?'Claro':'Escuro';window._thOk=1;localStorage.setItem('mandai.theme',dark?'light':'dark');persist(true)}catch(e){}
 };
 $('#main').innerHTML='<p class="empty">Selecione uma conversa para começar.<br>Cada uma pode ter o seu próprio tema.</p>';
 const me={name:'Você',about:'Disponível',photo:null};
@@ -3385,7 +3390,7 @@ function showReply(){
 function paintMsgs(){
   const box=$('#msgs');if(!box||!cur)return;const y=box.scrollTop;box.innerHTML='';
   const dd=document.createElement('div');dd.className='day';dd.textContent='Toque numa mensagem para responder, reagir ou apagar';box.appendChild(dd);
-  cur.msgs.forEach(m=>box.appendChild(bubble(m)));box.scrollTop=y;paintPin();
+  msgWin(box);box.scrollTop=y;paintPin();
 }
 function pinAsk(m,after){
   const x=m[5]=m[5]||{};
@@ -3408,7 +3413,7 @@ function paintPin(){
   const t=document.createElement('span');t.className='pnt';t.textContent=lt(it);d.append(ic,t);
   if(p.length>1){const c=document.createElement('small');c.className='pnc';c.textContent=(cur._pi+1)+'/'+p.length;d.appendChild(c)}
   d.setAttribute('aria-label','Mensagem fixada: '+lt(it));
-  d.onclick=()=>{const e=[...document.querySelectorAll('#msgs .m')].find(z=>z._m===it);if(e)e.scrollIntoView({block:'center',behavior:'smooth'});if(p.length>1){cur._pi=(cur._pi-1+p.length)%p.length;paintPin()}};
+  d.onclick=()=>{showMsg(it);const e=[...document.querySelectorAll('#msgs .m')].find(z=>z._m===it);if(e)e.scrollIntoView({block:'center',behavior:'smooth'});if(p.length>1){cur._pi=(cur._pi-1+p.length)%p.length;paintPin()}};
   el.appendChild(d);
 }
 function msgMenu(m){
@@ -4203,9 +4208,12 @@ async function restoreState(){
     window._demoOff=true;window._thOk=1;applyPrefs();lastState='';
   }catch(e){}
 }
-async function persist(){
+let _psig='',_pat=0;
+async function persist(force){
   if(!stateReady||!me.user)return;
-  let j='';for(const n of [1e9,150,60,20]){j=JSON.stringify(snapshot(n));if(j.length<=150000)break}
+  const tot=chats.reduce((a,c)=>a+c.msgs.length,0),sig=chats.map(c=>{const l=c.msgs[c.msgs.length-1];return c.id+':'+(c.name||'')+(c.hidden?'h':'')+(c.pin?'p':'')+':'+c.msgs.length+':'+(l?(l[1]||'').length+(l[5]&&l[5].st||''):'')+':'+(c.unread||0)}).join('|')+mine.length+JSON.stringify([S,privacy,notifS]);
+  if(!force&&sig===_psig&&Date.now()-_pat<60000)return;_psig=sig;_pat=Date.now();
+  let j='';for(const n of (tot>3000?[60,20]:tot>600?[150,60,20]:[1e9,150,60,20])){j=JSON.stringify(snapshot(n));if(j.length<=150000)break}
   if(j===lastState)return;lastState=j;
   try{localStorage.setItem('prosa.state',j);localStorage.setItem('prosa.photos',JSON.stringify(Object.fromEntries(chats.filter(c=>c.photo).map(c=>[c.id,c.photo]))))}catch(e){}
   if(dbBase){
@@ -4218,7 +4226,7 @@ function wipeState(){
   if(dbBase){ps.push(dbBase.doc('state').delete().catch(()=>{}));if(dbAcc)ps.push(dbAcc.delete().catch(()=>{}));chats.forEach(c=>{if(c.photo)ps.push(dbBase.doc('photo-'+c.id).delete().catch(()=>{}))})}
   return Promise.all(ps);
 }
-setInterval(persist,3000);document.addEventListener('visibilitychange',()=>{if(document.hidden)persist()});addEventListener('pagehide',persist);
+setInterval(()=>{if(document.hidden)return;(window.requestIdleCallback||(f=>setTimeout(f,0)))(()=>persist(),{timeout:3000})},4000);document.addEventListener('visibilitychange',()=>{if(document.hidden)persist(true)});addEventListener('pagehide',()=>persist(true));
 let _tab='c';
 function tab(n){
   if(n==='a'){openSettings()}
@@ -4556,7 +4564,7 @@ function copyText(t){if(navigator.clipboard)navigator.clipboard.writeText(t).the
 function paintMsgs(){
   const box=$('#msgs');if(!box||!cur)return;const y=box.scrollTop;box.innerHTML='';
   box.appendChild(mk('div','day','Deslize ou segure uma mensagem para responder, reagir ou apagar'));
-  cur.msgs.forEach(m=>box.appendChild(bubble(m)));box.scrollTop=y;paintPin();
+  msgWin(box);box.scrollTop=y;paintPin();
 }
 function bindSel(box){
   let lp=0,sx=0,sy=0;const stop=()=>{clearTimeout(lp);lp=0};
@@ -5801,7 +5809,7 @@ function buildGif(c){
   let box=document.getElementById('nxfile');
   if(!box){box=document.createElement('input');box.type='file';box.id='nxfile';box.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';box.tabIndex=-1;document.body.appendChild(box)}
   window.nxFile=function(accept,onfile){
-    try{persist()}catch(e){}
+    try{persist(true)}catch(e){}
     box.value='';box.accept=accept;
     box.onchange=()=>{const f=box.files&&box.files[0];if(f)onfile(f)};
     box.click();
@@ -5901,7 +5909,7 @@ function rtPush(r,initial){
   if(c.group&&!mine){const pp=chats.find(x=>x.uid===r.remetente_id&&!x.group)||rtPerson({id:r.remetente_id,usuario:'?',nome:'Participante'});m[5].snd=pp.id;if(!pp.fetched){pp.fetched=1;rtFetchPerson(pp)}
     const pre=rtPre(c,m);m[5].pre=pre;m[1]=pre+m[1]}
   if(r.apagada_em){m[1]='';m[5].del=true;m[5].delK=r.midia&&r.midia.k;if(r.midia&&r.midia.removida_por==='admin')m[5].delBy='admin';c.msgs.push(m);if(!mine&&c.group){const pp=chats.find(x=>x.uid===r.remetente_id&&!x.group);if(pp)m[5].snd=pp.id}if(cur===c&&typeof paintMsgs==='function'&&!initial)paintMsgs();return}
-  c.msgs.push(m);if(m[4]&&m[4].remote)rtAuto(c,m);
+  c.msgs.push(m);if(m[4]&&m[4].remote&&!initial)rtAuto(c,m);
   if(m[4]&&m[4].k==='poll')rtPollLoad(m[4]);
   if(mine)return;
   rtDeliverSoon();
@@ -5934,7 +5942,7 @@ async function bkRun(){
 }
 function bkFreqMenu(){
   const cur0=S.bkFreq||'d';
-  dlg('Fazer backup automático',[['Fechar',()=>bkMenu()]].concat(Object.keys(BKF).map(k=>[(k===cur0?'✓ ':'')+BKF[k][0],()=>{S.bkFreq=k;persist();snack('Backup: '+BKF[k][0].toLowerCase());setTimeout(bkMenu,60)}])),'Escolha de quanto em quanto tempo o app guarda seus contatos e ajustes na nuvem.',true);{const a=document.querySelector('#modal .dla');if(a)a.classList.add('col')}
+  dlg('Fazer backup automático',[['Fechar',()=>bkMenu()]].concat(Object.keys(BKF).map(k=>[(k===cur0?'✓ ':'')+BKF[k][0],()=>{S.bkFreq=k;persist(true);snack('Backup: '+BKF[k][0].toLowerCase());setTimeout(bkMenu,60)}])),'Escolha de quanto em quanto tempo o app guarda seus contatos e ajustes na nuvem.',true);{const a=document.querySelector('#modal .dla');if(a)a.classList.add('col')}
 }
 async function bkMenu(){
   let n='?',err=BK.err||'';
@@ -6035,7 +6043,7 @@ async function rtSync(){
     const r=await q;if(r.error||!r.data)return;
     const miss=[...new Set(r.data.map(x=>x.conversa_id).filter(id=>!chats.some(c=>c.rid===id)))];
     for(const id of miss)await rtFetchConv(id);
-    r.data.forEach(x=>rtPush(x,false));rtOnceSync();rtDelPoll();
+    r.data.forEach(x=>rtPush(x,false));rtOnceSync();if((RT.tk||0)%3===0)rtDelPoll();
     rtGroupPoll();
     RT.tk=(RT.tk||0)+1;if(RT.tk%6===0){rtRcptLoad();rtGroupsSync();rtSeenLoad()}
   }catch(e){}
@@ -6214,7 +6222,7 @@ function stOpen(rq){const c=cur;let key=null,list=null,idx=-1;
   play([[key,key==='me'?'Meu status':c.name,list]]);sv.i=idx;show()}
 function jumpTo(rq){const c=cur;if(!c)return;if(rq.who==='Status'){stOpen(rq);return}let tg=rq.m;if(!tg&&rq.to)tg=c.msgs.find(z=>z[5]&&z[5].rid===rq.to);
   if(!tg&&rq.text){const t0=String(rq.text).replace(/^\S+\s/,'');tg=[...c.msgs].reverse().find(z=>z[1]&&(z[1]===rq.text||z[1]===t0))}
-  const box=$('#msgs'),el=tg&&[...box.children].find(x=>x._m===tg);if(!el){snack('A mensagem original não está mais aqui');return}
+  if(tg)showMsg(tg);const box=$('#msgs'),el=tg&&[...box.children].find(x=>x._m===tg);if(!el){snack('A mensagem original não está mais aqui');return}
   el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.remove('jump');void el.offsetWidth;el.classList.add('jump');setTimeout(()=>el.classList.remove('jump'),1600)}
 function thSq(el,n){try{const c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');const w=el.videoWidth||el.naturalWidth||el.width,h=el.videoHeight||el.naturalHeight||el.height;if(!w||!h)return null;const q=Math.min(w,h);x.drawImage(el,(w-q)/2,(h-q)/2,q,q,0,0,n,n);return c.toDataURL('image/jpeg',.6)}catch(e){return null}}
 function qThumb(msg){const md=msg&&msg[4];if(!md)return{};
@@ -6269,6 +6277,7 @@ function rtMime(md,path){const ex=((path||'').match(/\.([a-z0-9]+)$/i)||[])[1];c
 async function rtGet(md){if(md.src)return md.src;if(md._p)return md._p;
   md._p=(async()=>{const r=await SB.storage.from('midia').download(md.path);if(r.error)throw r.error;const mt=rtMime(md,md.path);md.src=URL.createObjectURL(mt?new Blob([r.data],{type:mt}):r.data);return md.src})();
   try{return await md._p}finally{md._p=null}}
+function rtOpenAuto(c){try{c.msgs.slice(-10).forEach((m,i)=>{const md=m[4];if(md&&md.remote&&!md.src&&md.k==='img'&&!md.err&&!md._p&&!md.once)setTimeout(()=>{if(!md.src&&!md._p)rtAuto(c,m)},300+i*350)})}catch(e){}}
 function rtRepaint(m){const box=$('#msgs');if(!box)return;const el=[...box.children].find(x=>x._m===m);if(el)el.replaceWith(bubble(m,false))}
 function rtAuto(c,m){const md=m[4];if(!md||!md.remote||md.once)return;
   const mine=m[0]==='out';if(!mine&&(md.k==='img'||md.k==='vid')&&dlManual(c))return;
