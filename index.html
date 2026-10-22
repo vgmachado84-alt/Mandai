@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3090">
+<meta name="mandai-build" content="20261021-3160">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1084,6 +1084,33 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .stkb.isf{position:relative}.stkb.isf:after{content:'⭐';position:absolute;right:2px;top:0;font-size:13px}.gifb2{position:relative}.emhint{grid-column:1/-1;text-align:center;font-size:12px;color:var(--mute);margin:8px 0 14px}.stkg{user-select:none;-webkit-user-select:none}.stkb,.gifb2{-webkit-touch-callout:none;touch-action:manipulation}
 #list::after{content:'';display:block;flex:none;height:180px}
 .lgw{display:inline-flex;align-items:center;gap:9px}.lgi{flex:none;filter:none}.top h1.logo .wm,.lgw .wm{font-weight:800!important;letter-spacing:-.7px!important;font-size:25px!important}.top h1.logo{display:flex;align-items:center}
+/* boas-vindas Mandaí (violeta, claro e escuro) */
+:root{--wv-bg:linear-gradient(180deg,#ffffff 0%,#f7f3ff 100%);--wv-ink:#1a0f5c;--wv-mute:#6d6a8c;--wv-ic:#7c4dff;--wv-icbg:#f0eaff;--wv-icbd:transparent;--wv-ol:#8a55ff;--wv-g1:rgba(160,120,255,.22);--wv-g2:rgba(160,120,255,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--wv-bg:linear-gradient(180deg,#07041f 0%,#150a52 100%);--wv-ink:#fff;--wv-mute:#a9a4d6;--wv-ic:#cdb8ff;--wv-icbg:#1b1066;--wv-icbd:rgba(150,110,255,.35);--wv-ol:#8a55ff;--wv-g1:rgba(120,70,255,.35);--wv-g2:rgba(120,70,255,.4)}}
+:root[data-theme="dark"]{--wv-bg:linear-gradient(180deg,#07041f 0%,#150a52 100%);--wv-ink:#fff;--wv-mute:#a9a4d6;--wv-ic:#cdb8ff;--wv-icbg:#1b1066;--wv-icbd:rgba(150,110,255,.35);--wv-ol:#8a55ff;--wv-g1:rgba(120,70,255,.35);--wv-g2:rgba(120,70,255,.4)}
+.onbv:has(.obwel){background:radial-gradient(70% 38% at 100% 0%,var(--wv-g1),transparent 70%),radial-gradient(90% 26% at 0% 100%,var(--wv-g2),transparent 70%),var(--wv-bg)}
+.obwel{justify-content:space-between;gap:6px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.obwel .obhero{padding-top:clamp(0px,2.5vh,24px)}
+.obwel .obi{filter:drop-shadow(0 12px 28px rgba(110,60,255,.5))}
+.obwel .obnx{font-size:clamp(46px,15vw,62px);font-weight:800;letter-spacing:-1px;margin-top:clamp(10px,2.4vh,20px);background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--wv-ink)}
+.obwel .obtag{font-size:clamp(18px,5.4vw,22px);color:var(--wv-ink);opacity:.9;margin:clamp(14px,3vh,26px) 0 0;font-weight:400}
+.obwel .obsw{margin-top:12px}
+.obfs{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2.6vh,26px) 12px;margin:clamp(12px,2.4vh,24px) 0 clamp(12px,2.4vh,24px)}
+.obfe{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px}
+.obfi{width:62px;height:62px;border-radius:50%;background:var(--wv-icbg);border:1px solid var(--wv-icbd);color:var(--wv-ic);display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.obfe b{font-size:16.5px;font-weight:700;color:var(--wv-ink)}.obfe small{font-size:13.5px;color:var(--wv-mute)}
+.obwel .obbot{padding-top:0;gap:12px}
+.obwel .obp{height:58px;border-radius:29px;background:linear-gradient(90deg,#b04dff 0%,#6a3df5 55%,#3d4dff 100%);box-shadow:0 10px 26px rgba(110,60,255,.4);font-size:19px;font-weight:600}
+.obwel .obo{height:54px;border-radius:27px;border:1.5px solid var(--wv-ol);color:var(--wv-ink);font-size:16px;font-weight:600}
+.obwel .obtm{color:var(--wv-mute);font-size:12px;margin:2px 0 0}.obwel .obtm a{color:var(--wv-ic)}
+.obwt,.obwb{position:fixed;left:0;width:100%;pointer-events:none;z-index:0}
+.obwt{top:0;height:34vh;max-height:300px}.obwb{bottom:0;height:17vh;max-height:150px}
+.obwel{position:relative;z-index:1}
+.obwt .w1{fill:var(--wv-w1)}.obwt .w2{fill:var(--wv-w2)}.obwb .w3{fill:var(--wv-w3)}.obwb .w4{fill:var(--wv-w4)}
+.wl{stroke:var(--wv-wl);stroke-width:1.6;opacity:.9}
+:root{--wv-w1:rgba(150,110,255,.10);--wv-w2:rgba(150,110,255,.12);--wv-w3:rgba(150,110,255,.14);--wv-w4:rgba(150,110,255,.22);--wv-wl:rgba(140,90,255,.55)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--wv-w1:rgba(110,60,255,.16);--wv-w2:rgba(120,70,255,.22);--wv-w3:rgba(110,60,255,.28);--wv-w4:rgba(130,80,255,.45);--wv-wl:rgba(170,120,255,.7)}}
+:root[data-theme="dark"]{--wv-w1:rgba(110,60,255,.16);--wv-w2:rgba(120,70,255,.22);--wv-w3:rgba(110,60,255,.28);--wv-w4:rgba(130,80,255,.45);--wv-wl:rgba(170,120,255,.7)}
 @media (pointer:coarse){input,textarea,select{font-size:16px!important}.obw input{font-size:16px!important}}html,body{overflow-x:hidden;max-width:100vw}
 .stories .ring{padding:2.5px}.stories .ring .av{width:54px;height:54px;font-size:16px}.stories .st{width:70px}.stories .st small{max-width:70px}
 .stories{padding-left:10px!important}.row{padding-left:20px!important}.rw::after{left:94px!important}
@@ -3690,9 +3717,8 @@ function onboarding(){
   const eyeB=()=>{const b=mk('button','obe');b.type='button';b.innerHTML=ico('eye',20);b.setAttribute('aria-label','Mostrar ou ocultar senha');return b};
   function fld(ic,label,ph,id,opt){opt=opt||{};const l=mk('label','obf');const i=mk('span','obx');i.innerHTML=ic;const w=mk('span','obw');const t=mk('small',0,label);const inp=document.createElement('input');inp.id=id;inp.placeholder=ph;inp.autocomplete='off';inp.maxLength=opt.max||60;if(opt.type)inp.type=opt.type;if(opt.cap)inp.autocapitalize='off';w.append(t,inp);l.append(i,w);if(opt.pw){const e=eyeB();e.onclick=ev=>{ev.preventDefault();inp.type=inp.type==='password'?'text':'password';e.classList.toggle('off',inp.type==='password')};e.classList.add('off');l.appendChild(e)}return l}
   function welcome(){
-    o.innerHTML='<div class="ob2 obwel"><div class="obhero">'+OB_BUB+'<div class="obnx">Mandaí</div><p class="obtag">Conecte-se com quem<br>realmente importa.</p></div><div class="obbot"><button class="obp" id="obgo">Começar <i>→</i></button><button class="obo" id="obhv">Já tenho uma conta</button><button class="lnk" id="ond">Usar dados de exemplo</button><p class="obtm">Ao continuar, você concorda com nossos <a id="obt1">Termos de Uso</a> e <a id="obt2">Política de Privacidade</a>.</p></div></div>';
+    o.innerHTML='<svg class="obwt" viewBox="0 0 400 320" preserveAspectRatio="xMaxYMin slice" aria-hidden="true"><path d="M400 0V200C330 120 250 90 150 70C90 58 40 40 0 0Z" class="w1"/><path d="M400 20V150C340 100 270 70 190 52C130 40 80 24 40 0H400Z" class="w2"/><path d="M0 0C60 70 150 90 240 120C310 144 360 190 400 250" fill="none" class="wl"/></svg><svg class="obwb" viewBox="0 0 400 190" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path d="M0 120C60 80 130 70 210 100C290 130 350 120 400 80V190H0Z" class="w3"/><path d="M0 150C70 118 150 118 230 142C300 162 360 156 400 130V190H0Z" class="w4"/><path d="M0 108C60 70 130 62 210 92C290 122 350 112 400 72" fill="none" class="wl"/></svg><div class="ob2 obwel"><div class="obhero"><svg class="obi" viewBox="0 0 120 120" width="112" height="112" aria-hidden="true"><defs><linearGradient id="obg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b44dff"/><stop offset=".55" stop-color="#6a35f2"/><stop offset="1" stop-color="#2b4dff"/></linearGradient></defs><path d="M36 6H84A28 28 0 0 1 112 34V66A28 28 0 0 1 84 94H62L24 114L34 90A28 28 0 0 1 8 66V34A28 28 0 0 1 36 6Z" fill="url(#obg2)"/><path d="M34 72V40L60 62L86 40V72" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="obnx">Mandaí</div><p class="obtag">Boas conversas<br>tornam tudo melhor</p><svg class="obsw" viewBox="0 0 120 12" width="110" height="12" aria-hidden="true"><defs><linearGradient id="obsg" x1="0" x2="1"><stop offset="0" stop-color="#7c4dff" stop-opacity=".25"/><stop offset=".5" stop-color="#8a55ff"/><stop offset="1" stop-color="#5a3df0"/></linearGradient></defs><path d="M4 9C30 3 70 2 116 6" fill="none" stroke="url(#obsg)" stroke-width="3.2" stroke-linecap="round"/></svg></div><div class="obfs"><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.4"/></svg></span><b>Conversas</b><small>Rápidas e seguras</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2a4.6 4.6 0 0 1 5 4.3"/></svg></span><b>Grupos</b><small>Mais próximos</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg></span><b>Chamadas</b><small>Com qualidade</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z"/><rect x="9.5" y="10.5" width="5" height="4.5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg></span><b>Privacidade</b><small>É a nossa prioridade</small></div></div><div class="obbot"><button class="obp" id="obgo">Começar <i>→</i></button><button class="obo" id="obhv">Já tenho uma conta</button><p class="obtm">Ao continuar, você concorda com nossos <a id="obt1">Termos de Uso</a> e <a id="obt2">Política de Privacidade</a>.</p></div></div>';
     $('#obgo').onclick=signup;$('#obhv').onclick=login;
-    $('#ond').onclick=()=>finish('Alex Prosa','alex.prosa','alex@exemplo.com',false);
     $('#obt1').onclick=()=>legalPage('termos');
     $('#obt2').onclick=()=>legalPage('priv');
   }
