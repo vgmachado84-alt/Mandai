@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3030">
+<meta name="mandai-build" content="20261021-3050">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2623,7 +2623,7 @@ function mediaEl(md,big){
       return w}
     w.append(v,pl);w.onclick=()=>viewMedia(md);return w}
   if(md.k==='poll')return buildPoll(md,{});
-  if(md.k==='contact'){const d=document.createElement('div'),w=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');d.className='mf';b.textContent=md.name;s.textContent=[md.user?'@'+md.user:'',md.phone||''].filter(Boolean).join(' · ')||'sem telefone';w.append(b,s);d.append('👤',w);if(cur&&cur.group){const col=document.createElement('div');col.className='ctw';d.classList.add('mfc');const row=document.createElement('div');row.className='mfr';row.append(d.firstChild,w);d.innerHTML='';d.append(row);const ac=document.createElement('div');ac.className='cts';d.appendChild(ac);contactActions(md,ac)}return d}
+  if(md.k==='contact'){const d=document.createElement('div'),w=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');d.className='mf';b.textContent=md.name;s.textContent=[md.user?'@'+md.user:'',md.phone||''].filter(Boolean).join(' · ')||'sem telefone';w.append(b,s);d.append('👤',w);if(cur&&cur.group){const col=document.createElement('div');col.className='ctw';d.classList.add('mfc');const row=document.createElement('div');row.className='mfr';row.append(d.firstChild,w);d.innerHTML='';d.append(row);const ac=document.createElement('div');ac.className='cts';d.appendChild(ac);contactActions(md,ac)}else if(cur&&!cur.group){d.classList.add('mfc');const row=document.createElement('div');row.className='mfr';row.append(d.firstChild,w);d.innerHTML='';d.append(row);const ac=document.createElement('div');ac.className='cts';d.appendChild(ac);contactCard(md,ac)}return d}
   if(md.k==='loc'){
     const d=document.createElement('div'),mp=document.createElement('div'),inf=document.createElement('div');d.className='loc';mp.className='lmm';inf.className='lin';
     const ended=()=>md.off||(md.until&&Date.now()>md.until);
@@ -3560,8 +3560,11 @@ function contactPick(){
   const give=d=>{closeModal();send(Object.assign({k:'contact'},d))};
   const row=(name,sub,fn)=>{const b=document.createElement('button');b.className='opt';b.style.cssText='margin:0;border-radius:0;text-align:left';const t=document.createElement('b');t.textContent=name;const sm=document.createElement('small');sm.style.cssText='display:block;color:var(--mute)';sm.textContent=sub||'sem telefone';b.append(t,sm);b.onclick=fn;l.appendChild(b)};
   if(navigator.contacts&&navigator.contacts.select){const a=$('#cpa');a.hidden=false;a.onclick=async()=>{
-    try{const r=await navigator.contacts.select(['name','tel'],{multiple:false});if(!r||!r.length)return;const c=r[0],nm=(c.name&&c.name[0])||'',tel=(c.tel&&c.tel[0])||'';if(!nm&&!tel){snack('Esse contato está vazio.');return}give({name:nm||tel,phone:tel})}
-    catch(e){snack('Não consegui abrir a agenda do celular.')}}}
+    let r=null;try{r=await navigator.contacts.select(['name','tel'],{multiple:false})}catch(e){snack('Não consegui abrir a agenda do celular.');return}
+    if(!r||!r.length){snack('Nenhum contato escolhido. Toque no contato e depois em Concluir.');return}
+    const c=r[0],nm=String((c.name&&c.name[0])||'').trim(),tel=String((c.tel&&c.tel[0])||'').trim();
+    if(!nm&&!tel){snack('Esse contato está vazio.');return}
+    try{give({name:nm||tel,phone:tel})}catch(e){snack('Não consegui enviar o contato: '+((e&&e.message)||'erro'))}}}
   let tm=0,seq=0;
   const paint=()=>{l.innerHTML='';const raw=($('#cpq').value||'').trim(),q=raw.toLowerCase().replace(/^@/,''),qd=q.replace(/\D/g,'');let n=0;
     chats.filter(x=>!x.group&&!x.hidden).forEach(c=>{
@@ -4832,6 +4835,32 @@ function addByUser(c,cb){
     let x=chats.find(z=>!z.group&&(z.user||'').toLowerCase()===u);
     if(!x){x={id:newId(),name:u.charAt(0).toUpperCase()+u.slice(1),user:u,online:false,unread:0,msgs:[],hidden:true,unsaved:true,reply:['Oi!','Tudo bem?']};chats.push(x)}
     closeModal();cb(x.id)};
+}
+/* Contato recebido numa conversa: abrir se já está salvo, salvar se não está */
+async function cardPerson(md){
+  if(typeof rtOn!=='function'||!rtOn()||!SB)return null;const q=md.user?String(md.user).toLowerCase():md.phone;if(!q)return null;
+  try{const r=await SB.rpc('buscar_pessoa',{q});const d=r.data||[];return d.find(p=>md.user&&String(p.usuario).toLowerCase()===String(md.user).toLowerCase())||(md.user?null:d[0])||null}catch(e){return null}
+}
+function contactCard(md,wrap){
+  const nd=t=>String(t||'').replace(/\D/g,'');
+  const find=()=>chats.find(z=>!z.group&&!z.pending&&!z.blocked&&((md.user&&String(z.user||'').toLowerCase()===String(md.user).toLowerCase())||(nd(md.phone).length>=8&&nd(z.phone).length>=8&&nd(z.phone).slice(-9)===nd(md.phone).slice(-9))||(!md.user&&!md.phone&&z.name===md.name)));
+  const isSaved=x=>x&&!x.unsaved&&(!x.stub||x.saved);
+  const paint=()=>{wrap.innerHTML='';const x=find();
+    const mkb=(t,fn,pri)=>{const b=mk('button','cta'+(pri?' pri':''),t);b.onclick=async e=>{e.stopPropagation();b.disabled=true;try{await fn()}finally{b.disabled=false}};wrap.appendChild(b)};
+    const goChat=async()=>{let z=find();
+      if(z&&z.rid){z.hidden=false;closePages();renderList();openChat(z.id);return}
+      const p=z&&z.uid?{id:z.uid,usuario:z.user,nome:z.name}:await cardPerson(md);
+      if(p){await rtOpenWith(p);return}
+      if(z){z.hidden=false;closePages();renderList();openChat(z.id);return}
+      snack('Essa pessoa ainda não está no Mandaí.')};
+    const save=async()=>{let z=find();
+      if(!z){const p=await cardPerson(md);if(p){z=rtPerson(p)}}
+      if(!z){z={id:newId(),name:md.name,phone:md.phone||'',user:md.user||'',online:false,unread:0,msgs:[],hidden:true,reply:['Oi! Tudo bem?','Combinado!']};chats.push(z);try{bkSaveContact(z)}catch(e){}}
+      z.unsaved=false;z.saved=true;if(md.name&&(!z.name||z.name[0]==='@'||z.name==='Participante'))z.name=md.name;if(!z.phone&&md.phone)z.phone=md.phone;
+      snack('Contato salvo');renderList();paint()};
+    if(isSaved(x)){mkb('Abrir conversa',goChat,1)}
+    else{mkb('Salvar contato',save,1);mkb('Conversar',goChat)}
+  };paint();
 }
 /* Contato recebido no grupo: o admin escolhe salvar, adicionar ou os dois */
 function contactActions(md,wrap){
