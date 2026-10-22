@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2910">
+<meta name="mandai-build" content="20261021-3030">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1991,6 +1991,12 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 #pinbar .pni{flex:none;width:40px;height:40px;border-radius:12px;background:var(--chip);color:var(--mute);display:grid;place-items:center}
 #pinbar .pnt{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pinbar .pnc{flex:none;color:var(--mute);font-size:12px}
+/* alfinete discreto no balão */
+.m small .pnm{display:inline-grid;vertical-align:-2px;margin-right:4px;color:inherit;opacity:.7;font-style:normal}
+/* campos de texto: sem retângulo laranja (o cartão do campo já acende) */
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none!important}
+/* durante o cadastro, janelas e câmera ficam acima da tela de entrada */
+body:has(#onb:not([hidden])) .modal,body:has(#onb:not([hidden])) .camv{z-index:85}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -2155,7 +2161,7 @@ function linkTxt(el,t){t=t==null?'':String(t);const re=/https?:\/\/[^\s]+/g;let 
 function bubble0(m,anim){
   const d=document.createElement('div');d.className='m '+m[0]+(anim?' new':'');d._m=m;if(m[0]==='sys'&&/^Mensagens temporárias (ativadas|desativadas)/.test(m[1]||'')){d.classList.add('tsys');d.onclick=()=>{const c=cur;if(!c||!c.dis)return;if(c.disMine)dlg('Reativar para você?',[['Cancelar'],['Reativar',()=>{c.disMine=false;snack('Mensagens temporárias reativadas')}]],'Suas novas mensagens voltarão a desaparecer após '+DISL[c.dis]+'.',true);else dlg('Desativar só para você?',[['Cancelar'],['Desativar',()=>{c.disMine=true;renderList();snack('Desativadas só para você')}]],'As suas novas mensagens deixam de desaparecer neste aparelho. Para '+(c.group?'os outros membros':c.name.split(" ")[0])+' continuam temporárias ('+DISL[c.dis]+').',true)}}if(m[0]==='sys'&&/^[⛔✅🚪]/.test(m[1]||''))d.classList.add('modmsg',m[1][0]==='⛔'?'bad':'ok');const x=m[5]||{};
   const s=document.createElement('span');linkTxt(s,m[1]);
-  const sm=document.createElement('small');sm.textContent=(x.star?'★ ':'')+(x.pin?'📌 ':'')+(x.edited?'Editada '+(x.editAt||m[2]):m[2])+'';if(m[3]){const tm=document.createElement('i');tm.className='tmi';tm.innerHTML=ico('timer',13);sm.appendChild(tm)}if(m[0]==='out'){const tk=document.createElement('span');tk.className='tk';tk.innerHTML=tickHtml(m);sm.appendChild(tk)}
+  const sm=document.createElement('small');sm.textContent=(x.star?'★ ':'')+(x.edited?'Editada '+(x.editAt||m[2]):m[2])+'';if(x.pin&&!x.del){const pn=document.createElement('i');pn.className='pnm';pn.innerHTML=ico('pushpin',12);sm.insertBefore(pn,sm.firstChild)}if(m[3]){const tm=document.createElement('i');tm.className='tmi';tm.innerHTML=ico('timer',13);sm.appendChild(tm)}if(m[0]==='out'){const tk=document.createElement('span');tk.className='tk';tk.innerHTML=tickHtml(m);sm.appendChild(tk)}
   if(x.del){s.textContent=m[0]==='out'?'Você apagou esta mensagem':'Esta mensagem foi apagada';s.className='delm';d.classList.add('isdel');sm.textContent=(m[0]==='out'?'apagada para todos · ':'')+m[2];d.append(s,sm);return d}
   if(x.fwd){const f=document.createElement('small');f.className='fw';f.textContent='↪ Encaminhada';d.append(f)}
   if(x.reply){const q=document.createElement('div'),qb=document.createElement('b'),qs=document.createElement('span');q.className='qt'+(x.reply.who==='Status'?' sr':'');qb.textContent=x.reply.who==='Status'?'Status · '+(/^📷/.test(x.reply.text||'')?'Foto':/^🎥/.test(x.reply.text||'')?'Vídeo':'Texto'):x.reply.who;qs.textContent=x.reply.text;const qw=document.createElement('div');qw.className='qtx';qw.append(qb,qs);q.append(qw);
@@ -2617,7 +2623,7 @@ function mediaEl(md,big){
       return w}
     w.append(v,pl);w.onclick=()=>viewMedia(md);return w}
   if(md.k==='poll')return buildPoll(md,{});
-  if(md.k==='contact'){const d=document.createElement('div'),w=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');d.className='mf';b.textContent=md.name;s.textContent=md.phone||'sem telefone';w.append(b,s);d.append('👤',w);if(cur&&cur.group){const col=document.createElement('div');col.className='ctw';d.classList.add('mfc');const row=document.createElement('div');row.className='mfr';row.append(d.firstChild,w);d.innerHTML='';d.append(row);const ac=document.createElement('div');ac.className='cts';d.appendChild(ac);contactActions(md,ac)}return d}
+  if(md.k==='contact'){const d=document.createElement('div'),w=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small');d.className='mf';b.textContent=md.name;s.textContent=[md.user?'@'+md.user:'',md.phone||''].filter(Boolean).join(' · ')||'sem telefone';w.append(b,s);d.append('👤',w);if(cur&&cur.group){const col=document.createElement('div');col.className='ctw';d.classList.add('mfc');const row=document.createElement('div');row.className='mfr';row.append(d.firstChild,w);d.innerHTML='';d.append(row);const ac=document.createElement('div');ac.className='cts';d.appendChild(ac);contactActions(md,ac)}return d}
   if(md.k==='loc'){
     const d=document.createElement('div'),mp=document.createElement('div'),inf=document.createElement('div');d.className='loc';mp.className='lmm';inf.className='lin';
     const ended=()=>md.off||(md.until&&Date.now()>md.until);
@@ -3549,9 +3555,27 @@ function defSend(md){
   [1400,3200].forEach(ms=>setTimeout(()=>{addSimVotes(md,1+Math.floor(Math.random()*2));if(md._rp)md._rp()},ms));
 }
 function contactPick(){
-  showModal('<h3>Enviar contato</h3><div class="mem" id="cl"></div><button class="btn ghost" id="cz">Cancelar</button>');
-  $('#cz').onclick=closeModal;const l=$('#cl');
-  chats.filter(x=>!x.group).forEach(c=>{const b=document.createElement('button');b.className='opt';b.style.cssText='margin:0;border-radius:0';b.textContent=c.name+(c.phone?'  —  '+c.phone:'');b.onclick=()=>{closeModal();send({k:'contact',name:c.name,phone:c.phone||''})};l.appendChild(b)});
+  showModal('<div class="dlt big">Enviar contato</div><input class="search" id="cpq" placeholder="Buscar por nome, @ ou telefone" aria-label="Buscar contato" style="display:block;width:calc(100% - 32px);margin:6px 16px 8px"><button class="opt" id="cpa" style="margin:0 16px 8px;width:calc(100% - 32px);height:auto;min-height:44px;padding:10px 14px;border-radius:12px;text-align:left" hidden>📇 Agenda do celular</button><div class="mem" id="cl" style="max-height:40vh;overflow:auto"></div><div class="dla row2"><button id="cz">Cancelar</button></div>');
+  $('#modal .mc').classList.add('dlg');$('#cz').onclick=closeModal;const l=$('#cl');
+  const give=d=>{closeModal();send(Object.assign({k:'contact'},d))};
+  const row=(name,sub,fn)=>{const b=document.createElement('button');b.className='opt';b.style.cssText='margin:0;border-radius:0;text-align:left';const t=document.createElement('b');t.textContent=name;const sm=document.createElement('small');sm.style.cssText='display:block;color:var(--mute)';sm.textContent=sub||'sem telefone';b.append(t,sm);b.onclick=fn;l.appendChild(b)};
+  if(navigator.contacts&&navigator.contacts.select){const a=$('#cpa');a.hidden=false;a.onclick=async()=>{
+    try{const r=await navigator.contacts.select(['name','tel'],{multiple:false});if(!r||!r.length)return;const c=r[0],nm=(c.name&&c.name[0])||'',tel=(c.tel&&c.tel[0])||'';if(!nm&&!tel){snack('Esse contato está vazio.');return}give({name:nm||tel,phone:tel})}
+    catch(e){snack('Não consegui abrir a agenda do celular.')}}}
+  let tm=0,seq=0;
+  const paint=()=>{l.innerHTML='';const raw=($('#cpq').value||'').trim(),q=raw.toLowerCase().replace(/^@/,''),qd=q.replace(/\D/g,'');let n=0;
+    chats.filter(x=>!x.group&&!x.hidden).forEach(c=>{
+      if(q&&!(c.name||'').toLowerCase().includes(q)&&!(c.user||'').toLowerCase().includes(q)&&!(qd&&String(c.phone||'').replace(/\D/g,'').includes(qd)))return;n++;
+      row(c.name,[c.user?'@'+c.user:'',c.phone||''].filter(Boolean).join(' · '),()=>give({name:c.name,phone:c.phone||'',user:c.user||''}))});
+    const isU=/^@?[a-z0-9_.]{3,30}$/i.test(raw),isTel=/^[\d\s()+-]+$/.test(raw)&&qd.length>=10;
+    clearTimeout(tm);const my=++seq;
+    if((isU||isTel)&&typeof rtOn==='function'&&rtOn()&&SB){
+      const w=document.createElement('p');w.className='note';w.textContent='Procurando no Mandaí…';l.appendChild(w);
+      tm=setTimeout(async()=>{let r;try{r=await SB.rpc('buscar_pessoa',{q:isU?q:raw})}catch(e){r={error:e}}
+        if(my!==seq)return;w.remove();if(r.error||!r.data||!r.data.length){if(!n&&!l.children.length)l.appendChild(Object.assign(document.createElement('p'),{className:'note',textContent:'Ninguém encontrado com esse @ ou telefone.'}));return}
+        r.data.filter(x=>x.id!==RT.uid&&!chats.some(c=>c.uid===x.id&&!c.group&&(c.user||'')===(x.usuario||''))).forEach(x=>row(x.nome||x.usuario,'@'+x.usuario+(x.telefone?' · +'+x.telefone:''),()=>give({name:x.nome||x.usuario,phone:x.telefone?'+'+x.telefone:'',user:x.usuario})))},350)}
+    else if(!n)l.appendChild(Object.assign(document.createElement('p'),{className:'note',textContent:'Nenhum contato encontrado.'}))};
+  $('#cpq').oninput=paint;paint();
 }
 function starredView(only){
   if(only&&!only.msgs)only=null;
@@ -3718,7 +3742,7 @@ function onboarding(){
           if(av.data===false){back();m.textContent='Esse @ já está em uso. Escolha outro.';m.classList.add('bad');$('#on2').focus();return}
           const r=await SB.auth.signUp({email:e,password:a,options:{emailRedirectTo:location.origin+location.pathname,data:{usuario:u,nome:n,maior_de_18:true,nascimento:bv,telefone:rtTel($('#on7').value)}}});
           if(r.error)throw r.error;
-          if(!r.data.session){back();ec.classList.remove('bad');ec.textContent='Enviamos um e-mail de confirmação para '+e+'. Abra o link e depois volte para entrar.';return}
+          if(!r.data.session){back();confirmMail(e,n,u);return}
           enterReal(n,u,e);
         }catch(x){back();err($('#on3'),sbMsg(x))}})();
         return;
@@ -3727,6 +3751,30 @@ function onboarding(){
     };
     ck.querySelector('#oat').onclick=ev=>{ev.preventDefault();legalPage('termos')};ck.querySelector('#oap').onclick=ev=>{ev.preventDefault();legalPage('priv')};
     go.onclick=()=>run(false);pk.onclick=()=>run(true);
+  }
+  function confirmMail(e,n,u){
+    o.innerHTML='';const w=mk('div','ob2 obsig');
+    const ic=mk('p','obpt','✉️');ic.style.cssText='font-size:56px;text-align:center;margin:28px 0 6px';
+    const h=mk('h2');h.innerHTML='Digite o <b>código</b>';h.style.textAlign='center';
+    const sub=mk('p','obs','Enviamos um código para');sub.style.textAlign='center';
+    const em=mk('p','obs');em.style.cssText='text-align:center;font-weight:700;color:var(--ink);margin-top:0;overflow-wrap:anywhere';em.textContent=e;
+    const how=mk('p','obs','Abra seu e-mail, copie o código e digite abaixo. Olhe também a caixa de spam.');how.style.textAlign='center';
+    const cd=mk('input','obcode');cd.id='obcode';cd.type='text';cd.inputMode='numeric';cd.autocomplete='one-time-code';cd.maxLength=10;cd.placeholder='000000';cd.setAttribute('aria-label','Código de confirmação');
+    cd.style.cssText='display:block;width:100%;box-sizing:border-box;text-align:center;font-size:30px;font-weight:700;letter-spacing:.35em;padding:16px 8px;margin:6px 0 8px;border-radius:16px;border:1.5px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,var(--panel));color:var(--ink);outline:none';
+    cd.oninput=()=>{cd.value=cd.value.replace(/\D/g,'');ms.textContent='';ms.classList.remove('bad')};
+    const ms=mk('p','obm','');ms.style.textAlign='center';
+    const go=mk('button','obp');go.innerHTML='Confirmar <i>→</i>';
+    const rs=mk('button','lnk','Reenviar código');rs.type='button';
+    const bk=mk('button','obbk');bk.innerHTML=ico('back',20)+'<span>Voltar</span>';bk.onclick=welcome;
+    const bad=t=>{ms.classList.add('bad');ms.textContent=t};
+    go.onclick=async()=>{const c=cd.value.trim();if(c.length<6)return bad('Digite o código completo que chegou no e-mail.');
+      go.disabled=true;const t0=go.innerHTML;go.textContent='Confirmando...';
+      try{const r=await SB.auth.verifyOtp({email:e,token:c,type:'signup'});if(r.error)throw r.error;
+        if(r.data&&r.data.session){enterReal(n,u,e);return}
+        go.disabled=false;go.innerHTML=t0;bad('Conta confirmada! Volte e toque em Entrar com seu e-mail e senha.')}
+      catch(x){go.disabled=false;go.innerHTML=t0;bad(/expired|invalid/i.test((x&&x.message)||'')?'Código inválido ou vencido. Toque em Reenviar código.':sbMsg(x))}};
+    rs.onclick=async()=>{rs.disabled=true;ms.classList.remove('bad');try{const r=await SB.auth.resend({type:'signup',email:e,options:{emailRedirectTo:location.origin+location.pathname}});if(r.error)throw r.error;ms.textContent='Enviamos um novo código. Pode levar um minuto.'}catch(x){bad('Não foi possível reenviar agora. Tente de novo em instantes.')}setTimeout(()=>{rs.disabled=false},30000)};
+    w.append(bk,ic,h,sub,em,how,cd,ms,go,rs);o.appendChild(w);o.scrollTop=0;setTimeout(()=>cd.focus(),200);
   }
   function login(){
     o.innerHTML='';const w=mk('div','ob2 obsig');
