@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3450">
+<meta name="mandai-build" content="20261021-3560">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2119,7 +2119,7 @@ function muteSel(){
 }
 function softDel(L){
   let was=false,keep=null;
-  L.forEach(c=>{const had=c.msgs.length;if(had){c.msgs=[];c.unread=0;c.later=null;c.pin=false}else{c.hidden=true;c.pin=false}if(cur===c){if(had)keep=c;else was=true}});
+  L.forEach(c=>{const had=c.msgs.length;if(had){hideMsgs(c.msgs);c.msgs=[];c.unread=0;c.later=null;c.pin=false}else{c.hidden=true;c.pin=false}if(cur===c){if(had)keep=c;else was=true}});
   if(was){cur=null;$('#app').classList.remove('open');$('#main').innerHTML='<p class="empty">Selecione uma conversa para começar.<br>Cada uma pode ter o seu próprio tema.</p>'}
   renderList();renderStories();
   if(keep)openChat(keep.id);
@@ -3443,7 +3443,7 @@ async function rtDelPoll(){try{if(!RT.delLast)RT.delLast=new Date(Date.now()-3*8
 function delMenu(m){
   const x=m[5]=m[5]||{};
   const b=[];if(canAll(m)||canAdm(m))b.push([canAdm(m)?'Apagar para todos (administrador)':'Apagar para todos',()=>{markDel(m,m[0]==='in');paintMsgs();renderList()}]);
-  b.push(['Apagar para mim',()=>{cur.msgs.splice(cur.msgs.indexOf(m),1);paintMsgs();renderList()}],['Cancelar']);
+  b.push(['Apagar para mim',()=>{hideMsgs([m]);cur.msgs.splice(cur.msgs.indexOf(m),1);paintMsgs();renderList()}],['Cancelar']);
   dlg('Deseja apagar a mensagem?',b);
 }
 function editMsg(m){
@@ -4208,14 +4208,14 @@ async function restoreState(){
     window._demoOff=true;window._thOk=1;applyPrefs();lastState='';
   }catch(e){}
 }
-let _psig='',_pat=0;
+let _psig='',_pat=0,_phsig='';
 async function persist(force){
   if(!stateReady||!me.user)return;
   const tot=chats.reduce((a,c)=>a+c.msgs.length,0),sig=chats.map(c=>{const l=c.msgs[c.msgs.length-1];return c.id+':'+(c.name||'')+(c.hidden?'h':'')+(c.pin?'p':'')+':'+c.msgs.length+':'+(l?(l[1]||'').length+(l[5]&&l[5].st||''):'')+':'+(c.unread||0)}).join('|')+mine.length+JSON.stringify([S,privacy,notifS]);
   if(!force&&sig===_psig&&Date.now()-_pat<60000)return;_psig=sig;_pat=Date.now();
   let j='';for(const n of (tot>3000?[60,20]:tot>600?[150,60,20]:[1e9,150,60,20])){j=JSON.stringify(snapshot(n));if(j.length<=150000)break}
   if(j===lastState)return;lastState=j;
-  try{localStorage.setItem('prosa.state',j);localStorage.setItem('prosa.photos',JSON.stringify(Object.fromEntries(chats.filter(c=>c.photo).map(c=>[c.id,c.photo]))))}catch(e){}
+  try{localStorage.setItem('prosa.state',j);{const psg=chats.map(c=>c.id+':'+(c.photo?c.photo.length:0)).join();if(psg!==_phsig){_phsig=psg;localStorage.setItem('prosa.photos',JSON.stringify(Object.fromEntries(chats.filter(c=>c.photo).map(c=>[c.id,c.photo]))))}}}catch(e){}
   if(dbBase){
     dbBase.doc('state').set(JSON.parse(j)).catch(()=>{});
     chats.forEach(c=>{if(c.photo&&photoSaved[c.id]!==c.photo){photoSaved[c.id]=c.photo;dbBase.doc('photo-'+c.id).set({d:c.photo}).catch(()=>{})}});
@@ -4627,7 +4627,7 @@ function selReply(){const m=sel[0];replyTo={who:m[0]==='out'?'Você':cur.name,te
 function selInfo(){const m=sel[0];infoModal('Dados da mensagem',m[0]==='out'?'Enviada às '+m[2]+(privacy.read?' — Lida':' — Entregue'):'Recebida às '+m[2])}
 function selDelete(){
   const ms=sel.slice(),all=ms.every(m=>canAll(m)||canAdm(m));
-  const run=a=>()=>{ms.forEach(m=>{if(a==='all'){markDel(m,m[0]==='in')}else{const i=cur.msgs.indexOf(m);if(i>=0)cur.msgs.splice(i,1)}});endSel();renderList();if(a==='all')snack('Mensagem apagada para todos')};
+  const run=a=>()=>{ms.forEach(m=>{if(a==='all'){markDel(m,m[0]==='in')}else{hideMsgs([m]);const i=cur.msgs.indexOf(m);if(i>=0)cur.msgs.splice(i,1)}});endSel();renderList();if(a==='all')snack('Mensagem apagada para todos')};
   const b=[];if(all)b.push(['Apagar para todos',run('all')]);
   b.push(['Apagar para mim',run('me')],['Cancelar']);
   dlg('Deseja apagar '+(ms.length>1?'as '+ms.length+' mensagens':'a mensagem')+'?',b);
@@ -4711,7 +4711,7 @@ function paintCompose(){
   if(msg&&sm&&!cur.blocked){b.innerHTML='';const ic=mk('span','sbi');ic.innerHTML=ico('clock',16);const t2=mk('div','sbt');t2.append(mk('b',0,'Suspenso(a)'),mk('small',0,sm>=9e14?'até um admin reativar':'volta em '+suspTxt(sm)));b.append(ic,t2)}
   else if(msg){b.innerHTML='';b.appendChild(mk('span',0,msg));if(cur.blocked){const u=mk('button',0,'Desbloquear');u.onclick=()=>{cur.blocked=false;syncBlock(cur)};b.appendChild(u)}}
 }
-function clearChat(c){dlg('Limpar conversa?',[['Cancelar'],['Limpar',()=>{c.msgs=[];renderList();if(cur===c)openChat(c.id);snack('Conversa limpa')}]],'Todas as mensagens desta conversa serão apagadas só neste aparelho.',true)}
+function clearChat(c){dlg('Limpar conversa?',[['Cancelar'],['Limpar',()=>{hideMsgs(c.msgs);c.msgs=[];renderList();if(cur===c)openChat(c.id);snack('Conversa limpa')}]],'Todas as mensagens desta conversa serão apagadas só neste aparelho.',true)}
 function exportChat(c){
   const t=(c.msgs||[]).filter(m=>m[0]!=='sys'||m[1]).map(m=>(m[0]==='sys'?'':(m[0]==='out'?'Você':c.name)+': ')+(typeof m[1]==='string'?m[1]:'[mídia]')).join('\n');
   try{const u=URL.createObjectURL(new Blob([t],{type:'text/plain'})),a=document.createElement('a');a.href=u;a.download='Conversa com '+c.name+'.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);snack('Conversa exportada')}catch(e){snack('Não foi possível exportar')}
@@ -5889,7 +5889,7 @@ function rtChat(rid,p){let c=chats.find(x=>x.rid===rid);if(c)return c;
 const rtCols='id,conversa_id,remetente_id,texto,criado_em,apagada_em,editada_em,tipo,arquivo_url,midia,expira_em';
 function rtPre(c,m){if(!(c.group&&m[0]==='in'&&!m[4]))return '';const p=chats.find(z=>z.id===(m[5]&&m[5].snd));return p?p.name.split(' ')[0]+': ':''}
 function rtPush(r,initial){
-  const c=chats.find(x=>x.rid===r.conversa_id);if(!c)return;
+  const c=chats.find(x=>x.rid===r.conversa_id);if(!c)return;if(hidSet().has(r.id))return;
   if(!RT.last||r.criado_em>RT.last)RT.last=r.criado_em;
   if(c.msgs.some(m=>m[5]&&m[5].rid===r.id))return;
   if(r.expira_em&&Date.parse(r.expira_em)<=Date.now())return;
@@ -6000,8 +6000,14 @@ async function trAudio(md,btn,box){
     trShow(md,btn,box);
   }catch(e){btn.disabled=false;btn.textContent='Transcrever áudio';snack('Não consegui transcrever: '+((e&&e.message)||e))}
 }
+const HID_K='mandai.hid';
+function hidSet(){if(!RT.hid){try{RT.hid=new Set(JSON.parse(localStorage.getItem(HID_K)||'[]'))}catch(e){RT.hid=new Set()}}return RT.hid}
+function hidSave(){try{localStorage.setItem(HID_K,JSON.stringify([...hidSet()].slice(-8000)))}catch(e){}}
+function hideMsgs(ms){const s=hidSet(),ids=[];(ms||[]).forEach(m=>{const id=m&&m[5]&&m[5].rid;if(id&&!s.has(id)){s.add(id);ids.push(id)}});if(!ids.length)return;hidSave();
+  try{if(rtOn())SB.from('mensagens_ocultas').upsert(ids.map(id=>({usuario_id:RT.uid,mensagem_id:id})),{onConflict:'usuario_id,mensagem_id',ignoreDuplicates:true}).then(()=>{},()=>{})}catch(e){}}
+async function rtHidLoad(){hidSet();try{const r=await SB.from('mensagens_ocultas').select('mensagem_id').eq('usuario_id',RT.uid).limit(8000);if(r&&r.data&&r.data.length){r.data.forEach(x=>RT.hid.add(x.mensagem_id));hidSave()}}catch(e){}}
 async function rtLoad(){
-  await bkLoad();
+  await bkLoad();await rtHidLoad();
   try{
     const a=await SB.from('participantes').select('conversa_id,conversas(tipo,mensagens_temporarias_seg)').eq('usuario_id',RT.uid).is('saiu_em',null);
     if(a.error)throw a.error;
@@ -6075,14 +6081,15 @@ async function rtFetchPerson(pp){try{const r=await SB.from('perfis').select('id,
     try{if(cur&&cur.group)paintMsgs();renderList()}catch(e){}}}catch(e){}}
 function rtGSnap(c){if(!c.group)return{dis:c.disMine?0:(c.dis||0)};
   const uid=id=>id==='me'?RT.uid:((chats.find(z=>z.id===id)||{}).uid);
-  return{name:c.name||'',desc:c.desc||'',photo:c.photo||'',perm:JSON.stringify(gperm(c)),dis:c.disMine?0:(c.dis||0),
+  return{name:c.name||'',desc:c.desc||'',photo:c.photo?c.photo.length+':'+String(c.photo).slice(-24):'',perm:JSON.stringify(gperm(c)),dis:c.disMine?0:(c.dis||0),
     mem:(c.members||[]).map(uid).filter(Boolean).sort(),adm:(c.admins||[]).map(uid).filter(Boolean).sort(),sus:JSON.stringify(Object.keys(c.susp||{}).filter(k=>k==='me'||/^\d+$/.test(k)).map(k=>[uid(k==='me'?'me':Number(k)),c.susp[k]>Date.now()?(c.susp[k]>=9e14?4102444800000:Math.round(c.susp[k]/1000)*1000):0]).filter(x=>x[0]&&x[1]).sort())}}
+function shrinkPhoto(d,cb){const im=new Image();im.onload=()=>{try{const k=Math.min(1,256/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);cb(cv.toDataURL('image/jpeg',.82))}catch(e){cb(d)}};im.onerror=()=>cb(d);im.src=d}
 function rtGroupApply(cv,parts){
   let c=chats.find(x=>x.rid===cv.id);const act=parts.filter(p=>!p.saiu_em),mr=act.find(p=>p.usuario_id===RT.uid);
   if(!mr){if(c){const i=chats.indexOf(c);if(i>=0)chats.splice(i,1);if(cur===c){cur=null;try{closePages();$('#app').classList.remove('open')}catch(e){}}try{renderList()}catch(e){}}return null}
   if(!c){c={id:rtNid(),rid:cv.id,group:true,real:true,online:false,unread:0,msgs:[],reply:[]};chats.push(c)}
   const person=p=>p.perfis?rtPerson(p.perfis):null;
-  c.name=cv.nome||'Grupo';c.photo=cv.foto_url||undefined;c.desc=cv.descricao||'';c.created=Date.parse(cv.criado_em);
+  c.name=cv.nome||'Grupo';{const ph=cv.foto_url||undefined;if(ph!==c._phRaw){c._phRaw=ph;if(ph&&String(ph).startsWith('data:')&&ph.length>30000){shrinkPhoto(ph,x=>{c.photo=x;c._srv=rtGSnap(c);try{renderList()}catch(e){}})}else c.photo=ph}}c.desc=cv.descricao||'';c.created=Date.parse(cv.criado_em);
   const cp=act.find(p=>p.usuario_id===cv.criado_por);c.creator=cv.criado_por===RT.uid?'me':(cp&&person(cp)?person(cp).id:null);
   c.members=act.filter(p=>p.usuario_id!==RT.uid).map(person).filter(Boolean).map(x=>x.id);
   c.admins=act.filter(p=>p.papel==='admin').map(p=>p.usuario_id===RT.uid?'me':(person(p)||{}).id).filter(v=>v!=null);
@@ -6130,7 +6137,7 @@ async function rtGroupWatch(){
             const r=await SB.from('participantes').update({suspenso_ate:B[u]?new Date(B[u]).toISOString():null}).eq('conversa_id',c.rid).eq('usuario_id',u).select('usuario_id');
             if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('Só administradores podem suspender.')}}
         const up={};if(a.name!==b.name)up.nome=b.name;if(a.desc!==b.desc)up.descricao=b.desc;
-        if(a.photo!==b.photo)up.foto_url=String(b.photo).startsWith('data:')&&b.photo.length<400000?b.photo:null;
+        if(a.photo!==b.photo)up.foto_url=String(c.photo||'').startsWith('data:')&&c.photo.length<400000?c.photo:null;
         if(a.perm!==b.perm){const pm=gperm(c);up.config={perm:pm};up.so_admin_posta=pm.send==='admins'}
         if(Object.keys(up).length){const r=await SB.from('conversas').update(up).eq('id',c.rid).select('id');if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('Só administradores podem alterar o grupo.')}
       }
@@ -6193,7 +6200,7 @@ async function rtVoteSave(md){try{const d=await SB.from('votos_enquete').delete(
 function rtBoot(){
   rtDeliverSoon();rtRcptLoad();rtSeenPing();rtSeenLoad();
   if(!RT.boot){RT.boot=1;
-    setInterval(rtGroupWatch,1500);
+    setInterval(()=>{if(!document.hidden)rtGroupWatch()},2000);
     setInterval(()=>{if(rtOn()&&!document.hidden){rtSeenPing();rtSeenLoad();try{SB.rpc('limpar_expiradas').then(()=>{},()=>{})}catch(e){}}},60000);
     addEventListener('pagehide',()=>{try{rtSeenPing()}catch(e){}})}}
 
@@ -6277,16 +6284,20 @@ function rtMime(md,path){const ex=((path||'').match(/\.([a-z0-9]+)$/i)||[])[1];c
 async function rtGet(md){if(md.src)return md.src;if(md._p)return md._p;
   md._p=(async()=>{const r=await SB.storage.from('midia').download(md.path);if(r.error)throw r.error;const mt=rtMime(md,md.path);md.src=URL.createObjectURL(mt?new Blob([r.data],{type:mt}):r.data);return md.src})();
   try{return await md._p}finally{md._p=null}}
-function rtOpenAuto(c){try{c.msgs.slice(-10).forEach((m,i)=>{const md=m[4];if(md&&md.remote&&!md.src&&md.k==='img'&&!md.err&&!md._p&&!md.once)setTimeout(()=>{if(!md.src&&!md._p)rtAuto(c,m)},300+i*350)})}catch(e){}}
+function rtOpenAuto(c){try{c.msgs.slice(-40).reverse().forEach(m=>{const md=m[4];if(md&&md.remote&&!md.src&&!md.err&&!md._p&&!md._q&&!md.once&&['img','vid','aud'].includes(md.k))rtAuto(c,m)})}catch(e){}}
 function rtRepaint(m){const box=$('#msgs');if(!box)return;const el=[...box.children].find(x=>x._m===m);if(el)el.replaceWith(bubble(m,false))}
-function rtAuto(c,m){const md=m[4];if(!md||!md.remote||md.once)return;
+const rtQ={q:[],n:0};
+function rtPump(){while(rtQ.n<3&&rtQ.q.length){const f=rtQ.q.shift();rtQ.n++;f().then(()=>{rtQ.n--;rtPump()},()=>{rtQ.n--;rtPump()})}}
+function rtAuto(c,m){const md=m[4];if(!md||!md.remote||md.once||md.src||md._q)return;
   const mine=m[0]==='out';if(!mine&&(md.k==='img'||md.k==='vid')&&dlManual(c))return;
-  const go=(n)=>rtGet(md).then(()=>{rtRepaint(m);renderList()}).catch(()=>{if(n<3)setTimeout(()=>go(n+1),1500*(n+1));else{md.err=1;rtRepaint(m)}});go(0)}
+  md._q=1;rtQ.q.push(()=>new Promise(res=>{const go=n=>rtGet(md).then(()=>{md._q=0;rtRepaint(m);renderList();res()}).catch(()=>{if(n<3)setTimeout(()=>go(n+1),1500*(n+1));else{md._q=0;md.err=1;rtRepaint(m);res()}});go(0)}));rtPump()}
+async function imgShrink(bl){try{const bm=await createImageBitmap(bl);const k=Math.min(1,1600/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k);const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,h);cx.drawImage(bm,0,0,w,h);try{bm.close()}catch(e){}return await new Promise(r=>cv.toBlob(r,'image/jpeg',.82))}catch(e){return null}}
 async function rtSendMedia(chat,txt,m){
   const md=m[4];let path=null,bl0=null;
   try{
     if(RT_UP.includes(md.k)&&md.src){
-      const bl=await (await fetch(md.src)).blob();
+      let bl=await (await fetch(md.src)).blob();
+      if(md.k==='img'&&/^image\/(jpeg|png|webp|heic|heif)/.test(bl.type)&&bl.size>300*1024){const nb=await imgShrink(bl);if(nb&&nb.size<bl.size){bl=nb;md.name=(md.name||'foto').replace(/\.[a-z0-9]{2,5}$/i,'')+'.jpg'}}
       if((md.k==='img'||md.k==='vid')&&!md.th){const t0=await thMake(md);if(t0){md.th=t0.th;md.w=t0.w;md.h=t0.h}}
       bl0=bl;md._path=null;if(bl.size>50*1024*1024){m[5].st='fail';snack('Arquivo grande demais (máximo 50 MB).');return}
       const ext=((md.name||'').match(/\.([a-z0-9]{2,5})$/i)||[])[1]||((bl.type||'').split('/')[1]||'bin').split(';')[0].replace('quicktime','mov').replace('mpeg','mp3').replace('x-matroska','mkv');
