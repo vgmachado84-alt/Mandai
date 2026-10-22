@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-3800">
+<meta name="mandai-build" content="20261022-3860">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1138,6 +1138,7 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .mxo,.mxo *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
 #msgs .m{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .mxp[hidden],.mxm[hidden]{display:none!important}
+.mxcol{position:absolute;inset:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:40px 12px}.mxc2{position:relative!important;margin:0!important;pointer-events:none;transform:none!important;animation:none!important;max-width:86%;flex:none}.mxc2.out{align-self:flex-end}.mxc2.in{align-self:flex-start}.mxhint{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;opacity:.7;font-size:13px}
 .mxo.clean{background:rgba(10,10,20,.62);-webkit-backdrop-filter:blur(34px);backdrop-filter:blur(34px)}
 .mxo .mxc{animation:mxpop .2s ease-out!important;position:absolute;margin:0!important;overflow:hidden;box-shadow:0 12px 36px rgba(0,0,0,.35);transform:none!important;animation:none!important;pointer-events:none}
 .mxp{position:absolute;display:flex;gap:1px;align-items:center;padding:4px 6px;border-radius:30px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 8px 28px rgba(0,0,0,.28)}
@@ -2223,7 +2224,7 @@ function linkTxt(el,t){t=t==null?'':String(t);const re=/https?:\/\/[^\s]+/g;let 
     if(tail)el.append(document.createTextNode(tail));i=mm.index+mm[0].length}
   if(!any){el.textContent=t;return}if(i<t.length)el.append(document.createTextNode(t.slice(i)))}
 function bubble0(m,anim){
-  const d=document.createElement('div');d.className='m '+m[0]+(anim?' new':'');d._m=m;if(m[0]==='sys'&&/^Mensagens temporárias (ativadas|desativadas)/.test(m[1]||'')){d.classList.add('tsys');d.onclick=()=>{const c=cur;if(!c||!c.dis)return;if(c.disMine)dlg('Reativar para você?',[['Cancelar'],['Reativar',()=>{c.disMine=false;snack('Mensagens temporárias reativadas')}]],'Suas novas mensagens voltarão a desaparecer após '+DISL[c.dis]+'.',true);else dlg('Desativar só para você?',[['Cancelar'],['Desativar',()=>{c.disMine=true;renderList();snack('Desativadas só para você')}]],'As suas novas mensagens deixam de desaparecer neste aparelho. Para '+(c.group?'os outros membros':c.name.split(" ")[0])+' continuam temporárias ('+DISL[c.dis]+').',true)}}if(m[0]==='sys'&&/^[⛔✅🚪]/.test(m[1]||''))d.classList.add('modmsg',m[1][0]==='⛔'?'bad':'ok');const x=m[5]||{};
+  const d=document.createElement('div');d.className='m '+m[0]+(anim?' new':'')+(sel.includes(m)?' sel':'');d._m=m;if(m[0]==='sys'&&/^Mensagens temporárias (ativadas|desativadas)/.test(m[1]||'')){d.classList.add('tsys');d.onclick=()=>{const c=cur;if(!c||!c.dis)return;if(c.disMine)dlg('Reativar para você?',[['Cancelar'],['Reativar',()=>{c.disMine=false;snack('Mensagens temporárias reativadas')}]],'Suas novas mensagens voltarão a desaparecer após '+DISL[c.dis]+'.',true);else dlg('Desativar só para você?',[['Cancelar'],['Desativar',()=>{c.disMine=true;renderList();snack('Desativadas só para você')}]],'As suas novas mensagens deixam de desaparecer neste aparelho. Para '+(c.group?'os outros membros':c.name.split(" ")[0])+' continuam temporárias ('+DISL[c.dis]+').',true)}}if(m[0]==='sys'&&/^[⛔✅🚪]/.test(m[1]||''))d.classList.add('modmsg',m[1][0]==='⛔'?'bad':'ok');const x=m[5]||{};
   const s=document.createElement('span');linkTxt(s,m[1]);
   const sm=document.createElement('small');sm.textContent=(x.star?'★ ':'')+(x.edited?'Editada '+(x.editAt||m[2]):m[2])+'';if(x.pin&&!x.del){const pn=document.createElement('i');pn.className='pnm';pn.innerHTML=ico('pushpin',12);sm.insertBefore(pn,sm.firstChild)}if(m[3]){const tm=document.createElement('i');tm.className='tmi';tm.innerHTML=ico('timer',13);sm.appendChild(tm)}if(m[0]==='out'){const tk=document.createElement('span');tk.className='tk';tk.innerHTML=tickHtml(m);sm.appendChild(tk)}
   if(x.del){s.textContent=delText(m);s.className='delm';d.classList.add('isdel');sm.textContent=(x.delBy==='admin'?'removida · ':m[0]==='out'?'apagada para todos · ':'')+m[2];d.append(s,sm);return d}
@@ -4714,6 +4715,14 @@ function selDelete(){
   dlg('Deseja apagar '+(ms.length>1?'as '+ms.length+' mensagens':'a mensagem')+'?',b);
 }
 function selFwd(){const ms=sel.slice().sort((a,b)=>cur.msgs.indexOf(a)-cur.msgs.indexOf(b));clearSel();fwdMenu(ms)}
+function cleanView(){
+  const ms=sel.slice().sort((a,b)=>cur.msgs.indexOf(a)-cur.msgs.indexOf(b));
+  const els=ms.map(m=>[...document.querySelectorAll('#msgs .m')].find(e=>e._m===m)).filter(Boolean);if(!els.length)return;
+  closeMsgMenu();const ov=mk('div','mxo clean');ov.id='mxo';const col=mk('div','mxcol');
+  els.forEach(el=>{const cl=el.cloneNode(true);cl.classList.remove('sel','new','swp');cl.classList.add('mxc2');cl.removeAttribute('id');cl.style.transform='';col.appendChild(cl)});
+  const hint=mk('div','mxhint','Toque fora para voltar');ov.append(col,hint);
+  ov.onclick=()=>{ov.remove();sel=[];paintSel()};document.body.appendChild(ov);
+}
 function selMore(){
   closePop();const one=sel.length===1,m=sel[0],allStar=sel.every(x=>x[5]&&x[5].star),pop=mk('div','pop');pop.id='pop';
   const it=[[allStar?'Desfavoritar':'Favoritar',()=>{sel.forEach(x=>{const o=x[5]=x[5]||{};o.star=!allStar});endSel()}]];
@@ -4721,6 +4730,7 @@ function selMore(){
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<9e5&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
   if(one&&m[1]&&!m[4]&&window.speechSynthesis)it.push(['Ouvir',()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(m[1]));u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}endSel()}]);
+  it.push(['Desfocar fundo (para print)',()=>cleanView()]);
   it.push(['Copiar',()=>{copyText(sel.map(x=>x[1]||'').filter(Boolean).join('\n'));endSel()}]);
   it.forEach(([lb,fn])=>{const b=mk('button',0,lb);b.onclick=()=>{closePop();fn()};pop.appendChild(b)});
   $('#main').appendChild(pop);setTimeout(()=>document.addEventListener('click',closePop,{once:true}),0);
