@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3330">
+<meta name="mandai-build" content="20261021-3360">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2209,7 +2209,7 @@ function bubble0(m,anim){
   const d=document.createElement('div');d.className='m '+m[0]+(anim?' new':'');d._m=m;if(m[0]==='sys'&&/^Mensagens temporárias (ativadas|desativadas)/.test(m[1]||'')){d.classList.add('tsys');d.onclick=()=>{const c=cur;if(!c||!c.dis)return;if(c.disMine)dlg('Reativar para você?',[['Cancelar'],['Reativar',()=>{c.disMine=false;snack('Mensagens temporárias reativadas')}]],'Suas novas mensagens voltarão a desaparecer após '+DISL[c.dis]+'.',true);else dlg('Desativar só para você?',[['Cancelar'],['Desativar',()=>{c.disMine=true;renderList();snack('Desativadas só para você')}]],'As suas novas mensagens deixam de desaparecer neste aparelho. Para '+(c.group?'os outros membros':c.name.split(" ")[0])+' continuam temporárias ('+DISL[c.dis]+').',true)}}if(m[0]==='sys'&&/^[⛔✅🚪]/.test(m[1]||''))d.classList.add('modmsg',m[1][0]==='⛔'?'bad':'ok');const x=m[5]||{};
   const s=document.createElement('span');linkTxt(s,m[1]);
   const sm=document.createElement('small');sm.textContent=(x.star?'★ ':'')+(x.edited?'Editada '+(x.editAt||m[2]):m[2])+'';if(x.pin&&!x.del){const pn=document.createElement('i');pn.className='pnm';pn.innerHTML=ico('pushpin',12);sm.insertBefore(pn,sm.firstChild)}if(m[3]){const tm=document.createElement('i');tm.className='tmi';tm.innerHTML=ico('timer',13);sm.appendChild(tm)}if(m[0]==='out'){const tk=document.createElement('span');tk.className='tk';tk.innerHTML=tickHtml(m);sm.appendChild(tk)}
-  if(x.del){s.textContent=m[0]==='out'?'Você apagou esta mensagem':'Esta mensagem foi apagada';s.className='delm';d.classList.add('isdel');sm.textContent=(m[0]==='out'?'apagada para todos · ':'')+m[2];d.append(s,sm);return d}
+  if(x.del){s.textContent=delText(m);s.className='delm';d.classList.add('isdel');sm.textContent=(x.delBy==='admin'?'removida · ':m[0]==='out'?'apagada para todos · ':'')+m[2];d.append(s,sm);return d}
   if(x.fwd){const f=document.createElement('small');f.className='fw';f.textContent='↪ Encaminhada';d.append(f)}
   if(x.reply){const q=document.createElement('div'),qb=document.createElement('b'),qs=document.createElement('span');q.className='qt'+(x.reply.who==='Status'?' sr':'');qb.textContent=x.reply.who==='Status'?'Status · '+(/^📷/.test(x.reply.text||'')?'Foto':/^🎥/.test(x.reply.text||'')?'Vídeo':'Texto'):x.reply.who;qs.textContent=x.reply.text;const qw=document.createElement('div');qw.className='qtx';qw.append(qb,qs);q.append(qw);
     const rq=x.reply;if(rq.th||rq.st||rq.bg){const tb=document.createElement('i');tb.className='qth';if(rq.th)tb.style.backgroundImage='url('+rq.th+')';else if(rq.bg){tb.style.background=rq.bg;tb.textContent=rq.e||'';tb.style.fontSize='13px';tb.style.color='#fff'}else{tb.style.background='linear-gradient(145deg,'+rq.st.c1+','+rq.st.c2+')';tb.textContent=rq.st.e}q.append(tb);q.classList.add('hasth')}
@@ -2649,7 +2649,7 @@ setTimeout(()=>{const c=chats.find(x=>x.id===3);if(c&&!window._demoOff&&me.user&
 setTimeout(()=>{const c=chats.find(x=>x.id===1);if(c&&!window._demoOff&&me.user&&!me.sb&&!S.demoN2){S.demoN2=1;incoming(c,'',fakeAud(12))}},22000);
 function fmt(s){return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
 function fmtSize(n){return n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB'}
-function lt(m){if(m[5]&&m[5].del)return m[0]==='out'?'Você apagou esta mensagem':'Esta mensagem foi apagada';return m[4]?({img:'📷 Foto',vid:m[4].note?'🎥 Recado de vídeo':'🎥 Vídeo',file:'📄 '+m[4].name,loc:'📍 Localização',poll:'📊 Enquete',contact:'👤 Contato',stk:'🏷️ Figurinha',gif:'🎞️ GIF',aud:'🎤 Áudio '+fmt(m[4].dur||0)}[m[4].k])+(m[1]?' '+m[1]:''):m[1]}
+function lt(m){if(m[5]&&m[5].del)return delText(m);return m[4]?({img:'📷 Foto',vid:m[4].note?'🎥 Recado de vídeo':'🎥 Vídeo',file:'📄 '+m[4].name,loc:'📍 Localização',poll:'📊 Enquete',contact:'👤 Contato',stk:'🏷️ Figurinha',gif:'🎞️ GIF',aud:'🎤 Áudio '+fmt(m[4].dur||0)}[m[4].k])+(m[1]?' '+m[1]:''):m[1]}
 function mediaEl(md,big){
   if(md.k==='stk')return stkEl(md,big?220:150);
   if(md.k==='gif')return gifEl(md,big);
@@ -3424,9 +3424,17 @@ function msgMenu(m){
     else if(a==='del')delMenu(m);
     else closeSheet()});
 }
+function delText(m){const x=m[5]||{};if(x.delBy==='admin'){const k=x.delK||(m[4]&&m[4].k);return k==='img'?'Foto removida pelo administrador do grupo':k==='vid'?'Vídeo removido pelo administrador do grupo':k==='aud'?'Áudio removido pelo administrador do grupo':k==='file'?'Arquivo removido pelo administrador do grupo':'Mensagem removida pelo administrador do grupo'}return m[0]==='out'?'Você apagou esta mensagem':'Esta mensagem foi apagada'}
+function canAdm(m){return !!(cur&&cur.group&&m[0]==='in'&&isAdmin(cur)&&!(m[5]&&m[5].del))}
+function markDel(m,adm){const o=m[5]=m[5]||{};o.delK=m[4]&&m[4].k||o.delK;if(adm)o.delBy='admin';o.del=true;o.pin=false;o.delAt=Date.now();
+  if(cur&&cur.rid&&o.rid&&typeof SB!=='undefined'&&SB){try{SB.rpc('apagar_mensagem',{p_id:o.rid}).then(x=>{if(x&&x.error)snack('Não consegui apagar para todos no servidor.')},()=>{})}catch(e){}}}
+function applyDel(r){for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m){if(m[5].del)return;m[5].delK=(r.midia&&r.midia.k)||(m[4]&&m[4].k)||undefined;if(r.midia&&r.midia.removida_por==='admin')m[5].delBy='admin';m[5].del=true;m[5].pin=false;m[5].delAt=Date.now();if(cur===c&&typeof paintMsgs==='function')paintMsgs();renderList();return}}}
+async function rtDelPoll(){try{if(!RT.delLast)RT.delLast=new Date(Date.now()-3*864e5).toISOString();
+  const r=await SB.from('mensagens').select('id,remetente_id,midia,apagada_em').gt('apagada_em',RT.delLast).order('apagada_em').limit(200);
+  if(r.error||!r.data||!r.data.length)return;r.data.forEach(x=>{applyDel(x);if(x.apagada_em>RT.delLast)RT.delLast=x.apagada_em})}catch(e){}}
 function delMenu(m){
   const x=m[5]=m[5]||{};
-  const b=[];if(canAll(m))b.push(['Apagar para todos',()=>{x.del=true;x.pin=false;x.delAt=Date.now();paintMsgs();renderList()}]);
+  const b=[];if(canAll(m)||canAdm(m))b.push([canAdm(m)?'Apagar para todos (administrador)':'Apagar para todos',()=>{markDel(m,m[0]==='in');paintMsgs();renderList()}]);
   b.push(['Apagar para mim',()=>{cur.msgs.splice(cur.msgs.indexOf(m),1);paintMsgs();renderList()}],['Cancelar']);
   dlg('Deseja apagar a mensagem?',b);
 }
@@ -4607,8 +4615,8 @@ function reactMore(m){
 function selReply(){const m=sel[0];replyTo={who:m[0]==='out'?'Você':cur.name,text:lt(m),m:m};endSel();showReply();$('#txt').focus()}
 function selInfo(){const m=sel[0];infoModal('Dados da mensagem',m[0]==='out'?'Enviada às '+m[2]+(privacy.read?' — Lida':' — Entregue'):'Recebida às '+m[2])}
 function selDelete(){
-  const ms=sel.slice(),all=ms.every(canAll);
-  const run=a=>()=>{ms.forEach(m=>{if(a==='all'){const o=m[5]=m[5]||{};o.del=true;o.pin=false;o.delAt=Date.now()}else{const i=cur.msgs.indexOf(m);if(i>=0)cur.msgs.splice(i,1)}});endSel();renderList();if(a==='all')snack('Mensagem apagada para todos')};
+  const ms=sel.slice(),all=ms.every(m=>canAll(m)||canAdm(m));
+  const run=a=>()=>{ms.forEach(m=>{if(a==='all'){markDel(m,m[0]==='in')}else{const i=cur.msgs.indexOf(m);if(i>=0)cur.msgs.splice(i,1)}});endSel();renderList();if(a==='all')snack('Mensagem apagada para todos')};
   const b=[];if(all)b.push(['Apagar para todos',run('all')]);
   b.push(['Apagar para mim',run('me')],['Cancelar']);
   dlg('Deseja apagar '+(ms.length>1?'as '+ms.length+' mensagens':'a mensagem')+'?',b);
@@ -5870,7 +5878,7 @@ function rtChat(rid,p){let c=chats.find(x=>x.rid===rid);if(c)return c;
 const rtCols='id,conversa_id,remetente_id,texto,criado_em,apagada_em,editada_em,tipo,arquivo_url,midia,expira_em';
 function rtPre(c,m){if(!(c.group&&m[0]==='in'&&!m[4]))return '';const p=chats.find(z=>z.id===(m[5]&&m[5].snd));return p?p.name.split(' ')[0]+': ':''}
 function rtPush(r,initial){
-  const c=chats.find(x=>x.rid===r.conversa_id);if(!c||r.apagada_em)return;
+  const c=chats.find(x=>x.rid===r.conversa_id);if(!c)return;
   if(!RT.last||r.criado_em>RT.last)RT.last=r.criado_em;
   if(c.msgs.some(m=>m[5]&&m[5].rid===r.id))return;
   if(r.expira_em&&Date.parse(r.expira_em)<=Date.now())return;
@@ -5884,11 +5892,12 @@ function rtPush(r,initial){
   const m=[mine?'out':'in',r.texto||'',rtHM(r.criado_em),r.expira_em?Date.parse(r.expira_em):0,null,{st:'sent',rid:r.id,at:r.criado_em,ts:Date.parse(r.criado_em)}];
   if(r.editada_em){m[5].edited=true;m[5].editAt=rtHM(r.editada_em)}
   if(r.midia&&r.midia.reply){const q=r.midia.reply;m[5].reply={who:q.w==='x'?'Status':(q.w==='s')===mine?'Você':c.name,text:q.text,to:q.to,th:q.th,st:q.st,bg:q.bg,e:q.e,sid:q.sid}}
-  if(r.midia&&r.midia.k){const md=Object.assign({},r.midia);if(r.arquivo_url){md.remote=true;md.path=r.arquivo_url;md.src=null}
+  if(!r.apagada_em&&r.midia&&r.midia.k){const md=Object.assign({},r.midia);if(r.arquivo_url){md.remote=true;md.path=r.arquivo_url;md.src=null}
     if(md.k==='poll'){md.opts=(md.opts||[]).map(o=>({t:o.t,em:o.em,st:o.st,v:0,voters:[]}));md.vk=r.id;md.mine=-1;md.own=mine;md._n=1}
     m[4]=md}
   if(c.group&&!mine){const pp=chats.find(x=>x.uid===r.remetente_id&&!x.group)||rtPerson({id:r.remetente_id,usuario:'?',nome:'Participante'});m[5].snd=pp.id;if(!pp.fetched){pp.fetched=1;rtFetchPerson(pp)}
     const pre=rtPre(c,m);m[5].pre=pre;m[1]=pre+m[1]}
+  if(r.apagada_em){m[1]='';m[5].del=true;m[5].delK=r.midia&&r.midia.k;if(r.midia&&r.midia.removida_por==='admin')m[5].delBy='admin';c.msgs.push(m);if(!mine&&c.group){const pp=chats.find(x=>x.uid===r.remetente_id&&!x.group);if(pp)m[5].snd=pp.id}if(cur===c&&typeof paintMsgs==='function'&&!initial)paintMsgs();return}
   c.msgs.push(m);if(m[4]&&m[4].remote)rtAuto(c,m);
   if(m[4]&&m[4].k==='poll')rtPollLoad(m[4]);
   if(mine)return;
@@ -6023,7 +6032,7 @@ async function rtSync(){
     const r=await q;if(r.error||!r.data)return;
     const miss=[...new Set(r.data.map(x=>x.conversa_id).filter(id=>!chats.some(c=>c.rid===id)))];
     for(const id of miss)await rtFetchConv(id);
-    r.data.forEach(x=>rtPush(x,false));rtOnceSync();
+    r.data.forEach(x=>rtPush(x,false));rtOnceSync();rtDelPoll();
     rtGroupPoll();
     RT.tk=(RT.tk||0)+1;if(RT.tk%6===0){rtRcptLoad();rtGroupsSync();rtSeenLoad()}
   }catch(e){}
@@ -6035,7 +6044,7 @@ function rtSubscribe(){
     if(!chats.some(c=>c.rid===r.conversa_id))await rtFetchConv(r.conversa_id);
     rtPush(r,false);
   }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'mensagens'},p=>{
-    const r=p.new;if(!r)return;if(r.midia&&r.midia.k==='loc'){for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m&&m[4]&&!m[4]._own){Object.assign(m[4],{lat:r.midia.lat,lng:r.midia.lng,off:r.midia.off,until:r.midia.until,sim:r.midia.sim,addr:r.midia.addr});if(m[4]._lp)m[4]._lp()}}return}if(!r.editada_em)return;
+    const r=p.new;if(!r)return;if(r.apagada_em){applyDel(r);return}if(r.midia&&r.midia.k==='loc'){for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m&&m[4]&&!m[4]._own){Object.assign(m[4],{lat:r.midia.lat,lng:r.midia.lng,off:r.midia.off,until:r.midia.until,sim:r.midia.sim,addr:r.midia.addr});if(m[4]._lp)m[4]._lp()}}return}if(!r.editada_em)return;
     for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m){const nt=(m[5].pre||'')+(r.texto||'');if(m[1]===nt)return;m[1]=nt;m[5].edited=true;m[5].editAt=rtHM(r.editada_em);if(cur===c&&typeof paintMsgs==='function')paintMsgs();renderList();return}}
   }).on('postgres_changes',{event:'INSERT',schema:'public',table:'midia_abertas'},p=>{rtOnceSync()}).on('postgres_changes',{event:'INSERT',schema:'public',table:'status'},p=>{const r=p.new;if(r&&r.autor_id!==RT.uid){rtStPlace(r);try{renderStories();renderList()}catch(e){}}}).on('postgres_changes',{event:'DELETE',schema:'public',table:'status'},p=>{rtStatusLoad()})
   .on('postgres_changes',{event:'*',schema:'public',table:'leituras'},p=>{const r=p.new;if(r&&r.usuario_id!==RT.uid){rtRcptApply(r);rtTicks()}})
