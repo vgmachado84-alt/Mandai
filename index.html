@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-3860">
+<meta name="mandai-build" content="20261022-3900">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -2122,7 +2122,7 @@ function paintSelBar(){
   const cnt=mk('b','cn',String(L.length));
   const allPin=L.every(c=>c.pin),allMute=L.every(isMuted);
   bar.append(bk,cnt,mk('span','sp'),
-    ib('ltag','Listas',()=>listAddTo(L,()=>{selC=[];paintSelBar();renderList()})),
+    ...(LISTS_ON?[ib('ltag','Listas',()=>listAddTo(L,()=>{selC=[];paintSelBar();renderList()}))]:[]),
     ib('pushpin',allPin?'Desafixar':'Fixar',()=>{L.forEach(c=>c.pin=!allPin);const n=L.length;selC=[];paintSelBar();renderList();snack(allPin?'Desafixada'+(n>1?'s':''):'Fixada'+(n>1?'s':''))}),
     ib('trash','Excluir',()=>delSel()),
     ib('bellx',allMute?'Reativar som':'Silenciar',()=>{if(allMute){L.forEach(c=>c.mute=0);selC=[];paintSelBar();renderList()}else muteSel()}),
@@ -2156,7 +2156,7 @@ function renderList(){
   const f=$('#q').value.toLowerCase();
   if(sMode&&sKind&&sKind!=='unread'&&sKind!=='groups'){renderKind();return}
   $('#list').innerHTML='';if(requests.length){const rr=document.createElement('button');rr.className='rq2';rr.textContent='📨 Pedidos de conversa ('+requests.length+')';rr.onclick=reqMenu;$('#list').appendChild(rr)}
-  if(String(flt).startsWith('L:')&&!sMode){const l=(S.lists||[]).find(x=>'L:'+x.id===flt);if(l){const n=chats.filter(c=>!c.hidden&&!c.stub&&l.keys.includes(laterKey(c))).length,h=mk('div','lhd');h.style.setProperty('--lc',listCol(l));const t1=mk('b',0,l.name+' · '+n);h.appendChild(t1);if(l.desc)h.appendChild(mk('small',0,l.desc));$('#list').appendChild(h)}}
+  if(LISTS_ON&&String(flt).startsWith('L:')&&!sMode){const l=(S.lists||[]).find(x=>'L:'+x.id===flt);if(l){const n=chats.filter(c=>!c.hidden&&!c.stub&&l.keys.includes(laterKey(c))).length,h=mk('div','lhd');h.style.setProperty('--lc',listCol(l));const t1=mk('b',0,l.name+' · '+n);h.appendChild(t1);if(l.desc)h.appendChild(mk('small',0,l.desc));$('#list').appendChild(h)}}
   if(sMode&&f&&chats.some(c=>c.name.toLowerCase().includes(f)))$('#list').appendChild(mk('h4','sh4','Conversas'));
   chats.filter(c=>!c.hidden&&c.name.toLowerCase().includes(f)&&chatFlt(c)).sort((x,y)=>(y.pin?1:0)-(x.pin?1:0)).forEach(c=>{
     const last=c.msgs[c.msgs.length-1];
@@ -2418,20 +2418,21 @@ function searchMsgs(f){
 }
 $('#q').oninput=()=>{if(sMode){$('#sxc').hidden=!$('#q').value;$('#sfc').hidden=!!$('#q').value&&!sKind}renderList()};$('#q').onfocus=enterSearch;$('#sbk').onclick=exitSearch;$('#sxc').onclick=()=>{$('#q').value='';$('#sxc').hidden=true;$('#sfc').hidden=false;renderList();$('#q').focus()};
 const FLT_ALL={unread:['Não lidas',c=>c.unread],groups:['Grupos',c=>c.group],later:['Responder depois',c=>c.later],pinned:['Fixadas',c=>c.pin],muted:['Silenciadas',c=>isMuted(c)]};
-function chatFlt(c){if(flt==='all')return true;if(String(flt).startsWith('L:')){const l=(S.lists||[]).find(x=>'L:'+x.id===flt);return !!l&&l.keys.includes(laterKey(c))}const f=FLT_ALL[flt];return f?!!f[1](c):true}
+function chatFlt(c){if(flt==='all')return true;if(String(flt).startsWith('L:')){if(!LISTS_ON)return true;const l=(S.lists||[]).find(x=>'L:'+x.id===flt);return !!l&&l.keys.includes(laterKey(c))}const f=FLT_ALL[flt];return f?!!f[1](c):true}
 const LCOL=['#f96332','#0a7aff','#ffb62e','#bf5af2','#8e9a9e','#c4d25b','#ff2d78','#7a644b','#056b9a','#fbe91f','#00a99d','#ffa7c4','#7de3c4','#c9290f','#d0cdc6','#b1ea63','#be8355','#93d6f6','#cfc3ff','#7b61ff'];
 function listCol(l){const i=Math.max(0,(S.lists||[]).indexOf(l));return l.color||LCOL[i%LCOL.length]}
+var LISTS_ON=false; // listas coloridas (etiquetas) desligadas; reativar no Mandaí Empresarial
 function chatLists(c){const k=laterKey(c);return (S.lists||[]).filter(l=>l.keys.includes(k))}
-function listTagsHtml(c){const a=chatLists(c).slice(0,4);return a.length?'<div class="ltg">'+a.map(l=>'<i style="--lc:'+listCol(l)+'">'+esc(l.name)+'</i>').join('')+'</div>':''}
+function listTagsHtml(c){if(!LISTS_ON)return '';const a=chatLists(c).slice(0,4);return a.length?'<div class="ltg">'+a.map(l=>'<i style="--lc:'+listCol(l)+'">'+esc(l.name)+'</i>').join('')+'</div>':''}
 function renderChips(){const box=document.querySelector('.chips');if(!box)return;S.flt=Array.isArray(S.flt)?S.flt.filter(k=>FLT_ALL[k]):['unread','groups'];S.lists=Array.isArray(S.lists)?S.lists:[];
-  if(flt!=='all'&&!S.flt.includes(flt)&&!S.lists.some(l=>'L:'+l.id===flt))flt='all';
-  box.innerHTML='';const items=[['all','Todas'],...S.flt.map(k=>[k,FLT_ALL[k][0]]),...S.lists.map(l=>['L:'+l.id,l.name,l])];
+  if(flt!=='all'&&!S.flt.includes(flt)&&!(LISTS_ON&&S.lists.some(l=>'L:'+l.id===flt)))flt='all';
+  box.innerHTML='';const items=[['all','Todas'],...S.flt.map(k=>[k,FLT_ALL[k][0]]),...(LISTS_ON?S.lists:[]).map(l=>['L:'+l.id,l.name,l])];
   items.forEach(([k,l,ls])=>{const b=mk('button','chip'+(flt===k?' on':''));b.dataset.f=k;
     if(ls){const d=mk('i','cdot');d.style.background=listCol(ls);b.append(d,document.createTextNode(l));const n=chats.filter(c=>!c.hidden&&!c.stub&&c.unread&&ls.keys.includes(laterKey(c))).length;if(n)b.append(mk('small','cn2',String(n)))}else b.textContent=l;
     b.onclick=()=>{if(b._lp){b._lp=0;return}flt=k;box.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));renderLTabs();renderList()};
     if(ls){let tm=0;b.onpointerdown=()=>{tm=setTimeout(()=>{b._lp=1;if(navigator.vibrate)navigator.vibrate(20);listEditor(ls)},550)};['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(tm)));b.oncontextmenu=e=>e.preventDefault()}
     box.appendChild(b)});
-  const pl=mk('button','chip chipadd');pl.type='button';pl.setAttribute('aria-label','Criar lista');pl.innerHTML=ico('plus',16);pl.onclick=()=>listEditor();box.appendChild(pl);try{renderLTabs()}catch(e){}}
+  if(LISTS_ON){const pl=mk('button','chip chipadd');pl.type='button';pl.setAttribute('aria-label','Criar lista');pl.innerHTML=ico('plus',16);pl.onclick=()=>listEditor();box.appendChild(pl)}try{renderLTabs()}catch(e){}}
 function renderLTabs(){const pc=document.querySelector('.pane#pc');if(!pc)return;let t=document.getElementById('ltabs');if(t)t.remove();pc.classList.remove('hasltabs');return;const L=S.lists||[];
   if(!t){t=mk('div','ltabs');t.id='ltabs';pc.appendChild(t)}
   pc.classList.add('hasltabs');t.innerHTML='';
@@ -2465,9 +2466,9 @@ function manageFilters(){
   showModal('<div class="dlt big">Filtros da lista</div><div class="dlb soft">Escolha quais filtros aparecem ao lado de "Todas". Os novos entram no fim da fila.</div><div class="rds"></div><div class="dla row2"><button id="mfc">Cancelar</button><button id="mfo">Salvar</button></div>');
   const mc=$('#modal .mc');mc.classList.add('dlg');const box=mc.querySelector('.rds'),on=new Set(S.flt||[]);
   Object.keys(FLT_ALL).forEach(k=>{const r=mk('button','rd'+(on.has(k)?' on':''));r.type='button';r.innerHTML='<i></i><span></span>';r.lastChild.textContent=FLT_ALL[k][0];r.onclick=()=>{on.has(k)?on.delete(k):on.add(k);r.classList.toggle('on',on.has(k))};box.appendChild(r)});
-  const hr=mk('p','note','Suas listas');hr.style.cssText='margin:10px 6px 2px;opacity:.6;font-size:13px';box.appendChild(hr);
+  if(LISTS_ON){const hr=mk('p','note','Suas listas');hr.style.cssText='margin:10px 6px 2px;opacity:.6;font-size:13px';box.appendChild(hr);
   (S.lists||[]).forEach(l=>{const r=mk('button','rd');r.type='button';r.innerHTML='<i style="visibility:hidden"></i><span></span>';r.lastChild.textContent=l.name+'  ·  editar';r.onclick=()=>{closeModal();listEditor(l)};box.appendChild(r)});
-  const nw=mk('button','rd');nw.type='button';nw.innerHTML='<i style="visibility:hidden"></i><span></span>';nw.lastChild.textContent='+ Nova lista';nw.onclick=()=>{closeModal();listEditor()};box.appendChild(nw);
+  const nw=mk('button','rd');nw.type='button';nw.innerHTML='<i style="visibility:hidden"></i><span></span>';nw.lastChild.textContent='+ Nova lista';nw.onclick=()=>{closeModal();listEditor()};box.appendChild(nw)}
   $('#mfc').onclick=closeModal;
   $('#mfo').onclick=()=>{const keep=(S.flt||[]).filter(k=>on.has(k)),add=Object.keys(FLT_ALL).filter(k=>on.has(k)&&!keep.includes(k));S.flt=keep.concat(add);closeModal();renderChips();renderList();snack('Filtros atualizados')}}
 setTimeout(()=>{try{renderChips()}catch(e){}},0);
@@ -2627,7 +2628,7 @@ function laterNotify(c){
   try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification('Mandaí',{body,tag:'later-'+laterKey(c)})}catch(e){}}
 setInterval(laterCheck,20000);setTimeout(laterCheck,1500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)laterCheck()});
 function chatActs(c){
-  const o=[['later',c.later?'Concluir resposta pendente':'Responder depois'],['lists','Listas'],['read',c.unread?'Marcar como lida':'Marcar como não lida'],['pin',c.pin?'Desafixar':'Fixar no topo'],['mute',isMuted(c)?'Reativar som':'Silenciar']];
+  const o=[['later',c.later?'Concluir resposta pendente':'Responder depois'],...(LISTS_ON?[['lists','Listas']]:[]),['read',c.unread?'Marcar como lida':'Marcar como não lida'],['pin',c.pin?'Desafixar':'Fixar no topo'],['mute',isMuted(c)?'Reativar som':'Silenciar']];
   if(!c.group)o.push(['block',c.blocked?'Desbloquear contato':'Bloquear contato']);
   o.push(['soft',c.msgs.length?'Excluir conversa':'Remover da tela de mensagens']);o.push(['del',c.group?'Excluir grupo':'Excluir contato da agenda']);
   return o;
@@ -3099,7 +3100,7 @@ function moreMenu(){
   const c=cur,anc=$('#tMore')||document.body,g=c.group;
   if(g){
     const more=[{t:'Limpar conversa',fn:()=>clearChat(c)},{t:'Exportar conversa',fn:()=>exportChat(c)},'-',{t:'Denunciar',fn:()=>dlg('Denunciar grupo?',[['Cancelar'],['Denunciar',()=>snack('Denúncia registrada')]],'O conteúdo recente do grupo será enviado para análise. Ninguém no grupo será avisado.',true)},{t:'Sair do grupo',fn:()=>leaveGroup(c)}];
-    dropMenu(anc,null,null).render([{t:'Dados do grupo',fn:()=>profileOf(c)},{t:'Mídia do grupo',fn:()=>mediaDocs(c)},{t:'Listas',fn:()=>listAddTo([c],()=>{renderList()})},{t:'Pesquisar',fn:chatSearch},{t:isMuted(c)?'Reativar notificações':'Silenciar notificações',fn:()=>{if(isMuted(c)){c.mute=0;renderList();snack('Notificações reativadas')}else muteMenu(c)}},{t:'Mensagens temporárias',fn:()=>{if(!canEdit(c)){snack('Só admins podem alterar');return}tempMsgs(c)}},{t:'Tema da conversa',fn:()=>lookSheet(['wall','bubble','font'],'chat')},{t:'Mais',sub:more,plain:true}]);
+    dropMenu(anc,null,null).render([{t:'Dados do grupo',fn:()=>profileOf(c)},{t:'Mídia do grupo',fn:()=>mediaDocs(c)},...(LISTS_ON?[{t:'Listas',fn:()=>listAddTo([c],()=>{renderList()})}]:[]),{t:'Pesquisar',fn:chatSearch},{t:isMuted(c)?'Reativar notificações':'Silenciar notificações',fn:()=>{if(isMuted(c)){c.mute=0;renderList();snack('Notificações reativadas')}else muteMenu(c)}},{t:'Mensagens temporárias',fn:()=>{if(!canEdit(c)){snack('Só admins podem alterar');return}tempMsgs(c)}},{t:'Tema da conversa',fn:()=>lookSheet(['wall','bubble','font'],'chat')},{t:'Mais',sub:more,plain:true}]);
     return;
   }
   const more=[...(!g?[{t:'Denunciar',fn:()=>reportChat(c)},{t:c.blocked?'Desbloquear':'Bloquear',fn:()=>{c.blocked=!c.blocked;syncBlock(c);snack(c.blocked?'Contato bloqueado':'Contato desbloqueado')}}]:[]),
@@ -3108,7 +3109,7 @@ function moreMenu(){
     '-',...(!g?[{t:'Remover contato',danger:true,fn:()=>confirmDel(c)}]:[]),{t:c.msgs.length?'Excluir conversa':'Remover da tela de mensagens',danger:true,fn:()=>askSoftDel(c)}];
   const it=[{t:g?'Dados do grupo':'Dados do contato',fn:()=>g?profileOf(c):editContact(c)},
     ...(canPostStatus(c)?[{t:'Adicionar status ao grupo',fn:()=>compose(c)}]:[]),
-    {t:'Listas',fn:()=>listAddTo([c],()=>{renderList()})},{t:'Pesquisar',fn:chatSearch},{t:'Mídia, links e docs',fn:()=>mediaDocs(c)},
+    ...(LISTS_ON?[{t:'Listas',fn:()=>listAddTo([c],()=>{renderList()})}]:[]),{t:'Pesquisar',fn:chatSearch},{t:'Mídia, links e docs',fn:()=>mediaDocs(c)},
     ...(g&&isAdmin(c)?[{t:'Suspender ou remover participante',fn:()=>membersPage(c,()=>groupPeople(c),{title:c.name,memberFn:x=>memberMenu(c,x)})}]:[]),
     ...(!g?[{t:'Mensagens temporárias',fn:()=>tempMsgs(c)}]:[]),
     {t:'Tema da conversa',fn:()=>lookSheet(['wall','bubble','font'],'chat')},
@@ -4720,7 +4721,7 @@ function cleanView(){
   const els=ms.map(m=>[...document.querySelectorAll('#msgs .m')].find(e=>e._m===m)).filter(Boolean);if(!els.length)return;
   closeMsgMenu();const ov=mk('div','mxo clean');ov.id='mxo';const col=mk('div','mxcol');
   els.forEach(el=>{const cl=el.cloneNode(true);cl.classList.remove('sel','new','swp');cl.classList.add('mxc2');cl.removeAttribute('id');cl.style.transform='';col.appendChild(cl)});
-  const hint=mk('div','mxhint','Toque fora para voltar');ov.append(col,hint);
+  ov.append(col);let seen=0;try{seen=localStorage.getItem('mandai.cvhint')}catch(e){}if(!seen){const hint=mk('div','mxhint','Toque fora para voltar');ov.append(hint);try{localStorage.setItem('mandai.cvhint','1')}catch(e){}setTimeout(()=>hint.remove(),2500)}
   ov.onclick=()=>{ov.remove();sel=[];paintSel()};document.body.appendChild(ov);
 }
 function selMore(){
@@ -4730,7 +4731,7 @@ function selMore(){
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<9e5&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
   if(one&&m[1]&&!m[4]&&window.speechSynthesis)it.push(['Ouvir',()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(m[1]));u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}endSel()}]);
-  it.push(['Desfocar fundo (para print)',()=>cleanView()]);
+  it.push(['Desfocar fundo',()=>cleanView()]);
   it.push(['Copiar',()=>{copyText(sel.map(x=>x[1]||'').filter(Boolean).join('\n'));endSel()}]);
   it.forEach(([lb,fn])=>{const b=mk('button',0,lb);b.onclick=()=>{closePop();fn()};pop.appendChild(b)});
   $('#main').appendChild(pop);setTimeout(()=>document.addEventListener('click',closePop,{once:true}),0);
