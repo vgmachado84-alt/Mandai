@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-3760">
+<meta name="mandai-build" content="20261022-3800">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -4605,8 +4605,13 @@ function bindSel(box){
       else{sel=[m];paintSel()}}};
   ['pointerup','pointercancel'].forEach(n=>box.addEventListener(n,endSw));
   box.addEventListener('click',e=>{const b=e.target.closest('.m');if(b&&b._swiped&&Date.now()-b._swiped<350){e.stopPropagation();e.preventDefault()}},true);
-  box.addEventListener('contextmenu',e=>{const b=e.target.closest('.m');if(b&&b._m&&b._m[0]!=='sys'){e.preventDefault();if(!sel.includes(b._m))toggleSel(b._m)}});
+  box.addEventListener('contextmenu',e=>{const b=e.target.closest('.m');if(b&&b._m&&b._m[0]!=='sys'){e.preventDefault()}});
+  let tp=null,tapAt=0;
+  box.addEventListener('pointerdown',e=>{tp=sel.length?{x:e.clientX,y:e.clientY,t:Date.now(),b:e.target.closest('.m')}:null});
+  box.addEventListener('pointerup',e=>{const q=tp;tp=null;if(!q||!sel.length)return;if(Math.abs(e.clientX-q.x)>12||Math.abs(e.clientY-q.y)>12||Date.now()-q.t>700)return;
+    tapAt=Date.now();const b=q.b;if(b&&b._m&&b._m[0]!=='sys')toggleSel(b._m);else clearSel()});
   box.addEventListener('click',e=>{
+    if(Date.now()-tapAt<600){e.stopPropagation();e.preventDefault();return}
     if(!sel.length)return;e.stopPropagation();e.preventDefault();if(skipClick){skipClick=false;return}
     const b=e.target.closest('.m');if(b&&b._m&&b._m[0]!=='sys')toggleSel(b._m);else clearSel();
   },true);
@@ -4616,7 +4621,7 @@ function closeMsgMenu(){const o=$('#mxo');if(o)o.remove();document.removeEventLi
 function _mmk(e){if(e.key==='Escape')closeMsgMenu()}
 function openMsgMenu(m,el){
   closeMsgMenu();if(!cur||!el)return;try{getSelection().removeAllRanges()}catch(e){}const x=m[5]=m[5]||{},gone=!!x.del,c=cur;
-  const ov=mk('div','mxo');ov.id='mxo';ov.onclick=e=>{if(e.target===ov)closeMsgMenu()};
+  const ov=mk('div','mxo');ov.id='mxo';const t0=Date.now();ov.onclick=e=>{if(e.target===ov&&Date.now()-t0>450)closeMsgMenu()};
   const act=fn=>()=>{closeMsgMenu();sel=[m];fn()};
   const items=[];
   const add=(ic,lb,fn,danger,clean)=>items.push([ic,lb,fn,danger,clean]);
@@ -4628,7 +4633,7 @@ function openMsgMenu(m,el){
   if(!gone&&txt)add('copy','Copiar',()=>{sel=[];copyText(txt)});
   if(!gone)add('star',x.star?'Desfavoritar':'Favoritar',()=>{sel=[];x.star=!x.star;paintMsgs()});
   if(!gone)add('pushpin',x.pin?'Desafixar':'Fixar',()=>{sel=[];pinAsk(m,()=>{try{paintMsgs()}catch(e){}})});
-  if(m[0]==='out'&&!m[4]&&m[1]&&x.ts&&Date.now()-x.ts<9e5&&!gone)add('edit','Editar',()=>{sel=[];editMsg(m)});
+  if(m[0]==='out'&&!m[4]&&m[1]&&!gone)add('edit','Editar',()=>{sel=[];if(x.ts&&Date.now()-x.ts>=9e5){snack('Só dá para editar até 15 minutos depois de enviar');return}editMsg(m)});
   if(!gone&&txt&&window.speechSynthesis)add('vol','Ouvir',()=>{sel=[];try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}});
   if(!gone&&m[0]==='in')add('clock','Responder depois',()=>{sel=[];laterMenu()});
   if(!gone)add('info','Dados',()=>selInfo());
