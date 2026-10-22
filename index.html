@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-2890">
+<meta name="mandai-build" content="20261021-2910">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1986,6 +1986,11 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 /* botões da página do grupo: texto cabe no cartão */
 #prp:not(.pro2) .gact>*{padding:12px 0;overflow:hidden;gap:4px}
 #prp:not(.pro2) .gact>* small{font-size:11px;letter-spacing:-.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+/* mensagem fixada, estilo do WhatsApp */
+#pinbar .pnb{display:flex;align-items:center;gap:12px;width:100%;padding:8px 14px;background:var(--panel);border:0;border-bottom:1px solid var(--line);color:var(--ink);text-align:left;font:inherit}
+#pinbar .pni{flex:none;width:40px;height:40px;border-radius:12px;background:var(--chip);color:var(--mute);display:grid;place-items:center}
+#pinbar .pnt{flex:1;min-width:0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pinbar .pnc{flex:none;color:var(--mute);font-size:12px}
 /* bordas do aparelho: a cor do app vai até o topo e o rodapé */
 html{background:var(--panel)}
 .tabs{padding-bottom:0!important}
@@ -3326,13 +3331,29 @@ function paintMsgs(){
   const dd=document.createElement('div');dd.className='day';dd.textContent='Toque numa mensagem para responder, reagir ou apagar';box.appendChild(dd);
   cur.msgs.forEach(m=>box.appendChild(bubble(m)));box.scrollTop=y;paintPin();
 }
+function pinAsk(m,after){
+  const x=m[5]=m[5]||{};
+  if(x.pin){x.pin=false;delete x.pinUntil;paintPin();if(after)after();return}
+  let k=1;const O=[['24 horas',864e5],['7 dias',6048e5],['30 dias',2592e6]];
+  showModal('<div class="dlt big">Defina por quanto tempo a mensagem ficará fixada</div><div class="dlb soft">Você pode desafixar a mensagem a qualquer momento.</div><div class="rds"></div><div class="dla row2"><button id="pxc">Cancelar</button><button id="pxo">Fixar</button></div>');
+  const mc=$('#modal .mc');mc.classList.add('dlg');const box=mc.querySelector('.rds');
+  const paint=()=>box.querySelectorAll('.rd').forEach((b,i)=>b.classList.toggle('on',i===k));
+  O.forEach(([l],i)=>{const r=mk('button','rd'+(i===k?' on':''));r.type='button';r.innerHTML='<i></i><span></span>';r.lastChild.textContent=l;r.onclick=()=>{k=i;paint()};box.appendChild(r)});
+  $('#pxc').onclick=closeModal;
+  $('#pxo').onclick=()=>{closeModal();x.pin=true;x.pinUntil=Date.now()+O[k][1];if(after)after();paintPin();snack('Mensagem fixada')};
+}
 function paintPin(){
   const el=$('#pinbar');if(!el||!cur)return;el.innerHTML='';
+  const now=Date.now();cur.msgs.forEach(m=>{const o=m[5];if(o&&o.pin&&o.pinUntil&&o.pinUntil<now){o.pin=false;delete o.pinUntil}});
   const p=cur.msgs.filter(m=>m[5]&&m[5].pin&&!m[5].del);if(!p.length)return;
-  const last=p[p.length-1],d=document.createElement('div'),s=document.createElement('span'),b=document.createElement('b'),v=document.createElement('button');
-  d.className='later';s.textContent='📌';b.textContent=lt(last)+(p.length>1?' (+'+(p.length-1)+')':'');v.textContent='Ver';
-  v.onclick=()=>{const e=[...document.querySelectorAll('#msgs .m')].find(z=>z._m===last);if(e)e.scrollIntoView({block:'center'})};
-  d.append(s,b,v);el.appendChild(d);
+  cur._pi=Math.min(cur._pi==null?p.length-1:cur._pi,p.length-1);
+  const it=p[cur._pi],d=document.createElement('button');d.type='button';d.className='pnb';
+  const ic=document.createElement('span');ic.className='pni';ic.innerHTML=ico('pushpin',20);
+  const t=document.createElement('span');t.className='pnt';t.textContent=lt(it);d.append(ic,t);
+  if(p.length>1){const c=document.createElement('small');c.className='pnc';c.textContent=(cur._pi+1)+'/'+p.length;d.appendChild(c)}
+  d.setAttribute('aria-label','Mensagem fixada: '+lt(it));
+  d.onclick=()=>{const e=[...document.querySelectorAll('#msgs .m')].find(z=>z._m===it);if(e)e.scrollIntoView({block:'center',behavior:'smooth'});if(p.length>1){cur._pi=(cur._pi-1+p.length)%p.length;paintPin()}};
+  el.appendChild(d);
 }
 function msgMenu(m){
   const x=m[5]=m[5]||{},out=m[0]==='out',chat=cur,o=[];
@@ -3344,7 +3365,7 @@ function msgMenu(m){
     if(a==='rep'){closeSheet();replyTo={who:out?'Você':chat.name,text:lt(m),m:m};showReply();$('#txt').focus()}
     else if(a==='fwd'){closeSheet();fwdMenu(m)}
     else if(a==='star'){x.star=!x.star;closeSheet();paintMsgs()}
-    else if(a==='pin'){x.pin=!x.pin;closeSheet();paintMsgs()}
+    else if(a==='pin'){closeSheet();pinAsk(m,paintMsgs)}
     else if(a==='later')laterMenu();
     else if(a==='edit'){closeSheet();editMsg(m)}
     else if(a==='del')delMenu(m);
@@ -4472,7 +4493,7 @@ function selFwd(){const ms=sel.slice().sort((a,b)=>cur.msgs.indexOf(a)-cur.msgs.
 function selMore(){
   closePop();const one=sel.length===1,m=sel[0],allStar=sel.every(x=>x[5]&&x[5].star),pop=mk('div','pop');pop.id='pop';
   const it=[[allStar?'Desfavoritar':'Favoritar',()=>{sel.forEach(x=>{const o=x[5]=x[5]||{};o.star=!allStar});endSel()}]];
-  if(one&&!(m[5]&&m[5].del))it.push([(m[5]&&m[5].pin)?'Desafixar':'Fixar',()=>{const o=m[5]=m[5]||{};o.pin=!o.pin;endSel()}]);
+  if(one&&!(m[5]&&m[5].del))it.push([(m[5]&&m[5].pin)?'Desafixar':'Fixar',()=>{endSel();pinAsk(m,()=>{try{paintMsgs()}catch(e){}})}]);
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<18e4&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
   if(one&&m[1]&&!m[4]&&window.speechSynthesis)it.push(['Ouvir',()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(m[1]));u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}endSel()}]);
@@ -4693,17 +4714,20 @@ setInterval(suspTick,2000);
 function suspTxt(u){if(u>=9e14)return 'até reativar';const m=Math.max(1,Math.ceil((u-Date.now())/6e4));return m<60?m+' min':m<1440?Math.ceil(m/60)+' h':Math.ceil(m/1440)+' d'}
 /* Menu de moderação único para grupo e comunidade */
 function userMenu(o){
-  const su=suspLeft(o.st,o.id),w=o.what,f=o.name.split(' ')[0];
-  showModal('<h3 id="umh"></h3>'+(su?'<p class="note umsus" id="ums"></p>':'')+'<div id="uml"></div><button class="btn ghost" id="umx">Fechar</button>');
-  $('#umh').textContent=o.name;if(su)$('#ums').textContent='⛔ Suspenso — restam '+suspTxt(su);$('#umx').onclick=closeModal;
-  const L=$('#uml'),add=(t,fn,dng)=>{const b=mk('button','opt'+(dng?' dng':''));b.textContent=t;b.onclick=()=>{closeModal();fn()};L.appendChild(b)};
-  if(o.chat)add('Conversar com '+f,()=>{closePages();openChat(o.chat.id)});
-  if(o.canAdm)add(o.isAdm?'Remover como administrador':'Tornar administrador',o.toggleAdm);
+  const su=suspLeft(o.st,o.id),w=o.what,f=o.name.split(' ')[0],B=[];
+  if(o.chat)B.push(['Conversar com '+f,()=>{closePages();openChat(o.chat.id)}]);
+  if(o.canAdm)B.push([o.isAdm?'Remover como administrador':'Tornar administrador',o.toggleAdm]);
   if(o.canMod){
-    if(su)add('Reativar '+f+' agora',()=>{delete o.st[o.id];delete o.st['w'+o.id];o.log('✅ '+o.name+' teve a suspensão removida.');o.done()});
-    else add('Suspender '+f+'…',()=>suspSheet(o));
-    add('Remover do '+w,()=>confirmRemove(o),true);
+    if(su)B.push(['Reativar '+f+' agora',()=>{delete o.st[o.id];delete o.st['w'+o.id];o.log('✅ '+o.name+' teve a suspensão removida.');o.done()}]);
+    else B.push(['Suspender '+f+'…',()=>suspSheet(o)]);
+    B.push(['Remover do '+w,()=>confirmRemove(o),true]);
   }
+  B.push(['Fechar',null]);
+  showModal('<div class="dlt big"></div>'+(su?'<div class="dlb soft"></div>':'')+'<div class="dla row2 col"></div>');
+  const mc=$('#modal .mc');mc.classList.add('dlg');mc.querySelector('.dlt').textContent=o.name;
+  if(su)mc.querySelector('.dlb').textContent='⛔ Suspenso — restam '+suspTxt(su);
+  const a=mc.querySelector('.dla');
+  B.forEach(([t,fn,dng])=>{const b=mk('button',dng?'dng':0,t);if(dng)b.style.setProperty('color','#e5484d','important');b.onclick=()=>{closeModal();fn&&fn()};a.appendChild(b)});
 }
 function suspSheet(o){
   let why='Violou as regras';
