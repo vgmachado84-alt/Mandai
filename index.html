@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-3680">
+<meta name="mandai-build" content="20261022-3700">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1134,6 +1134,8 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 /* menu da mensagem (estilo iPhone): fundo desfocado + mensagem em destaque */
 .mxo{position:fixed;inset:0;z-index:60;background:rgba(10,10,20,.38);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:mmin .16s ease-out}
 @keyframes mmin{from{opacity:0}to{opacity:1}}
+.mxo,.mxo *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
+#msgs .m{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .mxp[hidden],.mxm[hidden]{display:none!important}
 .mxo.clean{background:rgba(10,10,20,.62);-webkit-backdrop-filter:blur(34px);backdrop-filter:blur(34px)}
 .mxo .mxc{position:absolute;margin:0!important;overflow:hidden;box-shadow:0 12px 36px rgba(0,0,0,.35);transform:none!important;animation:none!important;pointer-events:none}
@@ -4611,7 +4613,7 @@ Object.assign(P,{copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d=
 function closeMsgMenu(){const o=$('#mxo');if(o)o.remove();document.removeEventListener('keydown',_mmk)}
 function _mmk(e){if(e.key==='Escape')closeMsgMenu()}
 function openMsgMenu(m,el){
-  closeMsgMenu();if(!cur||!el)return;const x=m[5]=m[5]||{},gone=!!x.del,c=cur;
+  closeMsgMenu();if(!cur||!el)return;try{getSelection().removeAllRanges()}catch(e){}const x=m[5]=m[5]||{},gone=!!x.del,c=cur;
   const ov=mk('div','mxo');ov.id='mxo';ov.onclick=e=>{if(e.target===ov)closeMsgMenu()};
   const act=fn=>()=>{closeMsgMenu();sel=[m];fn()};
   const items=[];
@@ -4646,6 +4648,7 @@ function openMsgMenu(m,el){
   if(ph){pill.style.top=(top-ph-G)+'px';pill.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px'}
   menu.style.top=(top+ch+G)+'px';menu.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px';
   if(menu.getBoundingClientRect().right>vw-8)menu.style.left=(vw-menu.offsetWidth-12)+'px';
+  ov.oncontextmenu=e=>e.preventDefault();[0,80,250].forEach(t=>setTimeout(()=>{try{getSelection().removeAllRanges()}catch(e){}},t));
   document.addEventListener('keydown',_mmk);
 }
 function toggleSel(m){const i=sel.indexOf(m);if(i>=0)sel.splice(i,1);else sel.push(m);paintSel()}
