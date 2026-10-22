@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3290">
+<meta name="mandai-build" content="20261021-3330">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -3894,6 +3894,30 @@ function choose(title,opts,curv,cb){
   document.querySelectorAll('#modal [data-o]').forEach(b=>b.onclick=()=>{cb(b.dataset.o);closeModal();if(!$('#set').hidden)renderSettings()});
 }
 function infoModal(title,text){showModal('<h3 id="imh"></h3><p class="note" id="imt" style="text-align:center"></p><button class="btn ghost" id="imx">Fechar</button>');$('#imh').textContent=title;$('#imt').textContent=text;$('#imx').onclick=closeModal}
+async function adminPanel(){
+  (()=>{const el=mk('div','setv');el.style.zIndex=40;document.body.appendChild(el);const hd=mk('div','sh'),bk=bkb();bk.onclick=()=>el.remove();hd.append(bk,mk('h2',0,'Painel do administrador'));el.appendChild(hd);
+    const box=mk('div','');box.style.cssText='padding:4px 14px 24px';el.appendChild(box);
+    const css=(e,t)=>{e.style.cssText=t;return e};
+    const load=async()=>{box.innerHTML='';box.appendChild(mk('p','note','Carregando…'));
+      let r;try{r=await SB.rpc('admin_stats')}catch(e){r={error:e}}
+      box.innerHTML='';
+      if(r.error||!r.data){box.appendChild(mk('p','note','Não foi possível carregar. Rode o arquivo banco 11 no Supabase.'));return}
+      const d=r.data,n=v=>Number(v||0).toLocaleString('pt-BR');
+      const card=(t,v,sub)=>{const c=css(mk('div',''),'background:var(--panel);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:2px');c.append(css(mk('small',0,t),'color:var(--mute)'),css(mk('b',0,n(v)),'font-size:26px;font-weight:800'));if(sub)c.appendChild(css(mk('small',0,sub),'color:var(--mute)'));return c};
+      const g=css(mk('div',''),'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px');
+      g.append(card('Usuários',d.usuarios,'no total'),card('Novos hoje',d.novos_hoje,n(d.novos_7d)+' em 7 dias'),card('Ativos hoje',d.ativos_hoje,n(d.ativos_7d)+' em 7 dias'),card('Mensagens hoje',d.mensagens_hoje,n(d.mensagens)+' no total'),card('Conversas',d.conversas_diretas,'diretas'),card('Grupos',d.grupos),card('Status 24h',d.status_24h),card('Novos 30 dias',d.novos_30d));
+      box.appendChild(g);
+      const pd=d.por_dia||[],mx=Math.max(1,...pd.map(x=>x.novos));
+      const ch=css(mk('div',''),'background:var(--panel);border-radius:16px;padding:14px;margin-bottom:14px');ch.appendChild(mk('b',0,'Novos usuários por dia (14 dias)'));
+      const bars=css(mk('div',''),'display:flex;align-items:flex-end;gap:4px;height:100px;margin-top:10px');
+      pd.forEach(x=>{const w=css(mk('div',''),'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--mute);gap:2px');const b=css(mk('div',''),'width:100%;border-radius:4px;background:linear-gradient(180deg,#b04dff,#4a3cff);height:'+Math.max(3,Math.round(x.novos/mx*62))+'px');w.append(mk('span','',x.novos?String(x.novos):''),b,mk('span','',String(x.dia).slice(8,10)));bars.appendChild(w)});
+      ch.appendChild(bars);box.appendChild(ch);
+      const ul=css(mk('div',''),'background:var(--panel);border-radius:16px;padding:6px 14px 10px');ul.appendChild(css(mk('b',0,'Últimos cadastros'),'display:block;margin:8px 0'));
+      (d.ultimos||[]).forEach(u=>{const row=css(mk('div',''),'display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:14px');const dt=new Date(u.criado_em);row.append(mk('span','',(u.nome||'')+' @'+u.usuario),css(mk('small','',dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})),'color:var(--mute)'));ul.appendChild(row)});
+      box.appendChild(ul);
+      const rf=mk('button','btn ghost','Atualizar');rf.style.marginTop='14px';rf.onclick=load;box.appendChild(rf)};
+    load()})();
+}
 function renderSettings(){
   const el=$('#set'),y=el.scrollTop;el.innerHTML='';
   const tg=(k,o)=>{o[k]=!o[k];renderSettings()};
@@ -3913,6 +3937,8 @@ function renderSettings(){
    {id:'help',ic:'help',col:'#64748b',t:'Ajuda',d:'Ajuda, feedback e sobre o app',rows:[['❓','Ajuda e feedback','',()=>infoModal('Ajuda e feedback','Fale com a equipe do Mandaí pelo @suporte ou envie sugestões pelo perfil @mandai.')],['📄','Termos de Uso','',()=>legalPage('termos')],['🔒','Política de Privacidade','',()=>legalPage('priv')],['ℹ️','Sobre o Mandaí','Versão 1.0.0',()=>infoModal('Mandaí','Mensageiro sem número de telefone. Esta é uma versão de protótipo: os dados ficam só na memória da página.')]]},
    {id:'inv',ic:'gift',col:'#f97316',t:'Convidar amigos',d:'Compartilhe seu link ou QR',go:myQr}
   ];
+  if(window._adm)cats.push({id:'adm',ic:'lock',col:'#8a55ff',t:'Administrador',d:'Números do Mandaí',rows:[['📊','Painel do administrador','Usuários, mensagens, grupos',adminPanel]]});
+  else if(window._adm===undefined&&SB&&typeof RT!=='undefined'&&RT.on){window._adm=false;try{SB.rpc('sou_admin').then(x=>{if(x&&x.data===true){window._adm=true;try{renderSettings()}catch(e){}}},()=>{})}catch(e){}}
   const hd=mk('div','sh'),bk=bkb();
   const cur=setSub&&cats.find(c=>c.id===setSub&&c.rows);
   bk.onclick=()=>{if(cur){setSub=null;el.scrollTop=0;renderSettings()}else{el.hidden=true;tab(_tab)}};
