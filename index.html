@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-3700">
+<meta name="mandai-build" content="20261022-3730">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -1139,12 +1139,13 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .mxp[hidden],.mxm[hidden]{display:none!important}
 .mxo.clean{background:rgba(10,10,20,.62);-webkit-backdrop-filter:blur(34px);backdrop-filter:blur(34px)}
 .mxo .mxc{position:absolute;margin:0!important;overflow:hidden;box-shadow:0 12px 36px rgba(0,0,0,.35);transform:none!important;animation:none!important;pointer-events:none}
-.mxp{position:absolute;display:flex;gap:2px;align-items:center;padding:6px 8px;border-radius:30px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 8px 28px rgba(0,0,0,.28)}
-.mxp button{background:none;border:0;font-size:25px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}.mxp button.on{background:var(--chip)}
-.mxm{position:absolute;min-width:236px;border-radius:16px;overflow:hidden;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 10px 34px rgba(0,0,0,.3)}
-.mxm button{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;padding:12px 16px;font-size:16.5px;color:var(--ink);background:none;border:0;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);text-align:left}
+.mxp{position:absolute;display:flex;gap:1px;align-items:center;padding:4px 6px;border-radius:30px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.mxp button{background:none;border:0;font-size:22px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}.mxp button.on{background:var(--chip)}
+.mxm{position:absolute;min-width:200px;border-radius:16px;overflow:hidden;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 10px 34px rgba(0,0,0,.3)}
+.mxm button{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;padding:9px 14px;font-size:15px;color:var(--ink);background:none;border:0;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);text-align:left}
 .mxm button:first-child{border-top:0}.mxm button:active{background:var(--chip)}.mxm button.dg{color:#e5484d}
-.mxm button i{display:flex;opacity:.85}
+.mxm button i{display:flex;opacity:.85}.mxm button i svg{width:18px;height:18px}
+.mxm.sub{min-width:190px}.mxm button.bk{justify-content:flex-start;gap:6px;color:var(--mute);font-size:14px}.mxm button.bk svg{width:16px;height:16px}
 @media (pointer:coarse){input,textarea,select{font-size:16px!important}.obw input{font-size:16px!important}}html,body{overflow-x:hidden;max-width:100vw}
 .stories .ring{padding:2.5px}.stories .ring .av{width:54px;height:54px;font-size:16px}.stories .st{width:70px}.stories .st small{max-width:70px}
 .stories{padding-left:10px!important}.row{padding-left:20px!important}.rw::after{left:94px!important}
@@ -4618,6 +4619,8 @@ function openMsgMenu(m,el){
   const act=fn=>()=>{closeMsgMenu();sel=[m];fn()};
   const items=[];
   const add=(ic,lb,fn,danger,clean)=>items.push([ic,lb,fn,danger,clean]);
+  const goClean=()=>{ov.classList.add('clean');pill.hidden=true;menu.hidden=true};
+  const goMulti=()=>{closeMsgMenu();window._selNoPill=true;sel=[m];paintSel()};
   if(!gone)add('corner','Responder',()=>selReply());
   if(!gone)add('fwd','Encaminhar',()=>selFwd());
   const txt=(!m[4]&&m[1])?String(x.pre&&String(m[1]).startsWith(x.pre)?String(m[1]).slice(x.pre.length):m[1]):'';
@@ -4628,26 +4631,35 @@ function openMsgMenu(m,el){
   if(!gone&&txt&&window.speechSynthesis)add('vol','Ouvir',()=>{sel=[];try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';speechSynthesis.speak(u)}catch(e){snack('Não consegui ler em voz alta')}});
   if(!gone&&m[0]==='in')add('clock','Responder depois',()=>{sel=[];laterMenu()});
   if(!gone)add('info','Dados',()=>selInfo());
-  add('check','Selecionar',null,0,1);
-  add('check','Selecionar várias',()=>{paintSel()});
+  add('check','Selecionar',null,0,'sub');
   add('trash','Apagar',()=>selDelete(),1);
   const vw=innerWidth,vh=innerHeight,r=el.getBoundingClientRect();
   const pill=mk('div','mxp');
   if(!gone){['👍','❤️','😂','😮','😢','🙏'].forEach(e=>{const b=mk('button',x.mine===e?'on':0,e);b.onclick=()=>{closeMsgMenu();react(m,e)};pill.appendChild(b)});
     const pl=mk('button','rpl2');pl.innerHTML=ico('plus',18);pl.setAttribute('aria-label','Mais reações');pl.onclick=()=>{closeMsgMenu();reactMore(m)};pill.appendChild(pl)}
   const menu=mk('div','mxm');
-  items.forEach(([ic,lb,fn,dg,cln])=>{const b=mk('button',dg?'dg':0);b.type='button';b.append(mk('span',0,lb));const i=mk('i');i.innerHTML=ico(ic,20);b.append(i);b.onclick=e=>{e.stopPropagation();if(cln){ov.classList.add('clean');pill.hidden=true;menu.hidden=true;return}closeMsgMenu();act(fn)()};menu.appendChild(b)});
+  const showSub=()=>{menu.innerHTML='';menu.classList.add('sub');
+    const hb=mk('button','bk');hb.type='button';hb.innerHTML=ico('back',18)+'<span>Selecionar</span>';hb.onclick=e=>{e.stopPropagation();menu.classList.remove('sub');build()};menu.appendChild(hb);
+    const o1=mk('button');o1.type='button';o1.append(mk('span',0,'Esta mensagem'));{const i=mk('i');i.innerHTML=ico('check',18);o1.append(i)}o1.onclick=e=>{e.stopPropagation();goClean()};
+    const o2=mk('button');o2.type='button';o2.append(mk('span',0,'Várias mensagens'));{const i=mk('i');i.innerHTML=ico('check',18);o2.append(i)}o2.onclick=e=>{e.stopPropagation();goMulti()};
+    menu.append(o1,o2);placeMenu()};
+  const build=()=>{menu.innerHTML='';
+  items.forEach(([ic,lb,fn,dg,cln])=>{const b=mk('button',dg?'dg':0);b.type='button';b.append(mk('span',0,lb));const i=mk('i');i.innerHTML=ico(ic,20);b.append(i);b.onclick=e=>{e.stopPropagation();if(cln==='sub'){showSub();return}closeMsgMenu();act(fn)()};menu.appendChild(b)});placeMenu()};
   const cl=el.cloneNode(true);cl.classList.remove('sel','new','swp');cl.classList.add('mxc');cl.removeAttribute('id');cl.style.transform='';
   ov.append(pill,cl,menu);document.body.appendChild(ov);
-  const W=Math.min(r.width,vw-24),out=m[0]==='out';
-  cl.style.width=W+'px';cl.style.left=(out?Math.max(12,r.right-W):Math.max(12,r.left))+'px';
-  const ph=gone?0:pill.offsetHeight,mh=menu.offsetHeight,G=8,topMin=12+(ph?ph+G:0);
-  const maxH=vh-12-mh-G-topMin;cl.style.maxHeight=Math.max(80,maxH)+'px';
-  const ch=cl.offsetHeight;let top=Math.max(topMin,r.top);if(top+ch+G+mh>vh-12)top=Math.max(topMin,vh-12-mh-G-ch);
-  cl.style.top=top+'px';
-  if(ph){pill.style.top=(top-ph-G)+'px';pill.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px'}
-  menu.style.top=(top+ch+G)+'px';menu.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px';
-  if(menu.getBoundingClientRect().right>vw-8)menu.style.left=(vw-menu.offsetWidth-12)+'px';
+  const out=m[0]==='out',W=Math.min(r.width,vw-24);let topY=0,chH=0,laid=false;
+  const placeMenu=()=>{
+    if(!laid){laid=true;
+      cl.style.width=W+'px';cl.style.left=(out?Math.max(12,r.right-W):Math.max(12,r.left))+'px';
+      const ph=gone?0:pill.offsetHeight,mh=menu.offsetHeight,G=8,topMin=12+(ph?ph+G:0);
+      cl.style.maxHeight=Math.max(80,vh-12-mh-G-topMin)+'px';
+      chH=cl.offsetHeight;topY=Math.max(topMin,r.top);if(topY+chH+G+mh>vh-12)topY=Math.max(topMin,vh-12-mh-G-chH);
+      cl.style.top=topY+'px';
+      if(ph){pill.style.top=(topY-ph-G)+'px';pill.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px'}}
+    menu.style.top=(topY+chH+8)+'px';menu.style.left='';menu.style.right='';
+    menu.style[out?'right':'left']=Math.max(12,out?vw-r.right:r.left)+'px';
+    if(menu.getBoundingClientRect().right>vw-8){menu.style.right='';menu.style.left=(vw-menu.offsetWidth-12)+'px'}};
+  build();
   ov.oncontextmenu=e=>e.preventDefault();[0,80,250].forEach(t=>setTimeout(()=>{try{getSelection().removeAllRanges()}catch(e){}},t));
   document.addEventListener('keydown',_mmk);
 }
@@ -4655,6 +4667,7 @@ function toggleSel(m){const i=sel.indexOf(m);if(i>=0)sel.splice(i,1);else sel.pu
 function clearSel(){sel=[];paintSel()}
 function endSel(){sel=[];paintMsgs();paintSel()}
 function paintSel(){
+  if(!sel.length)window._selNoPill=false;
   document.querySelectorAll('#msgs .m').forEach(e=>e.classList.toggle('sel',sel.includes(e._m)));
   const main=$('#main'),bar=$('#selbar'),pill=$('#rxpill');closePop();
   if(!main||!bar)return;main.classList.toggle('selmode',sel.length>0);
@@ -4665,7 +4678,7 @@ function paintSel(){
   bar.append(bt('back','Cancelar seleção',clearSel),mk('b',0,String(sel.length)));
   if(one&&!gone)bar.append(bt('corner','Responder',selReply),bt('info','Dados da mensagem',selInfo));
   bar.append(bt('trash','Apagar',selDelete),bt('fwd','Encaminhar',selFwd),bt('more','Mais',selMore));
-  placePill();
+  if(window._selNoPill){pill.hidden=true;pill.innerHTML=''}else placePill();
 }
 function placePill(){
   const pill=$('#rxpill');pill.hidden=true;pill.innerHTML='';
