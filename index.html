@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261021-3590">
+<meta name="mandai-build" content="20261021-3620">
 <meta name="apple-mobile-web-app-title" content="Mandaí">
 <meta name="application-name" content="Mandaí">
 <title>Mandaí – protótipo de mensageiro</title>
@@ -3210,7 +3210,10 @@ function openCam(cb,m0,opts){
     document.querySelectorAll('.cmodes button').forEach(b=>b.onclick=()=>{if(rec)return;mode=b.dataset.m;el.classList.toggle('note',mode==='note');document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x===b))});
     $('#cflip').onclick=()=>{if(rec)return;facing=facing==='user'?'environment':'user';start()};
     $('#cf').onclick=e=>{flash=!flash;e.currentTarget.classList.toggle('on',flash);const k=stream&&stream.getVideoTracks()[0];if(k)k.applyConstraints({advanced:[{torch:flash}]}).catch(()=>{})};
-    $('#cg').onclick=()=>{const i=document.createElement('input');i.type='file';i.accept='image/*,video/*';i.onchange=()=>{const f=i.files[0];if(f)review({k:f.type.startsWith('video')?'vid':'img',src:URL.createObjectURL(f),name:f.name,size:fmtSize(f.size)})};i.click()};
+    $('#cg').onclick=()=>{const i=document.createElement('input');i.type='file';i.accept='image/*,video/*';i.multiple=!LIMIT;
+      i.onchange=()=>{const fs=[...(i.files||[])].slice(0,30);if(!fs.length)return;const mm=f=>({k:f.type.startsWith('video')?'vid':'img',src:URL.createObjectURL(f),name:f.name,size:fmtSize(f.size)});
+        if(fs.length===1){review(mm(fs[0]));return}
+        close();if((i.files||[]).length>30)snack('Enviando as 30 primeiras.');fs.forEach((f,n)=>setTimeout(()=>{try{cb(mm(f),'')}catch(e){}},n*350))};i.click()};
     start();
   }
   showCam();
