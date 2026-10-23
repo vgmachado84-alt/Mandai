@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261023-4330">
+<meta name="mandai-build" content="20261023-4340">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2194,17 +2194,23 @@ async function offLoad(){
   }catch(e){}
 }
 function offPage(){
-  const box=overlayPage('Bippy',45),el=box.parentElement;box.style.cssText='padding:8px 14px 90px';
+  try{closePages()}catch(e){}cur=null;$('#app').classList.add('open');
+  $('#main').innerHTML='<div class="head"><button class="ib back" id="offback" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="av" style="background:#fff;padding:0;overflow:hidden"><img alt="" src="'+BIPPY_MARK+'" style="width:100%;height:100%;object-fit:contain"></div><div class="meta"><b>Bippy'+OFF_CHK+'</b><span>Conta oficial</span></div></div><div class="msgs" id="offmsgs"></div><div class="compose" id="offbar" style="justify-content:center"></div>';
+  const head=$('#main .head'),box=$('#offmsgs'),bar=$('#offbar');
   const paint=()=>{box.innerHTML='';
-    box.appendChild(_st(mk('p',0,'Canal oficial do Bippy. Só a equipe envia mensagens aqui.'),'text-align:center;color:var(--mute);font-size:13px;margin:6px 0 14px'));
-    OFF.list.forEach(x=>{const d=_st(mk('div',''),'background:var(--panel);border-radius:6px 18px 18px 18px;padding:12px 14px;margin:0 0 10px;max-width:92%');
-      const t=_st(mk('div',0,x.texto),'white-space:pre-wrap;word-break:break-word;line-height:1.45;font-size:15.5px'),m=_st(mk('small',0,offWhen(x)),'display:block;margin-top:6px;color:var(--mute);font-size:12px');
-      d.append(t,m);
-      if(OFF.adm){const del=_st(mk('button',0,'Apagar'),'border:0;background:none;color:#d93a4f;font:inherit;font-size:13px;padding:6px 0 0');del.onclick=()=>dlg('Apagar este aviso?',[['Cancelar'],['Apagar',async()=>{try{const r=await SB.rpc('admin_apagar_aviso',{p_id:x.id});if(r.error)throw r.error;OFF._sig='';await offLoad();snack('Aviso apagado')}catch(e){snack('Não consegui apagar')}}]],'Ele some para todos os usuários.',true);d.appendChild(del)}
-      box.appendChild(d)});
-    if(OFF.adm){const nb=mk('button','btn','Novo aviso para todos');nb.style.cssText='position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:auto';nb.onclick=offCompose;box.appendChild(nb)}
-    setTimeout(()=>{el.scrollTop=el.scrollHeight},0)};
-  OFF.pg={el,paint};paint();offMarkSeen();try{renderList()}catch(e){}
+    const lk=_st(mk('div',0,'🔒 Conta oficial. Só a equipe do Bippy envia mensagens aqui.'),'align-self:center;text-align:center;background:color-mix(in srgb,var(--panel) 90%,transparent);color:var(--mute);font-size:12.5px;padding:7px 12px;border-radius:12px;margin:2px 0 10px;max-width:90%');box.appendChild(lk);
+    let lastDay='';
+    OFF.list.forEach(x=>{const d=new Date(x.criado_em),dk=d.toDateString();
+      if(dk!==lastDay){lastDay=dk;const dd=mk('div','day',dk===new Date().toDateString()?'Hoje':d.toLocaleDateString('pt-BR'));box.appendChild(dd)}
+      const m=mk('div','m in'),sp=mk('span',0,x.texto),sm=mk('small',0,d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));sp.style.whiteSpace='pre-wrap';m.append(sp,sm);
+      if(OFF.adm){m.onclick=()=>dlg('Apagar este aviso?',[['Cancelar'],['Apagar',async()=>{try{const r=await SB.rpc('admin_apagar_aviso',{p_id:x.id});if(r.error)throw r.error;OFF._sig='';await offLoad();snack('Aviso apagado')}catch(e){snack('Não consegui apagar')}}]],'Ele some para todos os usuários.',true)}
+      box.appendChild(m)});
+    bar.innerHTML='';
+    if(OFF.adm){const nb=mk('button','btn','Novo aviso para todos');nb.style.cssText='width:100%;margin:0';nb.onclick=offCompose;bar.appendChild(nb)}
+    else{bar.appendChild(_st(mk('div',0,'Somente a equipe do Bippy pode enviar mensagens'),'flex:1;text-align:center;color:var(--mute);font-size:14px;padding:13px 12px;border-radius:22px;background:color-mix(in srgb,var(--panel) 92%,transparent)'))}
+    setTimeout(()=>{box.scrollTop=box.scrollHeight},0)};
+  OFF.pg={el:head,paint};paint();offMarkSeen();try{renderList()}catch(e){}
+  $('#offback').onclick=()=>{OFF.pg=null;$('#app').classList.remove('open');try{renderList()}catch(e){}};
   if(OFF.adm===undefined)offLoad().then(()=>{if(OFF.adm)paint()});
 }
 function offCompose(){
