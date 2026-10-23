@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-4310">
+<meta name="mandai-build" content="20261023-4320">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2167,11 +2167,58 @@ function delSel(){
   $('#dm').textContent=T.b;$('#dn').onclick=closeModal;
   $('#dy').onclick=()=>{closeModal();selC=[];paintSelBar();softDel(L);snack(T.sn)};
 }
+/* canal oficial: avisos do Bippy para todos (só leitura) */
+var OFF={list:[],ok:false,adm:undefined,pg:null};
+const offTs=x=>Date.parse(x.criado_em)||0;
+function offSeen(){try{return Number(localStorage.getItem('bippy.offseen'))||0}catch(e){return 0}}
+function offMarkSeen(){try{const l=OFF.list;if(l.length)localStorage.setItem('bippy.offseen',String(Math.max(...l.map(offTs))))}catch(e){}}
+function offUnread(){const s=offSeen();return OFF.list.filter(x=>offTs(x)>s).length}
+function offWhen(x){const d=new Date(x.criado_em),n=new Date(),hm=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===n.toDateString()?hm:d.toLocaleDateString('pt-BR')+' '+hm}
+const OFF_CHK='<svg width="15" height="15" viewBox="0 0 24 24" aria-label="Conta oficial" style="vertical-align:-2px;margin-left:4px"><circle cx="12" cy="12" r="11" fill="#2d7ff9"/><path d="M7 12.5l3.4 3.4L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function offRow(){
+  if(!OFF.ok||!OFF.list.length)return;
+  const last=OFF.list[OFF.list.length-1],un=offUnread(),w=mk('div','rw'),b=mk('button','row');
+  b.innerHTML='<div class="av" style="background:#fff;padding:0;overflow:hidden"><img alt="" src="'+BIPPY_MARK+'" style="width:100%;height:100%;object-fit:contain"></div><div class="meta"><b>Bippy'+OFF_CHK+'</b><span></span></div><div class="when"><span class="tm'+(un?' un':'')+'"></span>'+(un?'<span class="w2"><span class="badge">'+un+'</span></span>':'')+'</div>';
+  b.querySelector('.meta span').textContent=last.texto.replace(/\s+/g,' ').slice(0,70);{const d=new Date(last.criado_em);b.querySelector('.tm').textContent=d.toDateString()===new Date().toDateString()?d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('pt-BR')}
+  b.onclick=offPage;w.appendChild(b);$('#list').appendChild(w);
+}
+async function offLoad(){
+  if(typeof rtOn!=='function'||!rtOn())return;
+  try{const r=await SB.from('avisos_oficiais').select('id,texto,criado_em').order('criado_em').limit(200);if(r.error||!r.data)return;
+    const had=OFF.ok?OFF.list.length:-1,sig=JSON.stringify(r.data.map(x=>x.id));if(OFF.ok&&sig===OFF._sig)return;
+    OFF._sig=sig;OFF.list=r.data;OFF.ok=true;
+    const open=OFF.pg&&OFF.pg.el&&document.body.contains(OFF.pg.el);
+    if(open){offMarkSeen();OFF.pg.paint()}else if(had>=0&&OFF.list.length>had)snack('Novo aviso do Bippy');
+    try{renderList()}catch(e){}
+    if(OFF.adm===undefined){OFF.adm=false;try{const q=await SB.rpc('sou_admin');OFF.adm=q&&q.data===true;if(OFF.adm&&OFF.pg&&OFF.pg.el&&document.body.contains(OFF.pg.el))OFF.pg.paint()}catch(e){}}
+  }catch(e){}
+}
+function offPage(){
+  const box=overlayPage('Bippy',45),el=box.parentElement;box.style.cssText='padding:8px 14px 90px';
+  const paint=()=>{box.innerHTML='';
+    box.appendChild(_st(mk('p',0,'Canal oficial do Bippy. Só a equipe envia mensagens aqui.'),'text-align:center;color:var(--mute);font-size:13px;margin:6px 0 14px'));
+    OFF.list.forEach(x=>{const d=_st(mk('div',''),'background:var(--panel);border-radius:6px 18px 18px 18px;padding:12px 14px;margin:0 0 10px;max-width:92%');
+      const t=_st(mk('div',0,x.texto),'white-space:pre-wrap;word-break:break-word;line-height:1.45;font-size:15.5px'),m=_st(mk('small',0,offWhen(x)),'display:block;margin-top:6px;color:var(--mute);font-size:12px');
+      d.append(t,m);
+      if(OFF.adm){const del=_st(mk('button',0,'Apagar'),'border:0;background:none;color:#d93a4f;font:inherit;font-size:13px;padding:6px 0 0');del.onclick=()=>dlg('Apagar este aviso?',[['Cancelar'],['Apagar',async()=>{try{const r=await SB.rpc('admin_apagar_aviso',{p_id:x.id});if(r.error)throw r.error;OFF._sig='';await offLoad();snack('Aviso apagado')}catch(e){snack('Não consegui apagar')}}]],'Ele some para todos os usuários.',true);d.appendChild(del)}
+      box.appendChild(d)});
+    if(OFF.adm){const nb=mk('button','btn','Novo aviso para todos');nb.style.cssText='position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:auto';nb.onclick=offCompose;box.appendChild(nb)}
+    setTimeout(()=>{el.scrollTop=el.scrollHeight},0)};
+  OFF.pg={el,paint};paint();offMarkSeen();try{renderList()}catch(e){}
+  if(OFF.adm===undefined)offLoad().then(()=>{if(OFF.adm)paint()});
+}
+function offCompose(){
+  showModal('<h3>Aviso para todos</h3><label class="fld"><textarea id="ofx" maxlength="1500" rows="6" placeholder="Escreva o aviso…" style="width:100%;resize:none"></textarea></label><p class="note">Aparece no canal Bippy de todos os usuários.</p><button class="btn" id="ofs">Publicar</button><button class="btn ghost" id="ofc">Cancelar</button>');
+  $('#ofc').onclick=closeModal;
+  $('#ofs').onclick=()=>{const t=$('#ofx').value.trim();if(!t){$('#ofx').focus();return}
+    closeModal();dlg('Publicar para todos?',[['Cancelar'],['Publicar',async()=>{try{const r=await SB.rpc('admin_publicar_aviso',{p_texto:t});if(r.error)throw r.error;OFF._sig='';await offLoad();snack('Aviso publicado')}catch(e){rtErr(e);snack('Não consegui publicar. Rode o arquivo banco 20 no Supabase.')}}]],'Todos os usuários vão receber este aviso. Não dá para editar depois (só apagar).',true)}
+}
 function renderList(){
   const f=$('#q').value.toLowerCase();
   if(sMode&&sKind&&sKind!=='unread'&&sKind!=='groups'){renderKind();return}
   $('#list').innerHTML='';if(requests.length){const rr=document.createElement('button');rr.className='rq2';rr.textContent='📨 Pedidos de conversa ('+requests.length+')';rr.onclick=reqMenu;$('#list').appendChild(rr)}
   if(LISTS_ON&&String(flt).startsWith('L:')&&!sMode){const l=(S.lists||[]).find(x=>'L:'+x.id===flt);if(l){const n=chats.filter(c=>!c.hidden&&!c.stub&&l.keys.includes(laterKey(c))).length,h=mk('div','lhd');h.style.setProperty('--lc',listCol(l));const t1=mk('b',0,l.name+' · '+n);h.appendChild(t1);if(l.desc)h.appendChild(mk('small',0,l.desc));$('#list').appendChild(h)}}
+  try{if(flt==='all'&&(!f||'bippy'.includes(f)))offRow()}catch(e){}
   if(sMode&&f&&chats.some(c=>c.name.toLowerCase().includes(f)))$('#list').appendChild(mk('h4','sh4','Conversas'));
   chats.filter(c=>!c.hidden&&c.name.toLowerCase().includes(f)&&chatFlt(c)).sort((x,y)=>(y.pin?1:0)-(x.pin?1:0)).forEach(c=>{
     const last=c.msgs[c.msgs.length-1];
@@ -3980,7 +4027,7 @@ async function adminPanel(){
       box.appendChild(ul);
       let ct={};try{const q=await SB.rpc('admin_contagens');ct=q.data||{}}catch(e){}
       const ab=(t,n,k)=>{const b=mk('button','btn ghost',t+(n?' ('+n+' nova'+(n>1?'s':'')+')':''));b.style.cssText='width:100%;margin-top:10px';b.onclick=()=>adminList(k);box.appendChild(b)};
-      ab('Denúncias',ct.denuncias,'den');ab('Fale conosco',ct.fale,'fale');{const b=mk('button','btn ghost','Exclusões de conta'+(ct.exclusoes?' ('+ct.exclusoes+' pendente'+(ct.exclusoes>1?'s':'')+')':''));b.style.cssText='width:100%;margin-top:10px';b.onclick=()=>adminList('exc');box.appendChild(b)}
+      {const b=mk('button','btn','📣 Enviar aviso oficial');b.style.cssText='width:100%;margin-top:10px';b.onclick=offCompose;box.appendChild(b)}ab('Denúncias',ct.denuncias,'den');ab('Fale conosco',ct.fale,'fale');{const b=mk('button','btn ghost','Exclusões de conta'+(ct.exclusoes?' ('+ct.exclusoes+' pendente'+(ct.exclusoes>1?'s':'')+')':''));b.style.cssText='width:100%;margin-top:10px';b.onclick=()=>adminList('exc');box.appendChild(b)}
       const rf=mk('button','btn ghost','Atualizar');rf.style.marginTop='14px';rf.onclick=load;box.appendChild(rf)};
     load()})();
 }
@@ -4003,7 +4050,7 @@ function renderSettings(){
    {id:'help',ic:'help',col:'#64748b',t:'Ajuda',d:'Ajuda, feedback e sobre o app',rows:[['💬','Fale conosco','Dúvidas, problemas, sugestões',faleConosco],['❓','Perguntas frequentes','',faqPage],['✉️','E-mail de suporte','bippysuporte@gmail.com',()=>{try{location.href='mailto:bippysuporte@gmail.com'}catch(e){}}],['📄','Termos de Uso','',()=>legalPage('termos')],['🔒','Política de Privacidade','',()=>legalPage('priv')],['ℹ️','Sobre o Bippy','Versão 1.0.0',()=>infoModal('Bippy','Mensageiro sem número de telefone. Esta é uma versão de protótipo: os dados ficam só na memória da página.')]]},
    {id:'inv',ic:'gift',col:'#f97316',t:'Convidar amigos',d:'Compartilhe seu link ou QR',go:myQr}
   ];
-  if(window._adm)cats.push({id:'adm',ic:'lock',col:'#8a55ff',t:'Administrador',d:'Números do Bippy',rows:[['📊','Painel do administrador','Usuários, mensagens, grupos',adminPanel]]});
+  if(window._adm)cats.push({id:'adm',ic:'lock',col:'#8a55ff',t:'Administrador',d:'Números do Bippy',rows:[['📊','Painel do administrador','Usuários, mensagens, grupos',adminPanel],['📣','Enviar aviso oficial','Para todos os usuários',offCompose]]});
   else if(window._adm===undefined&&SB&&typeof RT!=='undefined'&&RT.on){window._adm=false;try{SB.rpc('sou_admin').then(x=>{if(x&&x.data===true){window._adm=true;try{renderSettings()}catch(e){}}},()=>{})}catch(e){}}
   const hd=mk('div','sh'),bk=bkb();
   const cur=setSub&&cats.find(c=>c.id===setSub&&c.rows);
@@ -6317,7 +6364,7 @@ function rtSubscribe(){
   }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'mensagens'},p=>{
     const r=p.new;if(!r)return;if(r.apagada_em){applyDel(r);return}if(r.midia&&r.midia.k==='loc'){for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m&&m[4]&&!m[4]._own){Object.assign(m[4],{lat:r.midia.lat,lng:r.midia.lng,off:r.midia.off,until:r.midia.until,sim:r.midia.sim,addr:r.midia.addr});if(m[4]._lp)m[4]._lp()}}return}if(!r.editada_em)return;
     for(const c of chats){const m=c.msgs.find(x=>x[5]&&x[5].rid===r.id);if(m){const nt=(m[5].pre||'')+(r.texto||'');if(m[1]===nt)return;m[1]=nt;m[5].edited=true;m[5].editAt=rtHM(r.editada_em);if(cur===c&&typeof paintMsgs==='function')paintMsgs();renderList();return}}
-  }).on('postgres_changes',{event:'INSERT',schema:'public',table:'midia_abertas'},p=>{rtOnceSync()}).on('postgres_changes',{event:'INSERT',schema:'public',table:'status'},p=>{const r=p.new;if(r&&r.autor_id!==RT.uid){rtStPlace(r);try{renderStories();renderList()}catch(e){}}}).on('postgres_changes',{event:'DELETE',schema:'public',table:'status'},p=>{rtStatusLoad()})
+  }).on('postgres_changes',{event:'INSERT',schema:'public',table:'midia_abertas'},p=>{rtOnceSync()}).on('postgres_changes',{event:'INSERT',schema:'public',table:'status'},p=>{const r=p.new;if(r&&r.autor_id!==RT.uid){rtStPlace(r);try{renderStories();renderList()}catch(e){}}}).on('postgres_changes',{event:'DELETE',schema:'public',table:'status'},p=>{rtStatusLoad()}).on('postgres_changes',{event:'*',schema:'public',table:'avisos_oficiais'},()=>{offLoad()})
   .on('postgres_changes',{event:'*',schema:'public',table:'leituras'},p=>{const r=p.new;if(r&&r.usuario_id!==RT.uid){rtRcptApply(r);rtTicks()}})
   .on('postgres_changes',{event:'DELETE',schema:'public',table:'mensagens'},p=>{const id=p.old&&p.old.id;if(id)rtDrop(id)})
   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'conversas'},p=>{rtConvUpd(p.new)})
@@ -6454,7 +6501,7 @@ async function rtVoteSave(md){try{const d=await SB.from('votos_enquete').delete(
 function rtBoot(){
   rtDeliverSoon();rtRcptLoad();rtSeenPing();rtSeenLoad();
   if(!RT.boot){RT.boot=1;
-    setInterval(()=>{if(!document.hidden)rtGroupWatch()},2000);
+    setInterval(()=>{if(!document.hidden)rtGroupWatch()},2000);setInterval(()=>{if(!document.hidden)offLoad()},45000);offLoad();
     setInterval(()=>{if(rtOn()&&!document.hidden){rtSeenPing();rtSeenLoad();try{SB.rpc('limpar_expiradas').then(()=>{},()=>{})}catch(e){}}},60000);
     addEventListener('pagehide',()=>{try{rtSeenPing()}catch(e){}})}}
 
@@ -6480,7 +6527,7 @@ async function realStart(){
     if(pf&&pf.data&&pf.data.telefone&&!me.phone){me.phone='+'+pf.data.telefone;saveAcc()}
     else if(me.phone&&!(pf&&pf.data&&pf.data.telefone))rtSavePhone(true)}catch(e){}
   await rtLoad();rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtOn()){rtStatusLoad();rtDeliverSoon();rtReadSoon();rtSeenPing();rtSeenLoad()}else if(rtOn())rtSeenPing()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtOn()){offLoad();rtStatusLoad();rtDeliverSoon();rtReadSoon();rtSeenPing();rtSeenLoad()}else if(rtOn())rtSeenPing()});
 }
 function stLabel(x){const m=x&&x[4],t0=(x&&x[0])||'';return m?(m.k==='vid'?'🎥 Vídeo':'📷 Foto')+(t0?' '+t0:''):(t0||'Status')}
 function stReply(x){const o={who:'Status',text:stLabel(x),s:x};const m=x&&x[4];
