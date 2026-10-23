@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4550">
+<meta name="mandai-build" content="20261023-4560">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -1678,6 +1678,7 @@ button,.row,.srow,.opt,.tb,.chip{-webkit-tap-highlight-color:transparent}
 .mvw.isvid .mvh,.mvw.isvid .mvb,.mvw.isvid .mvpp{transition:opacity .25s}
 .mvw.isvid.mvhide .mvh,.mvw.isvid.mvhide .mvb,.mvw.isvid.mvhide .mvpp{opacity:0;pointer-events:none}
 .upw{position:relative;display:block;width:fit-content;max-width:100%}.upr{position:absolute;left:8px;bottom:10px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(0,0,0,.5);display:grid;place-items:center;color:#fff;padding:0;z-index:2}.upr svg{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px 0 0 -7.5px}.upr svg.upsp{inset:0;width:34px;height:34px;margin:0;left:0;top:0;animation:upspin 1s linear infinite}@keyframes upspin{to{transform:rotate(360deg)}}
+.stkpv{display:grid;place-items:center;margin:4px 0 10px}.stkpv canvas{width:240px;height:240px;border-radius:14px;background:repeating-conic-gradient(#c9c9c9 0 25%,#ececec 0 50%) 50%/20px 20px}.skl{font-size:12.5px;color:var(--mute);margin:8px 2px 2px}.skr{display:flex;gap:6px;flex-wrap:wrap}.skr button{flex:1;min-width:84px;padding:9px 6px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg,#fff);color:var(--ink);font:inherit;font-size:13.5px}.skr button.on{border-color:var(--out);background:var(--chip);font-weight:600}
 .mvh button.on{color:#ffc928}.mvh button.on svg *{fill:currentColor}
 .mvld{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-size:15px;background:rgba(0,0,0,.45);padding:8px 14px;border-radius:14px;z-index:1;pointer-events:none}
 .mvw.isimg .mvh,.mvw.isimg .mvb{transition:opacity .25s}.mvw.isimg.mvhide .mvh,.mvw.isimg.mvhide .mvb{opacity:0;pointer-events:none}
@@ -6126,6 +6127,37 @@ function gifEl(md,big){
   const g=document.createElement('i');g.className='gifb';g.textContent='GIF';d.appendChild(g);return d;
 }
 function stickerSend(md){send(md);}
+function stkCreate(cb,file){
+  const go=async f=>{
+    let bm;try{bm=await createImageBitmap(f)}catch(e){snack('Não consegui abrir essa imagem');return}
+    let alpha=false;try{const t=document.createElement('canvas');t.width=t.height=32;const tx=t.getContext('2d');tx.drawImage(bm,0,0,32,32);const dd=tx.getImageData(0,0,32,32).data;for(let i=3;i<dd.length;i+=4)if(dd[i]<240){alpha=true;break}}catch(e){}
+    const st={txt:'',pos:'b',col:'#ffffff',sz:1,brd:!alpha,crop:!alpha};
+    showModal('<h3>Criar figurinha</h3><div class="stkpv"><canvas id="skc" width="320" height="320"></canvas></div><label class="fld"><input id="skt" maxlength="40" placeholder="Escrever na figurinha (opcional)" autocomplete="off"></label><div class="skl">Posição do texto</div><div class="skr" id="sk1"></div><div class="skl">Cor</div><div class="skr" id="sk2"></div><div class="skl">Tamanho</div><div class="skr" id="sk3"></div><div class="skl">Formato</div><div class="skr" id="sk4"></div><div class="skr" id="sk5"></div><button class="btn" id="sks">Salvar figurinha</button><button class="btn ghost" id="skx">Cancelar</button>');
+    const mc=$('#modal .mc');if(mc)mc.style.maxHeight='92vh',mc.style.overflowY='auto';
+    const draw=()=>{const N=320,c=$('#skc');if(!c)return;const x=c.getContext('2d');x.clearRect(0,0,N,N);
+      const P=st.brd?14:6,W=N-2*P;
+      if(st.crop){const sq=Math.min(bm.width,bm.height);x.save();rrect(x,P,P,W,W,56);x.clip();x.drawImage(bm,(bm.width-sq)/2,(bm.height-sq)/2,sq,sq,P,P,W,W);x.restore();if(st.brd){x.lineWidth=12;x.strokeStyle='#fff';rrect(x,P,P,W,W,56);x.stroke()}}
+      else{const k=Math.min(W/bm.width,W/bm.height),w=bm.width*k,h=bm.height*k,ox=(N-w)/2,oy=(N-h)/2;
+        if(st.brd){const o=document.createElement('canvas');o.width=o.height=N;const g=o.getContext('2d');g.drawImage(bm,ox,oy,w,h);g.globalCompositeOperation='source-in';g.fillStyle='#fff';g.fillRect(0,0,N,N);for(let a=0;a<16;a++)x.drawImage(o,Math.cos(a/16*6.2832)*6,Math.sin(a/16*6.2832)*6)}
+        x.drawImage(bm,ox,oy,w,h)}
+      const T=st.txt.trim().toUpperCase();
+      if(T){let fs=[34,44,58][st.sz];const maxW=N-28;x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+        let lines=[];const wrap=()=>{x.font='900 '+fs+'px Impact,"Arial Black",Arial,sans-serif';lines=[];let cu='';T.split(/\s+/).forEach(w=>{const t2=cu?cu+' '+w:w;if(x.measureText(t2).width>maxW&&cu){lines.push(cu);cu=w}else cu=t2});if(cu)lines.push(cu)};
+        wrap();while(fs>16&&lines.some(l=>x.measureText(l).width>maxW)){fs-=3;wrap()}
+        const lh=fs*1.1,h=lines.length*lh,yc=st.pos==='t'?22+h/2:st.pos==='m'?N/2:N-22-h/2;
+        x.lineWidth=fs*.24;x.strokeStyle=st.col==='#000000'?'#fff':'#000';x.fillStyle=st.col;
+        lines.forEach((l,i)=>{const y=yc-h/2+lh*(i+.5);x.strokeText(l,N/2,y);x.fillText(l,N/2,y)})}};
+    const chips=(id,opts,get,set)=>{const w=$('#'+id);const paint=()=>{w.innerHTML='';opts.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.textContent=l;if(get()===v)b.className='on';b.onclick=()=>{set(v);paint();draw()};w.appendChild(b)})};paint()};
+    chips('sk1',[['t','Em cima'],['m','No meio'],['b','Embaixo']],()=>st.pos,v=>st.pos=v);
+    chips('sk2',[['#ffffff','Branco'],['#ffe14a','Amarelo'],['#000000','Preto']],()=>st.col,v=>st.col=v);
+    chips('sk3',[[0,'Pequeno'],[1,'Médio'],[2,'Grande']],()=>st.sz,v=>st.sz=v);
+    chips('sk4',[[true,'Cortar em quadrado'],[false,'Manter inteira']],()=>st.crop,v=>{st.crop=v;if(!v&&alpha)st.brd=false});
+    chips('sk5',[[true,'Com borda branca'],[false,'Sem borda']],()=>st.brd,v=>st.brd=v);
+    $('#skt').oninput=e=>{st.txt=e.target.value;draw()};
+    $('#skx').onclick=closeModal;
+    $('#sks').onclick=()=>{const c=$('#skc');let d=c.toDataURL('image/webp',.82);if(d.length>42000)d=c.toDataURL('image/webp',.6);closeModal();cb(d)};
+    draw()};
+  if(file)go(file);else nxFile('image/*',go)}
 function stkPick(cb){nxFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d'),sq=Math.min(im.width,im.height);x.save();rrect(x,8,8,N-16,N-16,60);x.clip();x.drawImage(im,(im.width-sq)/2,(im.height-sq)/2,sq,sq,8,8,N-16,N-16);x.restore();x.lineWidth=10;x.strokeStyle='#fff';rrect(x,8,8,N-16,N-16,60);x.stroke();cb(c.toDataURL('image/webp',.82))};im.src=r.result};r.readAsDataURL(f)})}
 function gifPick(cb){nxFile('image/gif,image/webp,image/png',f=>{if(f.size>900*1024){snack('GIF muito grande (máximo 900 KB)');return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
 function buildQr(c){
@@ -6176,7 +6208,7 @@ function buildStk(c){
   const redraw=()=>buildEmo($('#emp'),null,'stk');
   const cell=(w,md,mine)=>{const b=mk('button','stkb');b.appendChild(stkEl(md,76));if(isFav(md))b.classList.add('isf');if(mine){let tm=0,lp=false;b.onpointerdown=()=>{lp=false;tm=setTimeout(()=>{lp=true;if(navigator.vibrate)navigator.vibrate(20);stkSheet(md,null,redraw)},480)};const cl=()=>clearTimeout(tm);b.onpointerup=cl;b.onpointerleave=cl;b.onpointercancel=cl;b.oncontextmenu=e=>e.preventDefault();b.onclick=()=>{if(lp){lp=false;return}sendMk(md)}}else pressable(b,md,()=>sendMk(md),redraw);w.appendChild(b)};
   const sec=(t,items,mine)=>{g.appendChild(mk('div','eml',t));const w=mk('div','stkg');
-    if(mine){const add=mk('button','stkadd');add.innerHTML=ico('plus',26)+'<small>Criar</small>';add.setAttribute('aria-label','Criar figurinha com uma foto');add.onclick=()=>stkPick(src=>{S.mystk=[src,...(S.mystk||[])].slice(0,24);snack('Figurinha criada');redraw()});w.appendChild(add);
+    if(mine){const add=mk('button','stkadd');add.innerHTML=ico('plus',26)+'<small>Criar</small>';add.setAttribute('aria-label','Criar figurinha');add.onclick=()=>stkCreate(src=>{S.mystk=[src,...(S.mystk||[])].slice(0,24);snack('Figurinha criada');redraw()});w.appendChild(add);
       (S.mystk||[]).forEach(z=>cell(w,typeof z==='string'?{k:'stk',src:z}:z,true))}
     else items.forEach(md=>cell(w,md));
     g.appendChild(w)};
