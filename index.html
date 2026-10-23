@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4670">
+<meta name="mandai-build" content="20261023-4690">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -442,7 +442,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--out);outline-of
 .gl.wide{width:auto;padding:0 16px;border-radius:24px;display:flex;align-items:center;gap:8px;font-size:14px}
 .cmid{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:10px 22px;gap:14px;overflow-y:auto}
 .edt{width:100%;background:transparent;border:0;outline:0;color:#fff;text-align:center;resize:none;font-size:30px;line-height:1.25;min-height:120px}.edt::placeholder{color:rgba(255,255,255,.6)}
-.cstk{display:flex;flex-direction:column;align-items:center;gap:10px}
+.stkov{position:absolute;touch-action:none;z-index:2}.stkvl{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}.stkvl .stkov{pointer-events:none}#edsl{position:absolute!important;inset:0;pointer-events:none;z-index:1}#edsl .stkov{pointer-events:auto}.stkx{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:18px;line-height:24px;padding:0}.cstk{display:flex;flex-direction:column;align-items:center;gap:10px}
 .cbot{display:flex;align-items:center;gap:10px;padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px))}
 .pubx{flex:1;height:50px;border-radius:26px;background:#fff;color:#16182b;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}.pubx small{font-weight:600;color:#6b7a99}
 .rad .rdt{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:none;position:relative}.rad.on .rdt{border-color:var(--out)}.rad.on .rdt::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--out)}
@@ -4525,9 +4525,10 @@ function vidSnap(md,cb){if(md._th)return cb(md._th);_vsq.push([md,cb]);if(_vsb)r
   const nx=()=>{const it=_vsq.shift();if(!it){_vsb=false;return}const[m,f]=it;if(m._th){f(m._th);return nx()}
     const v=document.createElement('video');let dn=false;const end=u=>{if(dn)return;dn=true;if(u)m._th=u;try{v.removeAttribute('src');v.load()}catch(e){}f(u||'');nx()};
     v.muted=true;v.preload='auto';v.playsInline=true;
-    v.onloadeddata=()=>{try{v.currentTime=Math.min(.5,(v.duration||1)/2)}catch(e){}};
-    v.onseeked=()=>{try{const k=96/Math.max(v.videoWidth||96,v.videoHeight||96),c=document.createElement('canvas');c.width=Math.max(1,Math.round(v.videoWidth*k));c.height=Math.max(1,Math.round(v.videoHeight*k));c.getContext('2d').drawImage(v,0,0,c.width,c.height);end(c.toDataURL('image/jpeg',.7))}catch(e){end('')}};
-    v.onerror=()=>end('');setTimeout(()=>end(''),5000);v.src=m.src};nx()}
+    let ti=0;const fr=[.4,.25,.55,.1,.8,.0];const seek=()=>{const d=v.duration||1;try{v.currentTime=Math.min(Math.max(d*fr[ti],.15),Math.max(d-.1,.1))}catch(e){end('')}};
+    v.onloadeddata=()=>seek();
+    v.onseeked=()=>setTimeout(()=>{try{const k=96/Math.max(v.videoWidth||96,v.videoHeight||96),c=document.createElement('canvas');c.width=Math.max(1,Math.round(v.videoWidth*k));c.height=Math.max(1,Math.round(v.videoHeight*k));const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);let sm=0;const dt=x.getImageData(0,0,c.width,c.height).data,n=dt.length/4;for(let i=0;i<dt.length;i+=4)sm+=dt[i]*.3+dt[i+1]*.6+dt[i+2]*.1;if(sm/n<12&&++ti<fr.length){seek();return}end(c.toDataURL('image/jpeg',.7))}catch(e){end('')}},150);
+    v.onerror=()=>end('');setTimeout(()=>end(''),9000);v.src=m.src};nx()}
 function statusPage(){purgeMine();
   openPage('stp','Meu status',el=>{
     el.classList.add('mystp');
@@ -5640,6 +5641,7 @@ function addExtras(vt,s){
   if(x.poll)w.prepend(buildPoll(x.poll,{status:true,own:sv.key==='me'}));
   if(x.loc){const p=mk('span','pill');p.innerHTML=ico('pin',16)+'<span></span>';p.lastChild.textContent=x.loc;w.appendChild(p)}
   if(x.music){const p=mk('span','pill');p.innerHTML=ico('musicn',16)+'<span></span>';p.lastChild.textContent=x.music;w.appendChild(p)}
+  if(x.stks&&x.stks.length){const L=mk('div','stkvl'),W=vt.getBoundingClientRect().width||innerWidth;x.stks.forEach(o=>{const d=mk('div','stkov');d.style.left=(o.x*100)+'%';d.style.top=(o.y*100)+'%';d.style.transform='translate(-50%,-50%) rotate('+(o.r||0)+'deg)';d.appendChild(stkEl(o.md,Math.round(o.s*W)));L.appendChild(d)});vt.appendChild(L)}
   if(x.poll){const pl=w.querySelector('.vpoll');const c=mk('div','stkc');
     c.append(pl);
     if(!vt.classList.contains('vm')&&vt.textContent.trim()){const t=mk('div','scap',vt.textContent.trim());vt.textContent='';vt.appendChild(t)}
@@ -5772,10 +5774,10 @@ function trimVideo(src,dur,done,cancel){
 }
 function compose(target,pre,preCap){
   clearTimeout(sv.timer);const v=$('#viewer');v.hidden=false;let dest=target&&canPostStatus(target)?target:null;const locked=!!dest&&dest.group;if(target&&target.group&&!dest)setTimeout(()=>snack('Só administradores podem postar status neste grupo'),50);
-  let c=S.stBg||0,fi=0,dur=24,md=null,split=null,poll=null,loc='',music='',hd=true,fx=0;
+  let c=S.stBg||0,fi=0,dur=24,md=null,split=null,poll=null,loc='',music='',hd=true,fx=0,stks=[];
   const FX=[['Original',''],['Vívido','saturate(1.45) contrast(1.06)'],['Preto e branco','grayscale(1)'],['Quente','sepia(.35) saturate(1.25)'],['Frio','hue-rotate(-12deg) saturate(1.15) brightness(1.03)'],['Vintage','sepia(.55) contrast(.92) brightness(1.04)']];
   const FONTS=['sans','serif','hand','mono'];
-  v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="edc" aria-label="Cortar vídeo">'+ico('scissors',20)+'</button><button class="gl" id="edm" aria-label="Música">'+ico('musicn',20)+'</button><button class="gl" id="eds" aria-label="Adesivos">'+ico('sticker',20)+'</button><button class="gl" id="edhd" aria-label="Qualidade HD">HD</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><div class="vstrip" id="edstrip" hidden><div class="vth" id="edth"></div><div class="vwin" id="edwin"><i class="vhd vhl" id="edhl"></i><i class="vhd vhr" id="edhr"></i></div></div><div class="vinfo" id="edvi" hidden><button class="gl" id="edmu" aria-label="Som do vídeo"></button><span id="edvt"></span></div><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="edfl" id="edfl" hidden></div><div class="edhint" id="edhint" hidden>Deslize para cima para filtros</div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicione uma legenda…" aria-label="Legenda" autocomplete="off"></div><div class="cbot2"><button class="gl" id="edpi" aria-label="Galeria">'+ico('image',20)+'</button><button class="spill" id="eddst" aria-label="Escolher quem vê">'+ico('statusring',18)+'<span id="eddn"></span><i class="cdc">▾</i></button><button class="pubx2" id="edpub" aria-label="Publicar">'+ico('send',24)+'</button></div></div>';
+  v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="edc" aria-label="Cortar vídeo">'+ico('scissors',20)+'</button><button class="gl" id="eds" aria-label="Figurinhas">'+ico('sticker',20)+'</button><button class="gl" id="edmo" aria-label="Enquete e localização">'+ico('plus',20)+'</button><button class="gl" id="edhd" aria-label="Qualidade HD">HD</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><div class="vstrip" id="edstrip" hidden><div class="vth" id="edth"></div><div class="vwin" id="edwin"><i class="vhd vhl" id="edhl"></i><i class="vhd vhr" id="edhr"></i></div></div><div class="vinfo" id="edvi" hidden><button class="gl" id="edmu" aria-label="Som do vídeo"></button><span id="edvt"></span></div><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="edfl" id="edfl" hidden></div><div class="edhint" id="edhint" hidden>Deslize para cima para filtros</div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicione uma legenda…" aria-label="Legenda" autocomplete="off"></div><div class="cbot2"><button class="gl" id="edpi" aria-label="Galeria">'+ico('image',20)+'</button><button class="spill" id="eddst" aria-label="Escolher quem vê">'+ico('statusring',18)+'<span id="eddn"></span><i class="cdc">▾</i></button><button class="pubx2" id="edpub" aria-label="Publicar">'+ico('send',24)+'</button></div></div>';
   const paint=()=>{v.style.background=sb[c%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');$('#edtx').className='edt f-'+FONTS[fi];$('#eddn').textContent=dest?dest.name:'Status ('+(chats.filter(x=>!x.group&&!x.blocked&&!x.pending).length)+' contatos)';const ds0=$('#eddst');ds0.classList.toggle('lock',!!locked);const cc=ds0.querySelector('.cdc');if(cc)cc.hidden=!!locked};
   const stk=()=>{
     const need=!!(md||poll),ci=$('#edci'),tx0=$('#edtx');if(need&&!tx0.hidden&&!ci.value)ci.value=tx0.value;if(!need&&tx0.hidden&&ci.value&&!tx0.value)tx0.value=ci.value;tx0.hidden=need;$('#edcap').hidden=!need;{const cd=document.querySelector('.ced');if(cd){cd.classList.toggle('medm',!!md);cd.classList.toggle('vidm',!!(md&&md.k==='vid'))}v.style.background=md?'#000':sb[c%sb.length]}
@@ -5822,21 +5824,35 @@ function compose(target,pre,preCap){
   $('#edp').onclick=()=>{c=(c+1)%sb.length;paint()};
   $('#edt').onclick=e=>{e.stopPropagation();const dm=dropMenu($('#edt'),null);dm.render([12,24,48].map(h=>({t:h+' horas',on:dur===h,fn:()=>{dur=h;S.stDur=h;paint()}})),'Duração do status')};
   $('#edpi').onclick=()=>pickMedia((m,cp)=>{if(m.k==='img'&&m._file){prepImg(m._file,src=>{setMd({k:'img',src});if(cp)$('#edci').value=cp})}else{setMd(m);if(cp)$('#edci').value=cp}});
-  $('#edm').onclick=askMusic;
   {const hb=$('#edhd');hb.classList.toggle('on',hd);hb.onclick=()=>{hd=!hd;S.stHd=hd;hb.classList.toggle('on',hd);snack(hd?'Qualidade HD ativada':'Economia de dados ativada');if(md&&md.k==='img'&&md._orig)toData(md._orig,d=>{md.src=d;const pv=$('#edpv');pv.innerHTML='';pv.appendChild(mediaEl(md,true));pv.style.filter=FX[fx][1]},hd)}}
   {const pv=$('#edpv');let y0=0;pv.style.touchAction='none';pv.onpointerdown=e=>{y0=e.clientY};pv.onpointerup=e=>{const dy=e.clientY-y0;if(dy<-60)setFx(fx+1);else if(dy>60)setFx(fx-1)}}
+  const stLayer=()=>{let L=$('#edsl');if(!L){L=document.createElement('div');L.id='edsl';const cd=document.querySelector('.ced');cd.insertBefore(L,cd.firstChild)}return L};
+  const stDraw=()=>{const L=stLayer();L.innerHTML='';const W=L.getBoundingClientRect().width||innerWidth;
+    stks.forEach((o,i)=>{const w=document.createElement('div');w.className='stkov';const set=()=>{w.style.left=(o.x*100)+'%';w.style.top=(o.y*100)+'%';w.style.transform='translate(-50%,-50%) rotate('+(o.r||0)+'deg)'};
+      const sz=Math.round(o.s*W);w.appendChild(stkEl(o.md,sz));set();
+      const xb=document.createElement('button');xb.className='stkx';xb.textContent='×';xb.setAttribute('aria-label','Remover figurinha');xb.onpointerdown=e=>e.stopPropagation();xb.onclick=e=>{e.stopPropagation();stks.splice(i,1);stDraw()};w.appendChild(xb);
+      const ps=new Map();let d0=0,s0=o.s,a0=0,r0=0;
+      w.onpointerdown=e=>{e.preventDefault();w.setPointerCapture(e.pointerId);ps.set(e.pointerId,[e.clientX,e.clientY]);if(ps.size===2){const [a,b]=[...ps.values()];d0=Math.hypot(a[0]-b[0],a[1]-b[1])||1;s0=o.s;a0=Math.atan2(b[1]-a[1],b[0]-a[0]);r0=o.r||0}};
+      w.onpointermove=e=>{if(!ps.has(e.pointerId))return;const pr=ps.get(e.pointerId),r=L.getBoundingClientRect();
+        if(ps.size===1){o.x=Math.max(0,Math.min(1,o.x+(e.clientX-pr[0])/r.width));o.y=Math.max(0,Math.min(1,o.y+(e.clientY-pr[1])/r.height));ps.set(e.pointerId,[e.clientX,e.clientY]);set()}
+        else{ps.set(e.pointerId,[e.clientX,e.clientY]);const [a,b]=[...ps.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1])||1;o.s=Math.max(.12,Math.min(1.2,s0*d/d0));o.r=r0+(Math.atan2(b[1]-a[1],b[0]-a[0])-a0)*180/Math.PI;const k=w.firstChild;const z=Math.round(o.s*W);k.style.width=k.style.height=z+'px';k.style.setProperty('--sz',z+'px');set()}};
+      w.onpointerup=w.onpointercancel=e=>{ps.delete(e.pointerId);if(ps.size===1){const [pt]=[...ps.values()]}};
+      L.appendChild(w)})};
   $('#eds').onclick=()=>{
+    STK_TAP=m=>{closeModal();STK_TAP=null;stks.push({md:m.src?{k:'stk',src:m.src}:{k:'stk',e:m.e,t:m.t,c1:m.c1,c2:m.c2},x:.5,y:.5,s:.42,r:0});stDraw()};
+    showModal('<div id="stpk" style="max-height:62vh;overflow:auto"></div><button class="btn ghost" id="stpx">Fechar</button>');
+    $('#modal .mc').classList.add('am');buildStk($('#stpk'));$('#stpx').onclick=()=>{STK_TAP=null;closeModal()}};
+  $('#edmo').onclick=()=>{
     showModal('<div class="agrid"></div>');const mc=$('#modal .mc');mc.classList.add('am');const g=mc.querySelector('.agrid');
     [['poll','Enquete','#12a4b3',()=>pollForm(p=>{poll=p;stk()},{status:true})],
-     ['pin','Localização','#22b573',()=>{showModal('<h3>Localização</h3><label class="fld"><input id="lc1" maxlength="40" placeholder="Nome do lugar" autocomplete="off"></label><button class="btn" id="lcs">Adicionar</button><button class="btn ghost" id="lcx">Cancelar</button>');$('#lcx').onclick=closeModal;$('#lcs').onclick=()=>{const tx=$('#lc1').value.trim();if(!tx){$('#lc1').focus();return}loc=tx;closeModal();stk()}}],
-     ['musicn','Música','#8a5cf0',askMusic]
+     ['pin','Localização','#22b573',()=>{showModal('<h3>Localização</h3><label class="fld"><input id="lc1" maxlength="40" placeholder="Nome do lugar" autocomplete="off"></label><button class="btn" id="lcs">Adicionar</button><button class="btn ghost" id="lcx">Cancelar</button>');$('#lcx').onclick=closeModal;$('#lcs').onclick=()=>{const tx=$('#lc1').value.trim();if(!tx){$('#lc1').focus();return}loc=tx;closeModal();stk()}}]
     ].forEach(([ic,lb,col,fn])=>{const b=mk('button','ai'),s=mk('span');s.style.background=col;s.innerHTML=ico(ic,24);b.append(s,mk('small',0,lb));b.onclick=()=>{closeModal();fn()};g.appendChild(b)});
   };
   $('#edpub').onclick=()=>{
-    const tx=((md||poll)?$('#edci').value:$('#edtx').value).trim();if(!tx&&!md&&!poll&&!loc&&!music){$('#edtx').focus();return}
+    const tx=((md||poll)?$('#edci').value:$('#edtx').value).trim();if(!tx&&!md&&!poll&&!loc&&!music&&!stks.length){$('#edtx').focus();return}
     const post=m=>{
       if(m){delete m._orig;delete m._file;m.hd=hd;if(m.k==='vid'&&fx)m.filter=FX[fx][1]}
-      const st=[tx,c,'agora',[],m,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music}];
+      const st=[tx,c,'agora',[],m,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music,stks:stks.length?stks.map(o=>Object.assign({},o)):undefined}];
       if(dest){st[5].by='Você';(stat[dest.id]=stat[dest.id]||[]).push(st);seen[dest.id]=true;seenCnt[String(dest.id)]=stat[dest.id].length;return}
       mine.push(st);if(rtOn())rtStatusPublish(st);else{simViews(st);simVotes(st)}seen.me=false};
     const done=n=>{sv.key='';S.stBg=c;closeV();snack(dest?'Status publicado no grupo '+dest.name:(n>1?n+' status publicados por '+dur+' h':'Status publicado por '+dur+' h'))};
@@ -6349,6 +6365,7 @@ function stkSheet(md,m,after){
   row('send','Enviar de novo',()=>sendMk(md));
   $('#sfx').onclick=closeModal;
 }
+let STK_TAP=null;function tapStk(md){if(STK_TAP&&$('#stpk'))STK_TAP(md);else sendMk(md)}
 function sendMk(md){md=Object.assign({},md);addRec(md);send(md)}
 function pressable(b,md,onTap,redraw){let t=0,lp=false;
   b.onpointerdown=()=>{lp=false;clearTimeout(t);t=setTimeout(()=>{lp=true;toggleFav(md);if(navigator.vibrate)navigator.vibrate(20);redraw()},480)};
@@ -6356,8 +6373,8 @@ function pressable(b,md,onTap,redraw){let t=0,lp=false;
   b.onclick=()=>{if(lp){lp=false;return}onTap()}}
 function buildStk(c){
   const g=mk('div','emb stkp');
-  const redraw=()=>buildEmo($('#emp'),null,'stk');
-  const cell=(w,md,mine)=>{const b=mk('button','stkb');b.appendChild(stkEl(md,76));if(isFav(md))b.classList.add('isf');if(mine){let tm=0,lp=false;b.onpointerdown=()=>{lp=false;tm=setTimeout(()=>{lp=true;if(navigator.vibrate)navigator.vibrate(20);stkSheet(md,null,redraw)},480)};const cl=()=>clearTimeout(tm);b.onpointerup=cl;b.onpointerleave=cl;b.onpointercancel=cl;b.oncontextmenu=e=>e.preventDefault();b.onclick=()=>{if(lp){lp=false;return}sendMk(md)}}else pressable(b,md,()=>sendMk(md),redraw);w.appendChild(b)};
+  const redraw=()=>{if(STK_TAP&&$('#stpk')){c.innerHTML='';buildStk(c)}else buildEmo($('#emp'),null,'stk')};
+  const cell=(w,md,mine)=>{const b=mk('button','stkb');b.appendChild(stkEl(md,76));if(isFav(md))b.classList.add('isf');if(mine){let tm=0,lp=false;b.onpointerdown=()=>{lp=false;tm=setTimeout(()=>{lp=true;if(navigator.vibrate)navigator.vibrate(20);stkSheet(md,null,redraw)},480)};const cl=()=>clearTimeout(tm);b.onpointerup=cl;b.onpointerleave=cl;b.onpointercancel=cl;b.oncontextmenu=e=>e.preventDefault();b.onclick=()=>{if(lp){lp=false;return}tapStk(md)}}else pressable(b,md,()=>tapStk(md),redraw);w.appendChild(b)};
   const sec=(t,items,mine)=>{g.appendChild(mk('div','eml',t));const w=mk('div','stkg');
     if(mine){const add=mk('button','stkadd');add.innerHTML=ico('plus',26)+'<small>Criar</small>';add.setAttribute('aria-label','Criar figurinha');add.onclick=()=>stkCreate(src=>{S.mystk=[src,...(S.mystk||[])].slice(0,24);snack('Figurinha criada');redraw()});w.appendChild(add);
       (S.mystk||[]).forEach(z=>cell(w,typeof z==='string'?{k:'stk',src:z}:z,true))}
@@ -6864,7 +6881,7 @@ function rtOn(){try{return !!(RT.on&&RT.uid&&SB)}catch(e){return false}}
 function rtAgo(iso){const m=Math.max(0,Math.round((Date.now()-Date.parse(iso))/6e4));return m<1?'agora':m<60?'há '+m+' min':'há '+Math.floor(m/60)+' h'}
 function rtCleanStat(){try{if(!rtOn())return;Object.keys(stat).forEach(k=>{const c=chats.find(x=>String(x.id)===k);if(!c||!c.real)delete stat[k]})}catch(e){}}
 function rtStItem(r){const d=r.dados||{};let md=null;if(d.md&&d.md.path){md=Object.assign({},d.md);md.remote=true;md.src=null}
-  const it=[r.conteudo||'',Number(r.fundo)||0,rtAgo(r.criado_em),[],md,{f:d.f,exp:Date.parse(r.expira_em),dur:d.dur,poll:d.poll,loc:d.loc,music:d.music}];it.sid=r.id;if(it[5].poll){const pl=it[5].poll=Object.assign({},it[5].poll);pl.opts=(pl.opts||[]).map(o=>({t:o.t,em:o.em,st:o.st,img:o.img,v:0,voters:[]}));pl.vk=r.id;pl.mine=-1;pl._n=1;pl.own=r.autor_id===RT.uid}return it}
+  const it=[r.conteudo||'',Number(r.fundo)||0,rtAgo(r.criado_em),[],md,{f:d.f,exp:Date.parse(r.expira_em),dur:d.dur,poll:d.poll,loc:d.loc,music:d.music,stks:d.stks}];it.sid=r.id;if(it[5].poll){const pl=it[5].poll=Object.assign({},it[5].poll);pl.opts=(pl.opts||[]).map(o=>({t:o.t,em:o.em,st:o.st,img:o.img,v:0,voters:[]}));pl.vk=r.id;pl.mine=-1;pl._n=1;pl.own=r.autor_id===RT.uid}return it}
 function rtStPlace(row){RT.sids=RT.sids||new Set();if(RT.sids.has(row.id))return;RT.sids.add(row.id);const it=rtStItem(row);
   if(row.autor_id===RT.uid)mine.push(it);else{const c=chats.find(x=>x.uid===row.autor_id);if(!c)return;(stat[c.id]=stat[c.id]||[]).push(it)}
   if(it[5].poll)rtPollLoad(it[5].poll);const md=it[4];if(md&&md.remote)rtGet(md).then(()=>{try{renderStories()}catch(e){}}).catch(()=>{})}
@@ -6882,7 +6899,7 @@ async function rtStatusPublish(st){
       md.path=path;
       dm={k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note,from:md.from,to:md.to,dur:md.dur,mime:md.mime}}
     const x=st[5]||{};
-    const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,poll:x.poll,md:dm}}).select('id').single();
+    const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,stks:x.stks,poll:x.poll,md:dm}}).select('id').single();
     if(ins.error)throw ins.error;st.sid=ins.data.id;RT.sids=RT.sids||new Set();RT.sids.add(ins.data.id);if(x.poll){x.poll.vk=ins.data.id;RT.polls=RT.polls||{};RT.polls[ins.data.id]=x.poll}}
   catch(e){rtErr(e);snack('Não consegui publicar o status para os contatos. Verifique a internet e o arquivo 6 do banco.')}}
 async function rtStatusDel(st){try{if(st&&st.sid){await SB.from('status').delete().eq('id',st.sid);const p=st[4]&&st[4].path;if(p&&!mine.some(x=>x!==st&&x[4]&&x[4].path===p))SB.storage.from('midia').remove([p])}}catch(e){}}
