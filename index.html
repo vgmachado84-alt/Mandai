@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-4280">
+<meta name="mandai-build" content="20261022-4290">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -1224,6 +1224,14 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .ced.medm .pubx2{background:#fff;color:#12161c}
 .spill.lock{pointer-events:none}.spill.lock .cdc{display:none}
 
+/* escolha dividir vídeo */
+.splh{text-align:center;padding:2px 6px 14px}.splh .splic{display:grid;place-items:center;width:52px;height:52px;margin:0 auto 10px;border-radius:50%;background:var(--chip);font-size:24px}
+.splh b{display:block;font-size:20px;color:var(--ink)}.splh small{display:block;margin-top:6px;color:var(--mute);font-size:14.5px;line-height:1.35}
+.spo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 16px;margin-top:10px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg,#fff);color:var(--ink);font:inherit}
+.spo.spm{border-color:var(--out);background:var(--chip)}
+.spo .spe{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#fff;font-size:22px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.spo .spt{display:flex;flex-direction:column;min-width:0}.spo .spt b{font-size:16.5px;font-weight:650}.spo .spt small{margin-top:2px;color:var(--mute);font-size:13.5px;line-height:1.3}
+.spx{display:block;width:100%;margin-top:6px;padding:14px;border:0;background:none;color:var(--mute);font:inherit;font-size:15px}
 /* Meu status */
 
 .msl{padding:4px 0}
@@ -5539,7 +5547,7 @@ function trimVideo(src,dur,done,cancel){
 }
 function compose(target,pre,preCap){
   clearTimeout(sv.timer);const v=$('#viewer');v.hidden=false;let dest=target&&canPostStatus(target)?target:null;const locked=!!dest&&dest.group;if(target&&target.group&&!dest)setTimeout(()=>snack('Só administradores podem postar status neste grupo'),50);
-  let c=S.stBg||0,fi=0,dur=24,md=null,poll=null,loc='',music='',hd=true,fx=0;
+  let c=S.stBg||0,fi=0,dur=24,md=null,split=null,poll=null,loc='',music='',hd=true,fx=0;
   const FX=[['Original',''],['Vívido','saturate(1.45) contrast(1.06)'],['Preto e branco','grayscale(1)'],['Quente','sepia(.35) saturate(1.25)'],['Frio','hue-rotate(-12deg) saturate(1.15) brightness(1.03)'],['Vintage','sepia(.55) contrast(.92) brightness(1.04)']];
   const FONTS=['sans','serif','hand','mono'];
   v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="edc" aria-label="Cortar vídeo">'+ico('scissors',20)+'</button><button class="gl" id="edm" aria-label="Música">'+ico('musicn',20)+'</button><button class="gl" id="eds" aria-label="Adesivos">'+ico('sticker',20)+'</button><button class="gl" id="edhd" aria-label="Qualidade HD">HD</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><div class="vstrip" id="edstrip" hidden><div class="vth" id="edth"></div><div class="vwin" id="edwin"><i class="vhd vhl" id="edhl"></i><i class="vhd vhr" id="edhr"></i></div></div><div class="vinfo" id="edvi" hidden><button class="gl" id="edmu" aria-label="Som do vídeo"></button><span id="edvt"></span></div><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="edfl" id="edfl" hidden></div><div class="edhint" id="edhint" hidden>Deslize para cima para filtros</div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicione uma legenda…" aria-label="Legenda" autocomplete="off"></div><div class="cbot2"><button class="gl" id="edpi" aria-label="Galeria">'+ico('image',20)+'</button><button class="spill" id="eddst" aria-label="Escolher quem vê">'+ico('statusring',18)+'<span id="eddn"></span><i class="cdc">▾</i></button><button class="pubx2" id="edpub" aria-label="Publicar">'+ico('send',24)+'</button></div></div>';
@@ -5557,9 +5565,9 @@ function compose(target,pre,preCap){
     if(!(md&&md.k==='vid'&&md.dur>0)){strip.hidden=true;info.hidden=true;return}
     strip.hidden=false;info.hidden=false;
     const W=()=>strip.getBoundingClientRect().width||300,win=$('#edwin'),D=md.dur;
-    const upd=()=>{const w=W();win.style.left=(md.from/D*w)+'px';win.style.width=((md.to-md.from)/D*w)+'px';$('#edvt').textContent=fmt(md.to-md.from)+(md.size?' • '+fmtSize(md.size):'')};
+    const upd=()=>{const w=W();win.style.left=(md.from/D*w)+'px';win.style.width=((md.to-md.from)/D*w)+'px';const sp=split&&md.dur>31;win.style.display=sp?'none':'';$('#edvt').textContent=(sp?Math.min(10,Math.ceil(md.dur/30))+' partes de 30 s':fmt(md.to-md.from))+(md.size?' • '+fmtSize(md.size):'');$('#edvt').style.cursor=md.dur>31?'pointer':''};$('#edvt').onclick=()=>{if(md&&md.dur>31)askSplit()};
     const mu=()=>{$('#edmu').innerHTML=ico(md.mute?'volx':'vol',20)};mu();$('#edmu').onclick=()=>{md.mute=!md.mute;mu()};
-    const drag=(el,left)=>{el.onpointerdown=e=>{e.preventDefault();el.setPointerCapture(e.pointerId);const mv=ev=>{const r=strip.getBoundingClientRect(),t=Math.max(0,Math.min(D,(ev.clientX-r.left)/r.width*D));
+    const drag=(el,left)=>{el.onpointerdown=e=>{e.preventDefault();if(split){split=false;upd()}el.setPointerCapture(e.pointerId);const mv=ev=>{const r=strip.getBoundingClientRect(),t=Math.max(0,Math.min(D,(ev.clientX-r.left)/r.width*D));
         if(left){md.from=Math.max(0,Math.min(t,md.to-1));if(md.to-md.from>30)md.from=md.to-30}else{md.to=Math.min(D,Math.max(t,md.from+1));if(md.to-md.from>30)md.to=md.from+30}
         upd();const vd=document.querySelector('#edpv video');if(vd)vd.currentTime=left?md.from:Math.max(md.from,md.to-1)};
       const up=()=>{el.onpointermove=null;el.onpointerup=null;const vd=document.querySelector('#edpv video');if(vd){vd.currentTime=md.from;vd.play().catch(()=>{})}};
@@ -5569,10 +5577,14 @@ function compose(target,pre,preCap){
     upd();
   };
   const vidDur=(src,cb)=>{let dn=false;const ok=d=>{if(dn)return;dn=true;cb(d)};const t=document.createElement('video');t.preload='metadata';t.muted=true;t.onloadedmetadata=()=>{if(isFinite(t.duration)&&t.duration>0)return ok(t.duration);t.ontimeupdate=()=>{t.ontimeupdate=null;ok(isFinite(t.duration)?t.duration:0)};t.currentTime=1e7};t.onerror=()=>ok(0);setTimeout(()=>ok(0),6000);t.src=src};
+  const askSplit=cb=>{const n=Math.min(10,Math.ceil(md.dur/30));
+    showModal('<div class="splh"><span class="splic">✂️</span><b>Vídeo de '+fmt(md.dur)+'</b><small>O status aceita até 30 segundos. Como você quer postar?</small></div><button class="spo spm" id="sp1"><span class="spe">🎞️</span><span class="spt"><b>Dividir em '+n+' partes</b><small>'+n+' status de 30 s em sequência, com o vídeo todo</small></span></button><button class="spo" id="sp2"><span class="spe">✂️</span><span class="spt"><b>Escolher 30 segundos</b><small>Marque o trecho na barra de cortes</small></span></button><button class="spx" id="sp0">Agora não</button>');
+    $('#modal .mc').classList.add('am');
+    const pick=v=>()=>{split=v;closeModal();stripUI();if(cb)cb()};$('#sp1').onclick=pick(true);$('#sp2').onclick=pick(false);$('#sp0').onclick=pick(false)};
   const setMd=m=>{
-    const fin=mm=>{md=mm;const pv=$('#edpv');pv.innerHTML='';pv.appendChild(mediaEl(mm,true));pv.hidden=false;
+    const fin=mm=>{md=mm;split=null;const pv=$('#edpv');pv.innerHTML='';pv.appendChild(mediaEl(mm,true));pv.hidden=false;
       const vd=pv.querySelector('video');if(vd){vd.controls=false;vd.muted=true;vd.loop=true;vd.autoplay=true;vd.playsInline=true;vd.onloadedmetadata=()=>{vd.currentTime=mm.from||0};vd.ontimeupdate=()=>{if(mm.to&&vd.currentTime>=mm.to)vd.currentTime=mm.from||0};vd.play().catch(()=>{})}
-      $('#edth').innerHTML='';fx=0;pv.style.filter='';stk();stripUI();$('#edhint').hidden=mm.k!=='img';$('#edci').focus()};
+      $('#edth').innerHTML='';fx=0;pv.style.filter='';stk();stripUI();$('#edhint').hidden=mm.k!=='img';$('#edci').focus();if(mm.k==='vid'&&mm.dur>31)setTimeout(()=>askSplit(),300)};
     if(m.k==='img'&&String(m.src).startsWith('blob:')){m._orig=m.src;toData(m.src,d=>{m.src=d;fin(m)},hd);return}
     if(m.k==='vid'&&m.to==null){vidDur(m.src,d=>{if(d>0){m.dur=d;m.from=0;m.to=Math.min(30,d)}fin(m)});return}
     fin(m)};
@@ -5606,8 +5618,8 @@ function compose(target,pre,preCap){
     const go=()=>{
       if(md&&md.k==='vid'&&!md.dur&&!md._dq){md._dq=1;snack('Verificando o vídeo…');vidDur(md.src,d=>{if(d>0){md.dur=d;md.from=0;md.to=Math.min(30,d)}go()});return}
       if(md&&md.k==='vid'&&md.dur>31){
-        const n=Math.min(10,Math.ceil(md.dur/30));
-        dlg('Vídeo de '+fmt(md.dur),[['Cancelar'],['Só 30 s',()=>{post(md);done(1)}],['Dividir em '+n+' partes',()=>{const sh={};for(let i=0;i<n;i++){const part=Object.assign({},md,{from:i*30,to:Math.min(md.dur,(i+1)*30),__sh:sh});post(part)}done(n)}]],'O status aceita até 30 segundos. Posso dividir em partes de 30 segundos, cada uma vira um status em sequência.',true);return}
+        if(split===null){askSplit(go);return}
+        if(split){const n=Math.min(10,Math.ceil(md.dur/30)),sh={};for(let i=0;i<n;i++){post(Object.assign({},md,{from:i*30,to:Math.min(md.dur,(i+1)*30),__sh:sh}))}done(n);return}}
       post(md);done(1)};
     if(md&&md.k==='img'&&md._orig&&(fx||!hd)){toData(md._orig,d=>{md.src=d;go()},hd,FX[fx][1])}else go();
   };
