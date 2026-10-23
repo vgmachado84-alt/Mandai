@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-4250">
+<meta name="mandai-build" content="20261022-4270">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2329,18 +2329,20 @@ function renderStories(){
   el.innerHTML=items.join('');
   el.querySelectorAll('.st').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(k==='me'){mine.length?play([['me','Meu status',mine]]):compose()}else{const cs=chats.filter(x=>stat[x.id]&&!x.blocked),ix=cs.findIndex(x=>x.id==k);play(cs.slice(ix).map(c=>[String(c.id),c.name,stat[c.id]]))}});
 }
-function play(q){const[key,name,list]=q[0];sv={q,qi:0,key,name,list,i:0,timer:0};show()}
+function play(q,i0){const[key,name,list]=q[0];sv={q,qi:0,key,name,list,i:i0||0,timer:0};show()}
 function load(qi,last){const[key,name,list]=sv.q[qi];sv.key=key;sv.name=name;sv.list=list;sv.i=last?list.length-1:0}
 function show(){
   try{rtViewMark(sv.list[sv.i],sv.key)}catch(e){}
-  clearTimeout(sv.timer);const v=$('#viewer'),s=sv.list[sv.i],own=sv.key==='me';markSeen(sv.key,sv.list.length,sv.i+1);
+  clearTimeout(sv.timer);const v=$('#viewer'),s=sv.list[sv.i],own=sv.key==='me';
+  if(s&&s[4]&&s[4].remote&&!s[4].src){const sw=sv,sx=sw.i;v.hidden=false;v.style.background='#000';v.innerHTML='<div class="vt vm" style="display:grid;place-items:center;color:#fff;font-size:15px">Carregando…</div><div class="vh"><button class="x vgl" id="vx" aria-label="Fechar">'+ico('x',20)+'</button></div>';$('#vx').onclick=closeV;rtGet(s[4]).then(()=>{if(sv===sw&&sw.i===sx&&!$('#viewer').hidden)show()}).catch(()=>{snack('Não consegui carregar esse status. Tente de novo.');if(sv===sw)closeV()});return}
+  markSeen(sv.key,sv.list.length,sv.i+1);
   v.hidden=false;v.style.background=s[4]?'#000':sb[s[1]%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');v.classList.remove('paused');
   v.innerHTML=`<div class="bars">${sv.list.map((_,k)=>`<span class="bar"><i style="${k<sv.i?'width:100%':k===sv.i?'animation:fill 5s linear forwards':'width:0'}"></i></span>`).join('')}</div><div class="vh"><button class="x vgl" id="vx" aria-label="Fechar">${ico('x',20)}</button><span class="av">${own?'EU':ini(sv.name)}</span><div style="flex:1;min-width:0"><b>${sv.name}</b><br><small>${s[2]}${s[5]&&s[5].by?' · '+s[5].by:''}${own&&s[5]&&s[5].dur?' · expira em '+s[5].dur+' h':''}</small></div><button class="x vgl" id="vmore" aria-label="Mais opções">${ico('dots',20)}</button></div><div class="vt" id="vt"></div><button class="zl" id="zl" aria-label="Anterior"></button><button class="zr" id="zr" aria-label="Próximo"></button>${own?`<div class="vbar"><button class="eye" id="ve">${ico('eyev',24)}<span id="vn">${(s[3]||[]).length}</span> visualizações</button><button class="vshare" id="vsh" aria-label="Compartilhar">${ico('share',22)}</button></div>`:`<div class="vrp" id="vrp"><div class="vpl"><input id="vri" placeholder="Responder" aria-label="Responder ao status" autocomplete="off"><span class="vqe" id="vqe"><button data-e="😍" aria-label="😍">😍</button><button data-e="😂" aria-label="😂">😂</button></span><button class="vsd" id="vsd" aria-label="Enviar" hidden>${ico('send',22)}</button></div><button class="vhb${s._liked?' on':''}" id="vhb" aria-label="Curtir">${ico('heart',26)}</button></div>`}`;v.classList.toggle('hasvr',!own);
   const vt=$('#vt');if(s[4]){vt.classList.add('vm');vt.appendChild(mediaEl(s[4],true));if(s[0]){const cp=document.createElement('div');cp.className='scap';const ct=document.createElement('span');ct.className='scapt';ct.textContent=s[0];cp.appendChild(ct);v.appendChild(cp);const full=s[0],lm=()=>{const b=document.createElement('b');b.className='lermais';b.textContent='Ler mais';return b},fit=()=>{ct.textContent=full;if(ct.scrollHeight<=ct.clientHeight+2){cp.style.pointerEvents='none';cp.classList.remove('lg');return}cp.classList.add('lg');let lo=0,hi=full.length;while(lo<hi){const mid=(lo+hi+1)>>1;ct.textContent=full.slice(0,mid).trimEnd()+'… ';ct.appendChild(lm());if(ct.scrollHeight<=ct.clientHeight+2)lo=mid;else hi=mid-1}ct.textContent=full.slice(0,lo).trimEnd()+'… ';ct.appendChild(lm())};setTimeout(fit,0);cp.onpointerdown=e=>e.stopPropagation();cp.onclick=e=>{e.stopPropagation();if(cp.classList.contains('open')){cp.classList.remove('open');fit();v.classList.remove('paused');show();return}clearTimeout(sv.timer);v.classList.add('paused');const vd=v.querySelector('video');if(vd)vd.pause();cp.classList.add('open');ct.textContent=full}}}else vt.textContent=s[0];addExtras(vt,s);
   $('#vx').onclick=closeV;$('#zl').onclick=zone(()=>{if(sv.i>0)sv.i--;else if(sv.qi>0){sv.qi--;load(sv.qi,1)}show()});$('#zr').onclick=zone(next);v.onpointerdown=e=>{_sy=e.clientY;_sx=e.clientX;_swiped=false;holdStart(e)};v.onpointercancel=v.onpointerleave=holdEnd;v.onpointerup=e=>{holdEnd();if(own||!$('#vt'))return;if(_sy-e.clientY>70&&Math.abs(e.clientX-_sx)<90){_swiped=true;openQR()}};
   $('#vmore').onclick=e=>{e.stopPropagation();viewerMenu($('#vmore'),own)};
   if(own){$('#ve').onclick=viewers;$('#vsh').onclick=e=>{e.stopPropagation();shareSt()}}else wireReply();
-  const vd=vt.querySelector('video');if(vd){vd.controls=false;if(s[4]&&s[4].filter)vd.style.filter=s[4].filter;vd.muted=!!(s[4]&&s[4].mute);if(s[4]&&s[4].poster)vd.poster=s[4].poster;vd.playsInline=true;setTimeout(()=>{if(vd.isConnected&&vd.paused&&!v.classList.contains('paused')){const pb=document.createElement('button');pb.className='vplay';pb.setAttribute('aria-label','Tocar vídeo');pb.innerHTML=ico('play',34);pb.onclick=e=>{e.stopPropagation();vd.muted=!!(s[4]&&s[4].mute);vd.play().then(()=>pb.remove()).catch(()=>{})};vt.appendChild(pb)}},1400);vd.onended=next;vd.onerror=next;const m4=s[4]||{},f4=m4.from||0,t4=m4.to||0;vd.onloadedmetadata=()=>{if(f4)vd.currentTime=f4;const bi=document.querySelector('.bar i[style*="animation"]');const dd=(t4||vd.duration)-f4;if(bi&&isFinite(dd))bi.style.animationDuration=dd+'s'};if(t4)vd.ontimeupdate=()=>{if(vd.currentTime>=t4)next()};vd.play().catch(()=>{vd.muted=true;vd.play().catch(()=>{})})}else{sv.left=5000;sv.t0=Date.now();sv.timer=setTimeout(next,5000)}
+  const vd=vt.querySelector('video');if(vd){vd.controls=false;if(s[4]&&s[4].filter)vd.style.filter=s[4].filter;vd.muted=!!(s[4]&&s[4].mute);if(s[4]&&s[4].poster)vd.poster=s[4].poster;vd.playsInline=true;setTimeout(()=>{if(vd.isConnected&&vd.paused&&!v.classList.contains('paused')){const pb=document.createElement('button');pb.className='vplay';pb.setAttribute('aria-label','Tocar vídeo');pb.innerHTML=ico('play',34);pb.onclick=e=>{e.stopPropagation();vd.muted=!!(s[4]&&s[4].mute);vd.play().then(()=>pb.remove()).catch(()=>{})};vt.appendChild(pb)}},1400);vd.onended=next;vd.onerror=()=>{if(!vd.getAttribute('src')||/null/.test(vd.getAttribute('src')))return;snack('Não consegui reproduzir esse vídeo');next()};const m4=s[4]||{},f4=m4.from||0,t4=m4.to||0;vd.onloadedmetadata=()=>{if(f4)vd.currentTime=f4;const bi=document.querySelector('.bar i[style*="animation"]');const dd=(t4||vd.duration)-f4;if(bi&&isFinite(dd))bi.style.animationDuration=dd+'s'};if(t4)vd.ontimeupdate=()=>{if(vd.currentTime>=t4)next()};vd.play().catch(()=>{vd.muted=true;vd.play().catch(()=>{})})}else{sv.left=5000;sv.t0=Date.now();sv.timer=setTimeout(next,5000)}
 }
 function statusReply(text){
   const c=chats.find(z=>String(z.id)===sv.key),st=sv.list&&sv.list[sv.i];if(!c||!st||!text)return;
@@ -4302,12 +4304,14 @@ function statusPage(){purgeMine();
       mine.forEach((st,ix)=>{
         const b=mk('div','msi'),th=mk('button','mth'),tx=mk('button','mtx'),mn=mk('button','mmn');
         const md=st[4];
-        if(md&&md.k==='img')th.style.background='url('+md.src+') center/cover';
+        if(md&&md.remote&&!md.src)rtGet(md).then(()=>{if(!$('#stp').hidden)paint()}).catch(()=>{});
+        if(md&&md.k==='img'&&md.src)th.style.background='url('+md.src+') center/cover';
+        else if(md&&md.k==='vid'&&md.src){th.style.background='#222';th.style.position='relative';const tv=document.createElement('video');tv.src=md.src+'#t=0.1';tv.muted=true;tv.preload='metadata';tv.playsInline=true;tv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';th.appendChild(tv)}
         else{th.style.background=sb[(st[1]||0)%sb.length];if(!md){th.textContent=(st[0]||'').slice(0,12);th.classList.add('t')}}
         const n=(st[3]||[]).length,nl=stLikes(st).size;
         tx.append(mk('b',0,(n===1?'1 visualização':n+' visualizações')+(nl?' · 💜 '+nl:'')),mk('small',0,st[2]==='agora'?'Agora há pouco':st[2]));
         mn.innerHTML=ico('dots',20);mn.setAttribute('aria-label','Mais opções');
-        const open=()=>{play([['me','Meu status',mine]]);sv.i=ix;show()};
+        const open=()=>{play([['me','Meu status',mine]],ix)};
         th.onclick=tx.onclick=open;
         mn.onclick=e=>{e.stopPropagation();dlg('Excluir este status?',[['Cancelar'],['Excluir',()=>{rtStatusDel(mine[ix]);mine.splice(ix,1);renderStories();paint();snack('Status excluído')}]],'Ele deixa de aparecer para os seus contatos.',true)};
         b.append(th,tx,mn);list.appendChild(b)});
@@ -5592,12 +5596,17 @@ function compose(target,pre,preCap){
   };
   $('#edpub').onclick=()=>{
     const tx=((md||poll)?$('#edci').value:$('#edtx').value).trim();if(!tx&&!md&&!poll&&!loc&&!music){$('#edtx').focus();return}
+    const post=m=>{
+      if(m){delete m._orig;delete m._file;m.hd=hd;if(m.k==='vid'&&fx)m.filter=FX[fx][1]}
+      const st=[tx,c,'agora',[],m,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music}];
+      if(dest){st[5].by='Você';(stat[dest.id]=stat[dest.id]||[]).push(st);seen[dest.id]=true;seenCnt[String(dest.id)]=stat[dest.id].length;return}
+      mine.push(st);if(rtOn())rtStatusPublish(st);else{simViews(st);simVotes(st)}seen.me=false};
+    const done=n=>{sv.key='';S.stBg=c;closeV();snack(dest?'Status publicado no grupo '+dest.name:(n>1?n+' status publicados por '+dur+' h':'Status publicado por '+dur+' h'))};
     const go=()=>{
-      if(md){delete md._orig;delete md._file;md.hd=hd;if(md.k==='vid'&&fx)md.filter=FX[fx][1]}
-      const st=[tx,c,'agora',[],md,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music}];
-      if(dest){st[5].by='Você';(stat[dest.id]=stat[dest.id]||[]).push(st);seen[dest.id]=true;seenCnt[String(dest.id)]=stat[dest.id].length;sv.key='';S.stBg=c;closeV();snack('Status publicado no grupo '+dest.name);return}
-      mine.push(st);if(rtOn())rtStatusPublish(st);else{simViews(st);simVotes(st)}seen.me=false;sv.key='';S.stBg=c;closeV();snack('Status publicado por '+dur+' h');
-    };
+      if(md&&md.k==='vid'&&md.dur>31){
+        const n=Math.min(10,Math.ceil(md.dur/30));
+        dlg('Vídeo de '+fmt(md.dur),[['Cancelar'],['Só 30 s',()=>{post(md);done(1)}],['Dividir em '+n+' partes',()=>{const sh={};for(let i=0;i<n;i++){const part=Object.assign({},md,{from:i*30,to:Math.min(md.dur,(i+1)*30),__sh:sh});post(part)}done(n)}]],'O status aceita até 30 segundos. Posso dividir em partes de 30 segundos, cada uma vira um status em sequência.',true);return}
+      post(md);done(1)};
     if(md&&md.k==='img'&&md._orig&&(fx||!hd)){toData(md._orig,d=>{md.src=d;go()},hd,FX[fx][1])}else go();
   };
   if(pre){setMd(pre);if(preCap)$('#edci').value=preCap}
@@ -6459,7 +6468,7 @@ function stOpen(rq){const c=cur;let key=null,list=null,idx=-1;
   if(f(mine)>=0){key='me';list=mine;idx=f(mine)}
   else if(c&&stat[c.id]&&f(stat[c.id])>=0){key=String(c.id);list=stat[c.id];idx=f(stat[c.id])}
   if(!list){snack('Este status não está mais disponível');return}
-  play([[key,key==='me'?'Meu status':c.name,list]]);sv.i=idx;show()}
+  play([[key,key==='me'?'Meu status':c.name,list]],idx)}
 function jumpTo(rq){const c=cur;if(!c)return;if(rq.who==='Status'){stOpen(rq);return}let tg=rq.m;if(!tg&&rq.to)tg=c.msgs.find(z=>z[5]&&z[5].rid===rq.to);
   if(!tg&&rq.text){const t0=String(rq.text).replace(/^\S+\s/,'');tg=[...c.msgs].reverse().find(z=>z[1]&&(z[1]===rq.text||z[1]===t0))}
   if(tg)showMsg(tg);const box=$('#msgs'),el=tg&&[...box.children].find(x=>x._m===tg);if(!el){snack('A mensagem original não está mais aqui');return}
@@ -6489,15 +6498,18 @@ async function rtStatusLoad(){
     (r.data||[]).forEach(rtStPlace);renderStories();try{renderList()}catch(e){}rtViewsLoad()}catch(e){}}
 async function rtStatusPublish(st){
   try{const md=st[4];let dm=null;
-    if(md&&md.src){const bl=await (await fetch(md.src)).blob();const ex=md.k==='vid'?'webm':'jpg';
-      const path='status/'+RT.uid+'/'+(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random().toString(16).slice(2))+'.'+ex;
-      const up=await SB.storage.from('midia').upload(path,bl,{contentType:bl.type||(md.k==='vid'?'video/webm':'image/jpeg')});if(up.error)throw up.error;
-      dm={k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note}}
+    if(md&&md.src){const sh=md.__sh;
+      const upl=async()=>{const bl=await (await fetch(md.src)).blob();const ex=md.k==='vid'?'webm':'jpg';
+        const pa='status/'+RT.uid+'/'+(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random().toString(16).slice(2))+'.'+ex;
+        const up=await SB.storage.from('midia').upload(pa,bl,{contentType:bl.type||(md.k==='vid'?'video/webm':'image/jpeg')});if(up.error)throw up.error;return pa};
+      let path;if(sh){if(!sh.p)sh.p=upl();path=await sh.p}else path=await upl();
+      md.path=path;
+      dm={k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note,from:md.from,to:md.to,dur:md.dur}}
     const x=st[5]||{};
     const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,poll:x.poll,md:dm}}).select('id').single();
     if(ins.error)throw ins.error;st.sid=ins.data.id;RT.sids=RT.sids||new Set();RT.sids.add(ins.data.id);if(x.poll){x.poll.vk=ins.data.id;RT.polls=RT.polls||{};RT.polls[ins.data.id]=x.poll}}
   catch(e){rtErr(e);snack('Não consegui publicar o status para os contatos. Verifique a internet e o arquivo 6 do banco.')}}
-async function rtStatusDel(st){try{if(st&&st.sid){await SB.from('status').delete().eq('id',st.sid);const p=st[4]&&st[4].path;if(p)SB.storage.from('midia').remove([p])}}catch(e){}}
+async function rtStatusDel(st){try{if(st&&st.sid){await SB.from('status').delete().eq('id',st.sid);const p=st[4]&&st[4].path;if(p&&!mine.some(x=>x!==st&&x[4]&&x[4].path===p))SB.storage.from('midia').remove([p])}}catch(e){}}
 /* presença: digitando, gravando áudio, online */
 function rtActShow(c){try{if(cur===c){const e=$('#st');if(e)e.textContent=sub(c)}renderList()}catch(e){}}
 function rtAct(k,force){try{if(!rtOn()||!RT.actCh||!cur||!cur.rid)return;const now=Date.now();
