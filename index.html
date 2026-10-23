@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4690">
+<meta name="mandai-build" content="20261023-4700">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -4529,6 +4529,9 @@ function vidSnap(md,cb){if(md._th)return cb(md._th);_vsq.push([md,cb]);if(_vsb)r
     v.onloadeddata=()=>seek();
     v.onseeked=()=>setTimeout(()=>{try{const k=96/Math.max(v.videoWidth||96,v.videoHeight||96),c=document.createElement('canvas');c.width=Math.max(1,Math.round(v.videoWidth*k));c.height=Math.max(1,Math.round(v.videoHeight*k));const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);let sm=0;const dt=x.getImageData(0,0,c.width,c.height).data,n=dt.length/4;for(let i=0;i<dt.length;i+=4)sm+=dt[i]*.3+dt[i+1]*.6+dt[i+2]*.1;if(sm/n<12&&++ti<fr.length){seek();return}end(c.toDataURL('image/jpeg',.7))}catch(e){end('')}},150);
     v.onerror=()=>end('');setTimeout(()=>end(''),9000);v.src=m.src};nx()}
+function stPoster(md,cb){let dn=false;const ok=u=>{if(dn)return;dn=true;cb(u&&u.length<14000?u:'')};setTimeout(()=>ok(''),12000);
+  try{if(!md||!md.src)return ok('');if(md.k==='vid')return vidSnap(md,ok);
+    if(md.k==='img'){const im=new Image();im.onload=()=>{try{const k=96/Math.max(im.width,im.height),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.6))}catch(e){ok('')}};im.onerror=()=>ok('');im.src=md.src;return}}catch(e){}ok('')}
 function statusPage(){purgeMine();
   openPage('stp','Meu status',el=>{
     el.classList.add('mystp');
@@ -4540,6 +4543,7 @@ function statusPage(){purgeMine();
         const md=st[4];
         if(md&&md.remote&&!md.src)rtGet(md).then(()=>{if(!$('#stp').hidden)paint()}).catch(()=>{});
         if(md&&md.k==='img'&&md.src)th.style.background='url('+md.src+') center/cover';
+        else if(md&&md.poster&&!md.src)th.style.background='url('+md.poster+') center/cover';
         else if(md&&md.k==='vid'&&md.src){th.style.background=md._th?'url('+md._th+') center/cover':'#222';if(!md._th)vidSnap(md,u=>{if(u)th.style.background='url('+u+') center/cover'})}
         else{th.style.background=sb[(st[1]||0)%sb.length];if(!md){th.textContent=(st[0]||'').slice(0,12);th.classList.add('t')}}
         const n=(st[3]||[]).length,nl=stLikes(st).size;
@@ -6897,7 +6901,8 @@ async function rtStatusPublish(st){
         const up=await SB.storage.from('midia').upload(pa,bl,{contentType:bl.type||(md.k==='vid'?'video/webm':'image/jpeg')});if(up.error)throw up.error;md.mime=bt||undefined;return pa};
       let path;if(sh){if(!sh.p)sh.p=upl();path=await sh.p}else path=await upl();
       md.path=path;
-      dm={k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note,from:md.from,to:md.to,dur:md.dur,mime:md.mime}}
+      if(!md.poster||md.k==='vid'){const po=await new Promise(r=>stPoster(md,r));if(po)md.poster=po}
+      dm={poster:md.poster&&md.poster.length<14000?md.poster:undefined,k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note,from:md.from,to:md.to,dur:md.dur,mime:md.mime}}
     const x=st[5]||{};
     const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,stks:x.stks,poll:x.poll,md:dm}}).select('id').single();
     if(ins.error)throw ins.error;st.sid=ins.data.id;RT.sids=RT.sids||new Set();RT.sids.add(ins.data.id);if(x.poll){x.poll.vk=ins.data.id;RT.polls=RT.polls||{};RT.polls[ins.data.id]=x.poll}}
