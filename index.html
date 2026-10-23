@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4600">
+<meta name="mandai-build" content="20261023-4620">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -3411,10 +3411,11 @@ function openCam(cb,m0,opts){
     try{const wa=mode!=='foto';try{stream=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:facing},camC()),audio:wa?{echoCancellation:true,noiseSuppression:true,autoGainControl:true}:false})}catch(e1){if(!wa)throw e1;stream=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:facing},camC()),audio:false})}el.classList.toggle('mir',facing==='user');if(v)v.srcObject=stream;else stopS()}
     catch(e){const m=$('#cerr');if(m){m.hidden=false;if(/NotAllowed|Security/.test((e&&e.name)||''))m.textContent=permText('cam')}}
   }
+  let canvasRec=false;const drawOn0=()=>canvasRec;
   async function flip(){
     const old=facing;facing=facing==='user'?'environment':'user';
     if(!rec){start();return}
-    facing=old;snack('Pare a gravação para virar a câmera.');return;
+    if(!drawOn0()){facing=old;snack('Pare a gravação para virar a câmera.');return}
     try{const ns=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:facing},camC()),audio:false});const os=stream,v=$('#cv');stream=ns;if(v)v.srcObject=ns;el.classList.toggle('mir',facing==='user');if(os)os.getVideoTracks().forEach(k=>k.stop())}
     catch(e){facing=old;snack('Não consegui virar a câmera agora.')}
   }
@@ -3424,11 +3425,14 @@ function openCam(cb,m0,opts){
     if(rec){mr.stop();return}
     if(!stream)return;
     let tracks=[...stream.getVideoTracks()],drawOn=false;
+    try{const v0=$('#cv');if(v0&&v0.requestVideoFrameCallback&&window.CanvasCaptureMediaStreamTrack&&CanvasCaptureMediaStreamTrack.prototype.requestFrame){
+      const vw=v0.videoWidth||1280,vh=v0.videoHeight||720,kk=Math.min(1,1280/Math.max(vw,vh)),cvs=document.createElement('canvas');cvs.width=Math.round(vw*kk)&~1;cvs.height=Math.round(vh*kk)&~1;const g=cvs.getContext('2d',{alpha:false}),cs=cvs.captureStream(0),ct=cs.getVideoTracks()[0];
+      if(ct&&ct.requestFrame){drawOn=true;const pump=()=>{if(!drawOn)return;const vv=$('#cv');if(!vv||!vv.requestVideoFrameCallback){return}vv.requestVideoFrameCallback(()=>{if(!drawOn)return;try{if(vv.videoWidth){const sc=Math.max(cvs.width/vv.videoWidth,cvs.height/vv.videoHeight),w=vv.videoWidth*sc,h=vv.videoHeight*sc;g.drawImage(vv,(cvs.width-w)/2,(cvs.height-h)/2,w,h);ct.requestFrame()}}catch(e){}pump()})};g.fillRect(0,0,cvs.width,cvs.height);pump();tracks=[ct]}}}catch(e){drawOn=false;tracks=[...stream.getVideoTracks()]}
     {let a=stream.getAudioTracks()[0];if(!a||a.readyState!=='live')a=await getMic();if(a)tracks.push(a);else snack('Sem acesso ao microfone: o vídeo vai sem som. Libere o microfone nas permissões do navegador.')}
     const chunks=[];let tot=0;{const ms=new MediaStream(tracks);let mt='';try{mt=['video/webm;codecs=h264,opus','video/webm;codecs=vp8,opus','video/mp4;codecs=avc1,mp4a.40.2'].find(x=>MediaRecorder.isTypeSupported(x))||''}catch(e){}try{mr=new MediaRecorder(ms,Object.assign(mt?{mimeType:mt}:{},{videoBitsPerSecond:/h264|mp4/.test(mt)?3000000:2500000,audioBitsPerSecond:128000}))}catch(e){try{mr=new MediaRecorder(ms)}catch(e2){mr=new MediaRecorder(ms)}}}
     mr.ondataavailable=e=>{chunks.push(e.data);tot+=(e.data&&e.data.size)||0;if(tot>45*1048576&&mr.state!=='inactive')mr.stop()};
-    mr.onstop=()=>{clearInterval(tk);rec=false;drawOn=false;tracks.forEach(k=>{if(k.kind==='audio')k.stop()});mic=null;try{const as=stream&&stream.getAudioTracks();if(as)as.forEach(k=>k.stop())}catch(e){}const b=new Blob(chunks,{type:String(mr.mimeType||'video/webm').split(';')[0]});review({k:'vid',src:URL.createObjectURL(b),name:'video',mime:b.type,size:fmtSize(b.size),note:mode==='note'})};
-    window._vdgRec='Gravação: '+String(mr.mimeType||'?').split(';')[0]+' · trilhas de áudio: '+tracks.filter(k=>k.kind==='audio').length;
+    mr.onstop=()=>{clearInterval(tk);rec=false;drawOn=false;canvasRec=false;tracks.forEach(k=>{if(k.kind==='audio')k.stop()});mic=null;try{const as=stream&&stream.getAudioTracks();if(as)as.forEach(k=>k.stop())}catch(e){}const b=new Blob(chunks,{type:String(mr.mimeType||'video/webm').split(';')[0]});review({k:'vid',src:URL.createObjectURL(b),name:'video',mime:b.type,size:fmtSize(b.size),note:mode==='note'})};
+    canvasRec=drawOn;window._vdgRec=(drawOn?'[canvas] ':'')+'Gravação: '+String(mr.mimeType||'?').split(';')[0]+' · trilhas de áudio: '+tracks.filter(k=>k.kind==='audio').length;
     mr.start(1000);rec=true;el.classList.add('recing');const t0=Date.now(),rt=$('#ct2');rt.hidden=false;$('#sh').classList.add('rec');if(mode==='note'){const cv0=document.querySelector('.cvid');if(cv0&&!$('#cring')){const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.id='cring';sv.setAttribute('viewBox','0 0 100 100');sv.innerHTML='<circle cx="50" cy="50" r="49" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="307.9" stroke-dashoffset="307.9" transform="rotate(-90 50 50)"/>';cv0.appendChild(sv)}}
     const LIM=mode==='note'?60:LIMIT;tk=setInterval(()=>{const s=(Date.now()-t0)/1000;rt.textContent=fmt(s);const pr=LIM?Math.min(1,s/LIM):0;const sh0=$('#sh');if(sh0)sh0.style.setProperty('--p',pr);const rg=document.querySelector('#cring circle');if(rg)rg.style.strokeDashoffset=307.9*(1-pr);if(LIM&&s>=LIM&&mr.state!=='inactive')mr.stop()},100);
   }
@@ -6569,7 +6573,7 @@ async function rtLoad(){
     if(a.error)throw a.error;
     const rows=(a.data||[]).filter(x=>x.conversas);
     const ids=rows.filter(x=>x.conversas.tipo==='direta').map(x=>x.conversa_id),gids=rows.filter(x=>x.conversas.tipo==='grupo').map(x=>x.conversa_id),all=ids.concat(gids);
-    if(!all.length){renderList();return}
+    if(!all.length){if(RT.stale){chats.length=0;RT.stale=false}renderList();return}
     const none={data:[]};
     const [o,m,gc,gp]=await Promise.all([
       ids.length?SB.from('participantes').select('conversa_id,perfis(id,usuario,nome,telefone)').in('conversa_id',ids).neq('usuario_id',RT.uid):none,
@@ -6577,6 +6581,7 @@ async function rtLoad(){
       gids.length?SB.from('conversas').select('*').in('id',gids):none,
       gids.length?SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,suspenso_ate,perfis(id,usuario,nome,telefone)').in('conversa_id',gids):none]);
     if(o.error)throw o.error;
+    if(RT.stale){chats.length=0;RT.stale=false}
     (o.data||[]).forEach(x=>{if(x.perfis){const c=rtChat(x.conversa_id,x.perfis),seg=(rows.find(z=>z.conversa_id===x.conversa_id).conversas||{}).mensagens_temporarias_seg;c.dis=seg?seg/3600:0;c._srv=rtGSnap(c)}});
     (gc.data||[]).forEach(cv=>rtGroupApply(cv,(gp.data||[]).filter(q=>q.conversa_id===cv.id)));
     (m.data||[]).slice().sort((a,b)=>a.criado_em<b.criado_em?-1:1).forEach(r=>rtPush(r,true));
@@ -6777,7 +6782,7 @@ async function realStart(){
   let u=null;try{const ss=await SB.auth.getSession();u=ss&&ss.data&&ss.data.session&&ss.data.session.user}catch(e){}
   if(!u||(RT.on&&RT.uid===u.id))return;
   RT.uid=u.id;RT.since=Date.parse(u.created_at)||0;if(!me.email&&u.email)me.email=u.email;RT.on=true;window._demoOff=true;setTimeout(()=>{try{checkSusp()}catch(e){}},1500);try{SB.rpc('registrar_acesso',{p_evento:'entrada',p_agente:''}).then(()=>{},()=>{})}catch(e){}
-  chats.length=0;requests.length=0;Object.keys(stat).forEach(k=>delete stat[k]);renderList();
+  if(chats.some(c=>c.rid))RT.stale=true;else chats.length=0;requests.length=0;Object.keys(stat).forEach(k=>delete stat[k]);renderList();
   try{const pf=await SB.from('perfis').select('telefone').eq('id',u.id).maybeSingle();
     if(pf&&pf.data&&pf.data.telefone&&!me.phone){me.phone='+'+pf.data.telefone;saveAcc()}
     else if(me.phone&&!(pf&&pf.data&&pf.data.telefone))rtSavePhone(true)}catch(e){}
