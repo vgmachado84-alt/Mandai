@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261023-4340">
+<meta name="mandai-build" content="20261023-4350">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2168,7 +2168,9 @@ function delSel(){
   $('#dy').onclick=()=>{closeModal();selC=[];paintSelBar();softDel(L);snack(T.sn)};
 }
 /* canal oficial: avisos do Bippy para todos (só leitura) */
-var OFF={list:[],ok:false,adm:undefined,pg:null};
+var OFF={list:[],ok:false,adm:undefined,pg:null,prof:{nome:'Bippy',foto:'',desc:''}};
+function offAv(){const f=OFF.prof.foto;return f?'<img alt="" src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<img alt="" src="'+BIPPY_MARK+'" style="width:62%;height:62%;object-fit:contain;margin:19%">'}
+const offAvSt='background:#fff;padding:0;overflow:hidden;border-radius:50%';
 const offTs=x=>Date.parse(x.criado_em)||0;
 function offSeen(){try{return Number(localStorage.getItem('bippy.offseen'))||0}catch(e){return 0}}
 function offMarkSeen(){try{const l=OFF.list;if(l.length)localStorage.setItem('bippy.offseen',String(Math.max(...l.map(offTs))))}catch(e){}}
@@ -2178,14 +2180,15 @@ const OFF_CHK='<svg width="15" height="15" viewBox="0 0 24 24" aria-label="Conta
 function offRow(){
   if(!OFF.ok||!OFF.list.length)return;
   const last=OFF.list[OFF.list.length-1],un=offUnread(),w=mk('div','rw'),b=mk('button','row');
-  b.innerHTML='<div class="av" style="background:#fff;padding:0;overflow:hidden"><img alt="" src="'+BIPPY_MARK+'" style="width:100%;height:100%;object-fit:contain"></div><div class="meta"><b>Bippy'+OFF_CHK+'</b><span></span></div><div class="when"><span class="tm'+(un?' un':'')+'"></span>'+(un?'<span class="w2"><span class="badge">'+un+'</span></span>':'')+'</div>';
-  b.querySelector('.meta span').textContent=last.texto.replace(/\s+/g,' ').slice(0,70);{const d=new Date(last.criado_em);b.querySelector('.tm').textContent=d.toDateString()===new Date().toDateString()?d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('pt-BR')}
+  b.innerHTML='<div class="av" style="'+offAvSt+'">'+offAv()+'</div><div class="meta"><b></b><span></span></div><div class="when"><span class="tm'+(un?' un':'')+'"></span>'+(un?'<span class="w2"><span class="badge">'+un+'</span></span>':'')+'</div>';
+  b.querySelector('.meta b').insertAdjacentText('afterbegin',OFF.prof.nome||'Bippy');b.querySelector('.meta b').insertAdjacentHTML('beforeend',OFF_CHK);b.querySelector('.meta span').textContent=last.texto.replace(/\s+/g,' ').slice(0,70);{const d=new Date(last.criado_em);b.querySelector('.tm').textContent=d.toDateString()===new Date().toDateString()?d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('pt-BR')}
   b.onclick=offPage;w.appendChild(b);$('#list').appendChild(w);
 }
 async function offLoad(){
   if(typeof rtOn!=='function'||!rtOn())return;
-  try{const r=await SB.from('avisos_oficiais').select('id,texto,criado_em').order('criado_em').limit(200);if(r.error||!r.data)return;
-    const had=OFF.ok?OFF.list.length:-1,sig=JSON.stringify(r.data.map(x=>x.id));if(OFF.ok&&sig===OFF._sig)return;
+  try{const [r,pr]=await Promise.all([SB.from('avisos_oficiais').select('id,texto,criado_em').order('criado_em').limit(200),SB.from('canal_oficial').select('nome,foto,descricao').eq('id',1).maybeSingle().then(x=>x,()=>({}))]);if(r.error||!r.data)return;
+    if(pr&&pr.data)OFF.prof={nome:pr.data.nome||'Bippy',foto:pr.data.foto||'',desc:pr.data.descricao||''};
+    const had=OFF.ok?OFF.list.length:-1,sig=JSON.stringify(r.data.map(x=>x.id))+JSON.stringify(OFF.prof).length+(OFF.prof.nome||'')+(OFF.prof.desc||'')+(OFF.prof.foto||'').length;if(OFF.ok&&sig===OFF._sig)return;
     OFF._sig=sig;OFF.list=r.data;OFF.ok=true;
     const open=OFF.pg&&OFF.pg.el&&document.body.contains(OFF.pg.el);
     if(open){offMarkSeen();OFF.pg.paint()}else if(had>=0&&OFF.list.length>had)snack('Novo aviso do Bippy');
@@ -2195,9 +2198,9 @@ async function offLoad(){
 }
 function offPage(){
   try{closePages()}catch(e){}cur=null;$('#app').classList.add('open');
-  $('#main').innerHTML='<div class="head"><button class="ib back" id="offback" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="av" style="background:#fff;padding:0;overflow:hidden"><img alt="" src="'+BIPPY_MARK+'" style="width:100%;height:100%;object-fit:contain"></div><div class="meta"><b>Bippy'+OFF_CHK+'</b><span>Conta oficial</span></div></div><div class="msgs" id="offmsgs"></div><div class="compose" id="offbar" style="justify-content:center"></div>';
+  $('#main').innerHTML='<div class="head"><button class="ib back" id="offback" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="av" id="offav" style="'+offAvSt+'">'+offAv()+'</div><div class="meta" id="offmeta"><b></b><span>Conta oficial</span></div></div><div class="msgs" id="offmsgs"></div><div class="compose" id="offbar" style="justify-content:center"></div>';
   const head=$('#main .head'),box=$('#offmsgs'),bar=$('#offbar');
-  const paint=()=>{box.innerHTML='';
+  const paint=()=>{box.innerHTML='';$('#offav').innerHTML=offAv();{const b=$('#offmeta b');b.textContent=OFF.prof.nome||'Bippy';b.insertAdjacentHTML('beforeend',OFF_CHK)}
     const lk=_st(mk('div',0,'🔒 Conta oficial. Só a equipe do Bippy envia mensagens aqui.'),'align-self:center;text-align:center;background:color-mix(in srgb,var(--panel) 90%,transparent);color:var(--mute);font-size:12.5px;padding:7px 12px;border-radius:12px;margin:2px 0 10px;max-width:90%');box.appendChild(lk);
     let lastDay='';
     OFF.list.forEach(x=>{const d=new Date(x.criado_em),dk=d.toDateString();
@@ -2210,9 +2213,31 @@ function offPage(){
     else{bar.appendChild(_st(mk('div',0,'Somente a equipe do Bippy pode enviar mensagens'),'flex:1;text-align:center;color:var(--mute);font-size:14px;padding:13px 12px;border-radius:22px;background:color-mix(in srgb,var(--panel) 92%,transparent)'))}
     setTimeout(()=>{box.scrollTop=box.scrollHeight},0)};
   OFF.pg={el:head,paint};paint();offMarkSeen();try{renderList()}catch(e){}
+  $('#offav').onclick=$('#offmeta').onclick=offProfile;$('#offav').style.cursor=$('#offmeta').style.cursor='pointer';
   $('#offback').onclick=()=>{OFF.pg=null;$('#app').classList.remove('open');try{renderList()}catch(e){}};
   if(OFF.adm===undefined)offLoad().then(()=>{if(OFF.adm)paint()});
 }
+function offProfile(){
+  const box=overlayPage('Perfil',50),el=box.parentElement;
+  const paint=()=>{box.innerHTML='';
+    const av=_st(mk('div',0),'width:120px;height:120px;margin:14px auto 12px;'+offAvSt+';box-shadow:0 2px 14px rgba(0,0,0,.18)');av.innerHTML=offAv();
+    const nm=_st(mk('div',0),'text-align:center;font-size:22px;font-weight:700');nm.textContent=OFF.prof.nome||'Bippy';nm.insertAdjacentHTML('beforeend',OFF_CHK);
+    const sb=_st(mk('div',0,'Conta oficial'),'text-align:center;color:var(--mute);margin-top:2px');
+    const ds=_st(mk('div',0),'background:var(--panel);border-radius:16px;padding:14px;margin-top:18px;line-height:1.5');ds.innerHTML='<small style="color:var(--mute)">Recado</small><div></div>';ds.lastChild.textContent=OFF.prof.desc||'Conta oficial do Bippy.';
+    const lk=_st(mk('p',0,'🔒 Só a equipe do Bippy envia mensagens nesta conversa.'),'text-align:center;color:var(--mute);font-size:13px;margin-top:14px');
+    box.append(av,nm,sb,ds,lk);
+    if(OFF.adm){
+      const b1=mk('button','btn','Alterar foto'),b2=mk('button','btn ghost','Editar nome e recado'),b3=mk('button','btn ghost','Voltar à logo padrão');[b1,b2,b3].forEach(x=>x.style.cssText='width:100%;margin-top:10px');b1.style.marginTop='18px';
+      b1.onclick=()=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>{const f=i.files[0];if(!f)return;const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const k=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=256;c.getContext('2d').drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,256,256);offSave(null,null,c.toDataURL('image/jpeg',.82),true,paint)};im.onerror=()=>snack('Não consegui ler essa imagem');im.src=u};i.click()};
+      b2.onclick=()=>{showModal('<h3>Editar perfil</h3><label class="fld"><input id="opn" maxlength="40" placeholder="Nome" autocomplete="off"></label><label class="fld"><textarea id="opd" maxlength="300" rows="4" placeholder="Recado" style="width:100%;resize:none"></textarea></label><button class="btn" id="ops">Salvar</button><button class="btn ghost" id="opc">Cancelar</button>');$('#opn').value=OFF.prof.nome||'Bippy';$('#opd').value=OFF.prof.desc||'';$('#opc').onclick=closeModal;$('#ops').onclick=()=>{const n=$('#opn').value.trim();if(!n){$('#opn').focus();return}const d=$('#opd').value.trim();closeModal();offSave(n,d,null,false,paint)}};
+      b3.onclick=()=>offSave(null,null,null,true,paint);
+      box.append(b1,b2,b3)}
+  };
+  OFF.pp=paint;paint()}
+async function offSave(nome,desc,foto,mudar,done){
+  try{const r=await SB.rpc('admin_editar_canal',{p_nome:nome||OFF.prof.nome||'Bippy',p_desc:desc==null?(OFF.prof.desc||''):desc,p_foto:foto,p_mudar_foto:!!mudar});if(r.error)throw r.error;
+    OFF._sig='';await offLoad();if(OFF.pg&&OFF.pg.paint)OFF.pg.paint();if(done)done();snack('Perfil atualizado')}
+  catch(e){rtErr(e);snack('Não consegui salvar. Rode o arquivo banco 21 no Supabase.')}}
 function offCompose(){
   showModal('<h3>Aviso para todos</h3><label class="fld"><textarea id="ofx" maxlength="1500" rows="6" placeholder="Escreva o aviso…" style="width:100%;resize:none"></textarea></label><p class="note">Aparece no canal Bippy de todos os usuários.</p><button class="btn" id="ofs">Publicar</button><button class="btn ghost" id="ofc">Cancelar</button>');
   $('#ofc').onclick=closeModal;
