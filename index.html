@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261022-4300">
+<meta name="mandai-build" content="20261022-4310">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2339,7 +2339,9 @@ function renderStories(){
 }
 function play(q,i0){const[key,name,list]=q[0];sv={q,qi:0,key,name,list,i:i0||0,timer:0};show()}
 function load(qi,last){const[key,name,list]=sv.q[qi];sv.key=key;sv.name=name;sv.list=list;sv.i=last?list.length-1:0}
+function relVid(r){try{r.querySelectorAll('video').forEach(x=>{x.pause();x.removeAttribute('src');x.load()})}catch(e){}}
 function show(){
+  try{relVid($('#viewer'))}catch(e){}
   try{rtViewMark(sv.list[sv.i],sv.key)}catch(e){}
   clearTimeout(sv.timer);const v=$('#viewer'),s=sv.list[sv.i],own=sv.key==='me';
   if(s&&s[4]&&s[4].remote&&!s[4].src){const sw=sv,sx=sw.i;v.hidden=false;v.style.background='#000';v.innerHTML='<div class="vt vm" style="display:grid;place-items:center;color:#fff;font-size:15px">Carregando…</div><div class="vh"><button class="x vgl" id="vx" aria-label="Fechar">'+ico('x',20)+'</button></div>';$('#vx').onclick=closeV;rtGet(s[4]).then(()=>{if(sv===sw&&sw.i===sx&&!$('#viewer').hidden)show()}).catch(()=>{snack('Não consegui carregar esse status. Tente de novo.');if(sv===sw)closeV()});return}
@@ -2390,7 +2392,7 @@ function simViews(st){
     if(!$('#viewer').hidden&&sv.list[sv.i]===st){const e=$('#vn');if(e)e.textContent=st[3].length;if($('#vp'))viewers()}
   },3000+k*4000));
 }
-function closeV(){clearTimeout(sv.timer);clearTimeout(_tapT);$('#viewer').hidden=true;$('#viewer').innerHTML='';renderStories();renderList();if(!$('#stp').hidden)statusPage()}
+function closeV(){clearTimeout(sv.timer);clearTimeout(_tapT);relVid($('#viewer'));$('#viewer').hidden=true;$('#viewer').innerHTML='';renderStories();renderList();if(!$('#stp').hidden)statusPage()}
 function compose(){
   clearTimeout(sv.timer);let c=0;const v=$('#viewer');v.hidden=false;v.style.background=sb[0];
   v.innerHTML=`<div class="vh"><b style="flex:1">Novo status</b><button class="x" id="vx" aria-label="Fechar">✕</button></div><div class="pv" id="pv" hidden></div><textarea class="ct" id="ct" maxlength="120" placeholder="Escreva seu status" aria-label="Texto do status"></textarea><div class="pk"><button id="pi">Escolher foto</button></div><div class="sw">${sb.map((g,i)=>`<button style="background:${g}" class="${i?'':'on'}" data-i="${i}" aria-label="Cor ${i+1}"></button>`).join('')}</div><button class="pub" id="cp">Publicar</button>`;
@@ -4303,6 +4305,14 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function srow2(cls,bg,txt,name,time,fn){const b=mk('button','srow'),a=mk('span',cls),d=mk('div');a.style.cssText='width:46px;height:46px;background:'+bg;a.textContent=txt;d.style.flex='1';d.append(mk('b',0,name),mk('small',0,time));b.append(a,d);b.onclick=fn;return b}
 function postStatus(text,md){const st=[text||'',0,'agora',[],md||null];mine.push(st);simViews(st);seen.me=false;renderStories();if(!$('#stp').hidden)statusPage()}
 function statusLoc(){const go=(la,lo,sim)=>postStatus('📍 Estou aqui: '+la.toFixed(4)+', '+lo.toFixed(4)+(sim?' (simulada)':''),null);if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>go(p.coords.latitude,p.coords.longitude,false),()=>go(-23.5505,-46.6333,true),{timeout:6000});else go(-23.5505,-46.6333,true)}
+const _vsq=[];let _vsb=false;
+function vidSnap(md,cb){if(md._th)return cb(md._th);_vsq.push([md,cb]);if(_vsb)return;_vsb=true;
+  const nx=()=>{const it=_vsq.shift();if(!it){_vsb=false;return}const[m,f]=it;if(m._th){f(m._th);return nx()}
+    const v=document.createElement('video');let dn=false;const end=u=>{if(dn)return;dn=true;if(u)m._th=u;try{v.removeAttribute('src');v.load()}catch(e){}f(u||'');nx()};
+    v.muted=true;v.preload='auto';v.playsInline=true;
+    v.onloadeddata=()=>{try{v.currentTime=Math.min(.5,(v.duration||1)/2)}catch(e){}};
+    v.onseeked=()=>{try{const k=96/Math.max(v.videoWidth||96,v.videoHeight||96),c=document.createElement('canvas');c.width=Math.max(1,Math.round(v.videoWidth*k));c.height=Math.max(1,Math.round(v.videoHeight*k));c.getContext('2d').drawImage(v,0,0,c.width,c.height);end(c.toDataURL('image/jpeg',.7))}catch(e){end('')}};
+    v.onerror=()=>end('');setTimeout(()=>end(''),5000);v.src=m.src};nx()}
 function statusPage(){purgeMine();
   openPage('stp','Meu status',el=>{
     el.classList.add('mystp');
@@ -4314,7 +4324,7 @@ function statusPage(){purgeMine();
         const md=st[4];
         if(md&&md.remote&&!md.src)rtGet(md).then(()=>{if(!$('#stp').hidden)paint()}).catch(()=>{});
         if(md&&md.k==='img'&&md.src)th.style.background='url('+md.src+') center/cover';
-        else if(md&&md.k==='vid'&&md.src){th.style.background='#222';th.style.position='relative';const tv=document.createElement('video');tv.src=md.src+'#t=0.1';tv.muted=true;tv.preload='metadata';tv.playsInline=true;tv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none';th.appendChild(tv)}
+        else if(md&&md.k==='vid'&&md.src){th.style.background=md._th?'url('+md._th+') center/cover':'#222';if(!md._th)vidSnap(md,u=>{if(u)th.style.background='url('+u+') center/cover'})}
         else{th.style.background=sb[(st[1]||0)%sb.length];if(!md){th.textContent=(st[0]||'').slice(0,12);th.classList.add('t')}}
         const n=(st[3]||[]).length,nl=stLikes(st).size;
         tx.append(mk('b',0,(n===1?'1 visualização':n+' visualizações')+(nl?' · 💜 '+nl:'')),mk('small',0,st[2]==='agora'?'Agora há pouco':st[2]));
