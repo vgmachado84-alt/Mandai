@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4630">
+<meta name="mandai-build" content="20261023-4640">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2109,6 +2109,7 @@ html{background:var(--panel)}
 #skbusy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);font-weight:600}#skbusy[hidden]{display:none}
 .skin{display:flex;gap:8px;padding:6px 12px}.skin[hidden]{display:none}.skin input{flex:1;border:0;border-radius:12px;padding:12px;font-size:16px}.skin button{border:0;border-radius:12px;background:#25d366;color:#fff;font-weight:700;padding:0 18px}
 .skfoot{display:flex;align-items:center;gap:10px;padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 14px)}
+.skfo{display:flex;gap:6px;padding:4px 12px;overflow-x:auto;white-space:nowrap}.skfo[hidden]{display:none}.skfo button{border:0;border-radius:14px;background:rgba(255,255,255,.14);color:#fff;padding:8px 12px;flex:none}.skfo button.on{background:#fff;color:#111}.skfo .skout{margin-left:auto}
 .skh{flex:1;margin:0;font-size:12px;opacity:.7}.skcol{display:flex;gap:8px}.skcol[hidden]{display:none}
 .skcol button{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.5);padding:0}.skcol button.on{border-color:#fff;box-shadow:0 0 0 2px #25d366}
 .sksend{width:54px;height:54px;border-radius:50%;border:0;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
@@ -6218,21 +6219,23 @@ function stkCreate(cb,file){
     const M=512,k0=Math.min(1,1024/Math.max(bm.width,bm.height)),orig=document.createElement('canvas');orig.width=Math.max(1,Math.round(bm.width*k0));orig.height=Math.max(1,Math.round(bm.height*k0));orig.getContext('2d').drawImage(bm,0,0,orig.width,orig.height);
     let hasA=false;try{const t=document.createElement('canvas');t.width=t.height=32;const tx=t.getContext('2d');tx.drawImage(orig,0,0,32,32);const dd=tx.getImageData(0,0,32,32).data;for(let i=3;i<dd.length;i+=4)if(dd[i]<240){hasA=true;break}}catch(e){}
     let cut=null,useCut=false,brd=false,act='img',busy=false;
-    const IM={x:M/2,y:M/2,s:1,r:0},TX={x:M/2,y:M*.8,s:1,r:0,t:'',col:'#ffffff'},TB={w:0,h:0};
+    const IM={x:M/2,y:M/2,s:1,r:0},TX={x:M/2,y:M*.8,s:1,r:0,t:'',col:'#ffffff',f:0,out:true},TB={w:0,h:0};
     const ov=document.createElement('div');ov.id='skE';ov.className='ske';
-    ov.innerHTML='<div class="skbar"><button id="skX" type="button" aria-label="Fechar"><b>✕</b><i>Sair</i></button><span></span><button id="skCut" type="button"><b>✂️</b><i>Recortar</i></button><button id="skB" type="button"><b>▢</b><i>Borda</i></button><button id="skA" type="button"><b>Aa</b><i>Texto</i></button></div><div class="skstage"><div class="skchk"><canvas id="skc" width="512" height="512"></canvas><div id="skbusy" hidden>Recortando…</div></div></div><div class="skin" id="skinw" hidden><input id="skt" maxlength="40" placeholder="Digite o texto" autocomplete="off"><button id="skok" type="button">OK</button></div><div class="skfoot"><div class="skcol" id="skcol" hidden></div><p class="skh">1 dedo: mover · 2 dedos: aumentar, diminuir e girar</p><button id="sks" class="sksend" type="button" aria-label="Salvar figurinha">'+ico('send',24)+'</button></div>';
+    ov.innerHTML='<div class="skbar"><button id="skX" type="button" aria-label="Fechar"><b>✕</b><i>Sair</i></button><span></span><button id="skCut" type="button"><b>✂️</b><i>Recortar</i></button><button id="skB" type="button"><b>▢</b><i>Borda</i></button><button id="skA" type="button"><b>Aa</b><i>Texto</i></button></div><div class="skstage"><div class="skchk"><canvas id="skc" width="512" height="512"></canvas><div id="skbusy" hidden>Recortando…</div></div></div><div class="skin" id="skinw" hidden><input id="skt" maxlength="40" placeholder="Digite o texto" autocomplete="off"><button id="skok" type="button">OK</button></div><div class="skfo" id="skfo" hidden></div><div class="skfoot"><div class="skcol" id="skcol" hidden></div><p class="skh">1 dedo: mover · 2 dedos: aumentar, diminuir e girar</p><button id="sks" class="sksend" type="button" aria-label="Salvar figurinha">'+ico('send',24)+'</button></div>';
     document.body.appendChild(ov);const q=s=>ov.querySelector(s),cv=q('#skc'),x=cv.getContext('2d');
     const base=()=>useCut&&cut?cut:orig;
     const fit=()=>{const c=base();IM.s=Math.min((M-48)/c.width,(M-48)/c.height);IM.x=M/2;IM.y=M/2;IM.r=0};
-    const wrapT=()=>{const T=TX.t.trim();if(!T)return[];x.font='900 58px Impact,"Arial Black",Arial,sans-serif';const maxW=M-60,out=[];T.split('\n').forEach(par=>{let cu='';par.split(/\s+/).forEach(w=>{const t2=cu?cu+' '+w:w;if(x.measureText(t2).width>maxW&&cu){out.push(cu);cu=w}else cu=t2});if(cu)out.push(cu)});return out};
+    const FONTS=[['Forte','900 58px Impact,"Arial Black",Arial,sans-serif'],['Simples','700 54px Arial,Helvetica,sans-serif'],['Cursiva','700 56px "Comic Sans MS","Brush Script MT",cursive'],['Elegante','italic 700 56px Georgia,"Times New Roman",serif'],['Máquina','700 50px "Courier New",monospace']];
+    const fnt=()=>FONTS[TX.f][1];
+    const wrapT=()=>{const T=TX.t.trim();if(!T)return[];x.font=fnt();const maxW=M-60,out=[];T.split('\n').forEach(par=>{let cu='';par.split(/\s+/).forEach(w=>{const t2=cu?cu+' '+w:w;if(x.measureText(t2).width>maxW&&cu){out.push(cu);cu=w}else cu=t2});if(cu)out.push(cu)});return out};
     function render(ex){
       x.clearRect(0,0,M,M);const c=base(),w=c.width,h=c.height;
       const lay=document.createElement('canvas');lay.width=lay.height=M;const lx=lay.getContext('2d');lx.save();lx.translate(IM.x,IM.y);lx.rotate(IM.r);lx.scale(IM.s,IM.s);lx.imageSmoothingQuality='high';lx.drawImage(c,-w/2,-h/2);lx.restore();
       if(brd){const t=document.createElement('canvas');t.width=t.height=M;const tx=t.getContext('2d');tx.drawImage(lay,0,0);tx.globalCompositeOperation='source-in';tx.fillStyle='#fff';tx.fillRect(0,0,M,M);for(let a=0;a<24;a++)x.drawImage(t,Math.cos(a/24*6.2832)*9,Math.sin(a/24*6.2832)*9)}
       x.drawImage(lay,0,0);
       const L=wrapT();
-      if(L.length){x.save();x.translate(TX.x,TX.y);x.rotate(TX.r);x.scale(TX.s,TX.s);x.font='900 58px Impact,"Arial Black",Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';const lh=64,hh=L.length*lh;let ww=0;L.forEach(l=>{ww=Math.max(ww,x.measureText(l).width)});TB.w=ww;TB.h=hh;
-        x.lineWidth=14;x.strokeStyle=TX.col==='#000000'?'#fff':'#000';x.fillStyle=TX.col;L.forEach((l,i)=>{const y=-hh/2+lh*(i+.5);x.strokeText(l,0,y);x.fillText(l,0,y)});
+      if(L.length){x.save();x.translate(TX.x,TX.y);x.rotate(TX.r);x.scale(TX.s,TX.s);x.font=fnt();x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';const lh=64,hh=L.length*lh;let ww=0;L.forEach(l=>{ww=Math.max(ww,x.measureText(l).width)});TB.w=ww;TB.h=hh;
+        x.lineWidth=14;x.strokeStyle=TX.col==='#000000'?'#fff':'#000';x.fillStyle=TX.col;L.forEach((l,i)=>{const y=-hh/2+lh*(i+.5);if(TX.out)x.strokeText(l,0,y);x.fillText(l,0,y)});
         if(!ex&&act==='txt'){x.setLineDash([10,8]);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.55)';x.strokeRect(-ww/2-14,-hh/2-8,ww+28,hh+16)}x.restore()}
       else TB.w=TB.h=0;
       if(!ex&&act==='img'){x.save();x.translate(IM.x,IM.y);x.rotate(IM.r);x.scale(IM.s,IM.s);x.setLineDash([10/IM.s,8/IM.s]);x.lineWidth=3/IM.s;x.strokeStyle='rgba(0,0,0,.45)';x.strokeRect(-w/2,-h/2,w,h);x.restore()}
@@ -6262,9 +6265,11 @@ function stkCreate(cb,file){
     q('#skB').onclick=()=>{brd=!brd;sync();render()};
     const cols=['#ffffff','#ffe14a','#ff4d4d','#4da3ff','#000000'],cw=q('#skcol');
     const paintCols=()=>{cw.innerHTML='';cols.forEach(c=>{const b=document.createElement('button');b.type='button';b.style.background=c;if(TX.col===c)b.className='on';b.setAttribute('aria-label','Cor do texto');b.onclick=()=>{TX.col=c;paintCols();render()};cw.appendChild(b)})};paintCols();
-    const inw=q('#skinw'),ti=q('#skt');
-    const closeTxt=()=>{inw.hidden=true;cw.hidden=!TX.t.trim();sync()};
-    q('#skA').onclick=()=>{inw.hidden=false;cw.hidden=false;ti.value=TX.t;act='txt';render();setTimeout(()=>ti.focus(),50)};
+    const inw=q('#skinw'),ti=q('#skt'),fo=q('#skfo');
+    const showOpts=v=>{cw.hidden=!v;fo.hidden=!v};
+    const paintFo=()=>{fo.innerHTML='';FONTS.forEach(([n],i)=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.style.font=FONTS[i][1].replace(/\d+px/,'15px');if(TX.f===i)b.className='on';b.onclick=()=>{TX.f=i;paintFo();render()};fo.appendChild(b)});const o=document.createElement('button');o.type='button';o.textContent=TX.out?'Contorno: sim':'Contorno: não';o.className='skout'+(TX.out?' on':'');o.onclick=()=>{TX.out=!TX.out;paintFo();render()};fo.appendChild(o)};paintFo();
+    const closeTxt=()=>{inw.hidden=true;showOpts(!!TX.t.trim());sync()};
+    q('#skA').onclick=()=>{inw.hidden=false;showOpts(true);ti.value=TX.t;act='txt';render();setTimeout(()=>ti.focus(),50)};
     ti.oninput=()=>{TX.t=ti.value;act='txt';render();sync()};ti.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();closeTxt()}};q('#skok').onclick=closeTxt;
     q('#sks').onclick=()=>{if(busy)return;act='';render(true);let d='',sz=M;const tryEx=()=>{const c=document.createElement('canvas');c.width=c.height=sz;c.getContext('2d').drawImage(cv,0,0,sz,sz);for(const qq of [.8,.62,.45]){d=c.toDataURL('image/webp',qq);if(d.length<=40000)return true}return false};
       while(!tryEx()&&sz>256)sz=Math.round(sz*.8);ov.remove();cb(d)};
