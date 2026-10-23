@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261023-4320">
+<meta name="mandai-build" content="20261023-4330">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2213,14 +2213,16 @@ function offCompose(){
   $('#ofs').onclick=()=>{const t=$('#ofx').value.trim();if(!t){$('#ofx').focus();return}
     closeModal();dlg('Publicar para todos?',[['Cancelar'],['Publicar',async()=>{try{const r=await SB.rpc('admin_publicar_aviso',{p_texto:t});if(r.error)throw r.error;OFF._sig='';await offLoad();snack('Aviso publicado')}catch(e){rtErr(e);snack('Não consegui publicar. Rode o arquivo banco 20 no Supabase.')}}]],'Todos os usuários vão receber este aviso. Não dá para editar depois (só apagar).',true)}
 }
+function cts(c){for(let i=c.msgs.length-1,n=0;i>=0&&n<6;i--,n++){const t=c.msgs[i]&&c.msgs[i][5]&&c.msgs[i][5].ts;if(t)return t}return 0}
 function renderList(){
   const f=$('#q').value.toLowerCase();
   if(sMode&&sKind&&sKind!=='unread'&&sKind!=='groups'){renderKind();return}
   $('#list').innerHTML='';if(requests.length){const rr=document.createElement('button');rr.className='rq2';rr.textContent='📨 Pedidos de conversa ('+requests.length+')';rr.onclick=reqMenu;$('#list').appendChild(rr)}
   if(LISTS_ON&&String(flt).startsWith('L:')&&!sMode){const l=(S.lists||[]).find(x=>'L:'+x.id===flt);if(l){const n=chats.filter(c=>!c.hidden&&!c.stub&&l.keys.includes(laterKey(c))).length,h=mk('div','lhd');h.style.setProperty('--lc',listCol(l));const t1=mk('b',0,l.name+' · '+n);h.appendChild(t1);if(l.desc)h.appendChild(mk('small',0,l.desc));$('#list').appendChild(h)}}
-  try{if(flt==='all'&&(!f||'bippy'.includes(f)))offRow()}catch(e){}
+  let offDone=!(flt==='all'&&(!f||'bippy'.includes(f)));const offT=OFF.ok&&OFF.list.length?Math.max(...OFF.list.map(offTs)):0;
   if(sMode&&f&&chats.some(c=>c.name.toLowerCase().includes(f)))$('#list').appendChild(mk('h4','sh4','Conversas'));
-  chats.filter(c=>!c.hidden&&c.name.toLowerCase().includes(f)&&chatFlt(c)).sort((x,y)=>(y.pin?1:0)-(x.pin?1:0)).forEach(c=>{
+  chats.filter(c=>!c.hidden&&c.name.toLowerCase().includes(f)&&chatFlt(c)).sort((x,y)=>(y.pin?1:0)-(x.pin?1:0)||cts(y)-cts(x)).forEach(c=>{
+    if(!offDone&&!c.pin&&offT>=cts(c)){offDone=true;try{offRow()}catch(e){}}
     const last=c.msgs[c.msgs.length-1];
     const b=document.createElement('button');
     b.className='row'+(cur&&cur.id===c.id?' on':'')+(selC.includes(c.id)?' csel':'');
@@ -2237,6 +2239,7 @@ function renderList(){
     w.append(b,mb);
     $('#list').appendChild(w);
   });
+  if(!offDone){offDone=true;try{offRow()}catch(e){}}
   if(sMode&&f)searchMsgs(f);
   if(!$('#list').children.length)$('#list').innerHTML='<p class="empty">Nenhuma conversa encontrada.</p>';
 }
