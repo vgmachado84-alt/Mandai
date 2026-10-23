@@ -16,7 +16,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="theme-color" content="#ffffff">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
-<meta name="mandai-build" content="20261023-4410">
+<meta name="mandai-build" content="20261023-4420">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -1682,6 +1682,8 @@ button,.row,.srow,.opt,.tb,.chip{-webkit-tap-highlight-color:transparent}
 .mvpp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:68px;border-radius:50%;background:rgba(0,0,0,.5);border:0;color:#fff;display:grid;place-items:center;z-index:3}
 /* menu da mensagem: sempre acima do vídeo e sem cortar a reação */
 .mxo .mxc{z-index:1}.mxo .mxm,.mxo .mxp{z-index:5;transform:translateZ(0)}
+.mdl.ld b{animation:mdpulse 1.1s ease-in-out infinite}.mdl.ld .mdi{opacity:.85}
+@keyframes mdpulse{0%,100%{opacity:.55}50%{opacity:1}}
 /* recado: anel acompanha o círculo */
 .m .vbub.round video.mi,.vbub.round video{width:100%!important;height:100%!important;max-height:none!important;max-width:none!important;object-fit:cover;border-radius:50%}
 /* responder dentro do visualizador */
@@ -2368,7 +2370,7 @@ function bubble0(m,anim){
   if(m[4]){const md0=m[4];
     if(m[0]==='in'&&(md0.k==='img'||md0.k==='vid')&&!md0._got&&!md0.remote&&cur&&dlManual(cur)){const ph=document.createElement('button');ph.type='button';ph.className='mdl';ph.innerHTML='<span class="mdi">'+ico(md0.k==='vid'?'video':'image',26)+'</span><b></b>';ph.querySelector('b').textContent='Baixar'+(md0.size?' · '+md0.size:'');
       ph.onclick=e=>{e.stopPropagation();md0._got=true;ph.replaceWith(mediaEl(md0))};d.append(ph)}
-    else if(md0.remote&&!md0.src&&!md0.once&&md0.k!=='aud'){const ph=document.createElement('button');ph.type='button';ph.className='mdl';ph.innerHTML='<span class="mdi">'+ico(md0.k==='vid'?'video':md0.k==='aud'?'mic':md0.k==='file'?'download':'image',26)+'</span><b></b>';const lb=ph.querySelector('b');lb.textContent=md0.err?'Tentar baixar de novo':(md0._p?'Baixando…':'Baixar'+(md0.size?' · '+md0.size:''));if(md0.th){ph.style.cssText+=';background-image:url('+md0.th+');background-size:cover;background-position:center;width:min(240px,100%);height:auto;max-height:320px;aspect-ratio:'+((md0.w&&md0.h)?md0.w+'/'+md0.h:'1')+';min-height:110px';ph.classList.add('hasth')}
+    else if(md0.remote&&!md0.src&&!md0.once&&md0.k!=='aud'){const ph=document.createElement('button');ph.type='button';ph.className='mdl';ph.innerHTML='<span class="mdi">'+ico(md0.k==='vid'?'video':md0.k==='aud'?'mic':md0.k==='file'?'download':'image',26)+'</span><b></b>';const lb=ph.querySelector('b');const _auto=!md0.err&&(md0._p||md0._q||m[0]==='out'||(cur&&!dlManual(cur)));lb.textContent=md0.err?'Tentar baixar de novo':(_auto?'Carregando…':'Baixar'+(md0.size?' · '+md0.size:''));if(_auto)ph.classList.add('ld');if(md0.th){ph.style.cssText+=';background-image:url('+md0.th+');background-size:cover;background-position:center;width:min(240px,100%);height:auto;max-height:320px;aspect-ratio:'+((md0.w&&md0.h)?md0.w+'/'+md0.h:'1')+';min-height:110px';ph.classList.add('hasth')}
       ph.onclick=e=>{e.stopPropagation();lb.textContent='Baixando…';md0.err=0;rtGet(md0).then(()=>{md0._got=true;rtRepaint(m)}).catch(()=>{md0.err=1;lb.textContent='Falhou. Toque para tentar de novo'})};d.append(ph)}
     else d.append(mediaEl(md0))}
   if(m[1]||!m[4])d.append(s);if(m[0]!=='sys')d.append(sm);
