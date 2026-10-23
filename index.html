@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4470">
+<meta name="mandai-build" content="20261023-4480">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -3363,9 +3363,10 @@ function openCam(cb,m0,opts){
   const el=$('#camv');let mode=m0||'foto',facing='environment',stream=null,mr=null,rec=false,tk=0,flash=false;
   const stopS=()=>{if(stream)stream.getTracks().forEach(k=>k.stop());stream=null};
   const close=()=>{clearInterval(tk);if(mr&&mr.state!=='inactive'){mr.onstop=null;mr.stop()}rec=false;stopS();el.hidden=true;el.innerHTML=''};
+  const camC=()=>mode==='foto'?{width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}}:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}};
   async function start(){
     stopS();const v=$('#cv');
-    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});el.classList.toggle('mir',facing==='user');if(v)v.srcObject=stream;else stopS()}
+    try{stream=await navigator.mediaDevices.getUserMedia({video:Object.assign({facingMode:facing},camC()),audio:false});el.classList.toggle('mir',facing==='user');if(v)v.srcObject=stream;else stopS()}
     catch(e){const m=$('#cerr');if(m){m.hidden=false;if(/NotAllowed|Security/.test((e&&e.name)||''))m.textContent=permText('cam')}}
   }
   async function shutter(){
@@ -3375,9 +3376,9 @@ function openCam(cb,m0,opts){
     if(!stream)return;
     let tracks=[...stream.getVideoTracks()];
     try{const a=await navigator.mediaDevices.getUserMedia({audio:true});tracks=tracks.concat(a.getAudioTracks())}catch(e){}
-    const chunks=[];let tot=0;{const ms=new MediaStream(tracks);try{mr=new MediaRecorder(ms,{videoBitsPerSecond:4000000,audioBitsPerSecond:128000})}catch(e){mr=new MediaRecorder(ms)}}
+    const chunks=[];let tot=0;{const ms=new MediaStream(tracks);let mt='';try{mt=['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp8,opus'].find(x=>MediaRecorder.isTypeSupported(x))||''}catch(e){}try{mr=new MediaRecorder(ms,Object.assign(mt?{mimeType:mt}:{},{videoBitsPerSecond:/mp4/.test(mt)?3000000:2500000,audioBitsPerSecond:128000}))}catch(e){try{mr=new MediaRecorder(ms)}catch(e2){mr=new MediaRecorder(ms)}}}
     mr.ondataavailable=e=>{chunks.push(e.data);tot+=(e.data&&e.data.size)||0;if(tot>45*1048576&&mr.state!=='inactive')mr.stop()};
-    mr.onstop=()=>{clearInterval(tk);rec=false;tracks.forEach(k=>{if(k.kind==='audio')k.stop()});const b=new Blob(chunks,{type:mr.mimeType});review({k:'vid',src:URL.createObjectURL(b),name:'video',size:fmtSize(b.size),note:mode==='note'})};
+    mr.onstop=()=>{clearInterval(tk);rec=false;tracks.forEach(k=>{if(k.kind==='audio')k.stop()});const b=new Blob(chunks,{type:String(mr.mimeType||'video/webm').split(';')[0]});review({k:'vid',src:URL.createObjectURL(b),name:'video',size:fmtSize(b.size),note:mode==='note'})};
     mr.start(1000);rec=true;el.classList.add('recing');const t0=Date.now(),rt=$('#ct2');rt.hidden=false;$('#sh').classList.add('rec');if(mode==='note'){const cv0=document.querySelector('.cvid');if(cv0&&!$('#cring')){const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.id='cring';sv.setAttribute('viewBox','0 0 100 100');sv.innerHTML='<circle cx="50" cy="50" r="49" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="307.9" stroke-dashoffset="307.9" transform="rotate(-90 50 50)"/>';cv0.appendChild(sv)}}
     const LIM=mode==='note'?60:LIMIT;tk=setInterval(()=>{const s=(Date.now()-t0)/1000;rt.textContent=fmt(s);const pr=LIM?Math.min(1,s/LIM):0;const sh0=$('#sh');if(sh0)sh0.style.setProperty('--p',pr);const rg=document.querySelector('#cring circle');if(rg)rg.style.strokeDashoffset=307.9*(1-pr);if(LIM&&s>=LIM&&mr.state!=='inactive')mr.stop()},100);
   }
@@ -3396,7 +3397,7 @@ function openCam(cb,m0,opts){
     el.hidden=false;el.classList.toggle('note',mode==='note');
     el.innerHTML='<div class="cvid"><video id="cv" autoplay muted playsinline></video><p id="cerr" hidden>Câmera indisponível aqui. Use a galeria.</p></div><button class="cx" id="cc" aria-label="Fechar">'+ico('x',22)+'</button><button class="cfl" id="cf" aria-label="Flash">'+ico('bolt',20)+'</button><b class="crt" id="ct2" hidden>0:00</b><div class="cbar"><button class="cg" id="cg" aria-label="Galeria">'+ico('image',22)+'</button><button class="shut" id="sh" aria-label="Capturar"></button><button class="cg" id="cflip" aria-label="Virar câmera">'+ico('flipcam',22)+'</button></div><div class="cmodes"><button data-m="vid">Vídeo</button><button data-m="foto" class="on">Foto</button>'+(LIMIT?'':'<button data-m="note">Recado de vídeo</button>')+'</div>';
     $('#cc').onclick=close;$('#sh').onclick=shutter;document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
-    document.querySelectorAll('.cmodes button').forEach(b=>b.onclick=()=>{if(rec)return;mode=b.dataset.m;el.classList.toggle('note',mode==='note');document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x===b))});
+    document.querySelectorAll('.cmodes button').forEach(b=>b.onclick=()=>{if(rec)return;mode=b.dataset.m;try{const t0=stream&&stream.getVideoTracks()[0];if(t0&&t0.applyConstraints)t0.applyConstraints(camC()).catch(()=>{})}catch(e){}el.classList.toggle('note',mode==='note');document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x===b))});
     $('#cflip').onclick=()=>{if(rec)return;facing=facing==='user'?'environment':'user';start()};
     $('#cf').onclick=e=>{flash=!flash;e.currentTarget.classList.toggle('on',flash);const k=stream&&stream.getVideoTracks()[0];if(k)k.applyConstraints({advanced:[{torch:flash}]}).catch(()=>{})};
     $('#cg').onclick=()=>{const i=document.createElement('input');i.type='file';i.accept='image/*,video/*';i.multiple=!LIMIT;
