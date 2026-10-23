@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4500">
+<meta name="mandai-build" content="20261023-4510">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -4568,7 +4568,7 @@ function profileOf(c){if(c.group)return groupPage(c);
   row('🖼','Mídia, links e documentos',String(ms.total),()=>mediaPage(c),g2);
   row('★','Mensagens favoritas',String(fv),()=>starredView(c),g2);
   row('🔔','Notificações',isMuted(c)?'Silenciadas':'Ativadas',()=>{if(isMuted(c)){c.mute=0;renderList();profileOf(c)}else muteMenu(c,()=>profileOf(c))},g2);
-  row('🖼','Visibilidade de mídia',mediaPrefsLabel(c),()=>mediaPrefs(c,()=>{}),g2);
+  row('🖼','Visibilidade de mídia',mediaPrefsLabel(c),()=>mediaPrefs(c,()=>profileOf(c)),g2);
   row('🔒','Privacidade',c.blocked?'Bloqueado':(c.hideMine?'Status oculto':'Padrão'),()=>contactPrivacy(c),g2);
   row('✎','Editar contato','',()=>editContact(c),g2);
   el.append(cv,av,nm,st,act,g1,g2);
@@ -5152,7 +5152,7 @@ function groupPage(c,tab){
   const row=(ic,lb,vl,fn,red)=>{const b=mk('button','gr'+(red?' red':'')),sp=mk('span','gi');sp.innerHTML=ico(ic,22);const x=mk('div');x.appendChild(mk('b',0,lb));if(vl)x.appendChild(mk('small',0,vl));b.append(sp,x);b.onclick=fn;body.appendChild(b)};
   row('gear','Permissões do grupo','',()=>{if(!isAdmin(c)){snack('Só admins podem alterar');return}permPage(pm,()=>{$('#gsp').hidden=true;$('#gsp').classList.remove('vv');groupPage(c,'c');if(cur===c)paintCompose()})});
   row('bell','Notificações',isMuted(c)?'Silenciadas':'Ativadas',()=>{if(isMuted(c)){c.mute=0;groupPage(c,'c')}else muteMenu(c,()=>groupPage(c,'c'))});
-  row('image','Visibilidade de mídia',mediaPrefsLabel(c),()=>mediaPrefs(c,()=>{}));
+  row('image','Visibilidade de mídia',mediaPrefsLabel(c),()=>mediaPrefs(c,()=>groupPage(c,'c')));
   row('lock','Criptografia','As mensagens são protegidas',()=>infoModal('Criptografia','As mensagens e ligações deste grupo ficam protegidas e só os membros conseguem ler.'));
   row('clock','Mensagens temporárias',DISL[c.dis||0]+(c.dis&&c.disAll===false?' · só para mim':''),()=>{if(!canEdit(c)){snack('Só admins podem alterar');return}disDialog(c.dis||0,(v,all)=>{c.dis=v;c.disAll=all;c.disMine=false;if(all||!v)c.msgs.push(['sys',v?'Mensagens temporárias ativadas: novas mensagens somem após '+DISL[v]+'.':'Mensagens temporárias desativadas.']);groupPage(c,'c');renderList()},c.disAll)});
   row('link','Link de convite','',()=>inviteLink(c));
