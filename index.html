@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5085">
+<meta name="mandai-build" content="20261024-5086">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2174,6 +2174,11 @@ html{background:var(--panel)}
 .vtinf .vtp{padding:5px 11px!important;font-size:12.5px!important;border-radius:14px!important}
 .prvi video::-webkit-media-controls-mute-button,.prvi video::-webkit-media-controls-volume-slider,.prvi video::-webkit-media-controls-volume-control-container{display:none!important}
 .upr[data-p]::after{content:attr(data-p);position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:8px;font-size:12px;line-height:1;color:#fff;background:rgba(0,0,0,.6);padding:3px 8px;border-radius:10px;white-space:nowrap}
+.m.mo{padding:3px!important;position:relative!important;flex-shrink:0}
+.m.mo .mi,.m.mo .vbub,.m.mo .upw,.m.mo .mdl{margin:0!important}
+.m.mo .mi,.m.mo .vbub{border-radius:15px!important;display:block}
+.m.mo>small{position:absolute!important;right:10px;bottom:8px;margin:0!important;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.42);color:#fff!important;font-size:11.5px;line-height:1.3;z-index:2;display:flex;align-items:center;gap:4px}
+.m.mo>small *{color:inherit}
 </style>
 </head>
 <body>
@@ -2515,7 +2520,7 @@ function bubble0(m,anim){
     else if(md0.remote&&!md0.src&&!md0.once&&md0.k!=='aud'){const ph=document.createElement('button');ph.type='button';ph.className='mdl';ph.innerHTML='<span class="mdi">'+ico(md0.k==='vid'?'video':md0.k==='aud'?'mic':md0.k==='file'?'download':'image',26)+'</span><b></b>';const lb=ph.querySelector('b');const _auto=!md0.err&&(md0._p||md0._q||m[0]==='out'||(cur&&!dlManual(cur)));lb.textContent=md0.err?'Tentar baixar de novo':(_auto?'Carregando…':'Baixar'+(md0.size?' · '+md0.size:''));if(_auto)ph.classList.add('ld');if(md0.th){ph.style.cssText+=';background-image:url('+md0.th+');background-size:cover;background-position:center;width:240px;max-width:100%;height:240px;max-height:none;min-height:0';ph.classList.add('hasth')}
       ph.onclick=e=>{e.stopPropagation();lb.textContent='Baixando…';md0.err=0;rtGet(md0).then(()=>{md0._got=true;rtRepaint(m)}).catch(()=>{md0.err=1;lb.textContent='Falhou. Toque para tentar de novo'})};d.append(ph)}
     else{const me=mediaEl(md0);if(m[0]==='out'&&UPING.has(m)&&(md0.k==='img'||md0.k==='vid')){const wr=document.createElement('div');wr.className='upw';wr.append(me);const rg=document.createElement('button');rg.type='button';rg.className='upr';rg.setAttribute('aria-label','Cancelar envio');rg.innerHTML='<svg class="upsp" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3"/><circle cx="22" cy="22" r="19" fill="none" stroke="#3ddc84" stroke-width="3" stroke-linecap="round" stroke-dasharray="34 90"/></svg><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';rg.onclick=e=>{e.stopPropagation();rtCancelUp(m)};rg.onpointerdown=e=>e.stopPropagation();wr.append(rg);d.append(wr)}else d.append(me)}}
-  if(m[1]||!m[4])d.append(s);if(m[0]!=='sys')d.append(sm);
+  if(m[1]||!m[4])d.append(s);if(m[0]!=='sys')d.append(sm);if(m[4]&&(!m[1]||/^\u200b$/.test(m[1]))&&(m[4].k==='img'||m[4].k==='vid')&&!m[4].note&&!x.reply&&!x.fwd&&!x.del)d.classList.add('mo');
   if(x.react&&Object.keys(x.react).length){const r=document.createElement('div');r.className='rx'+(x.rxNew?' rxp':'');const tot=Object.values(x.react).reduce((a,b)=>a+b,0);r.textContent=Object.keys(x.react).slice(0,3).join('')+(tot>1?' '+tot:'');d.classList.add('hasrx');delete x.rxNew;d.append(r)}
   return d;
 }
