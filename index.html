@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5020">
+<meta name="mandai-build" content="20261024-5030">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -6451,10 +6451,10 @@ function stkCreate(cb,file){
     /* dedos */
     const P=new Map();let last=null;
     const pt=e=>{const r=cv.getBoundingClientRect(),k=M/r.width;return{x:(e.clientX-r.left)*k,y:(e.clientY-r.top)*k}};
-    const hitTxt=p=>{for(let i=TL.length-1;i>=0;i--){const T=TL[i];if(!T._w)continue;const dx=p.x-T.x,dy=p.y-T.y,co=Math.cos(-T.r),si=Math.sin(-T.r),lx=(dx*co-dy*si)/T.s,ly=(dx*si+dy*co)/T.s;if(Math.abs(lx)<=T._w/2+40&&Math.abs(ly)<=T._h/2+30)return i}return -1};
+    const hitTxt=p=>{for(let i=TL.length-1;i>=0;i--){const T=TL[i];if(!T._w)continue;const dx=p.x-T.x,dy=p.y-T.y,co=Math.cos(-T.r),si=Math.sin(-T.r),lx=(dx*co-dy*si)/T.s,ly=(dx*si+dy*co)/T.s;if(Math.abs(lx)<=Math.max(T._w/2+40,76/T.s)&&Math.abs(ly)<=Math.max(T._h/2+30,76/T.s))return i}return -1};
     const info=()=>{const a=[...P.values()];if(a.length<2)return{m:a[0]};const[A,B]=a;return{m:{x:(A.x+B.x)/2,y:(A.y+B.y)/2},d:Math.hypot(A.x-B.x,A.y-B.y)||1,a:Math.atan2(B.y-A.y,B.x-A.x)}};
     const L0=()=>act==='em'&&EM[ei]?EM[ei]:act==='txt'?TX:IM;
-    const hitEm=p=>{for(let i=EM.length-1;i>=0;i--){const m=EM[i],dx=p.x-m.x,dy=p.y-m.y,co=Math.cos(-m.r),si=Math.sin(-m.r),lx=(dx*co-dy*si)/m.s,ly=(dx*si+dy*co)/m.s;if(Math.abs(lx)<=64&&Math.abs(ly)<=64)return i}return -1};
+    const hitEm=p=>{for(let i=EM.length-1;i>=0;i--){const m=EM[i],dx=p.x-m.x,dy=p.y-m.y,co=Math.cos(-m.r),si=Math.sin(-m.r),lx=(dx*co-dy*si)/m.s,ly=(dx*si+dy*co)/m.s;const rr=Math.max(64,76/m.s);if(Math.abs(lx)<=rr&&Math.abs(ly)<=rr)return i}return -1};
     const toC=p=>{const c=base(),dx=p.x-IM.x,dy=p.y-IM.y,co=Math.cos(-IM.r),si=Math.sin(-IM.r);return{x:(dx*co-dy*si)/IM.s+c.width/2,y:(dx*si+dy*co)/IM.s+c.height/2}};
     const pushUn=fn=>{UN.push(fn);if(UN.length>15)UN.shift();sync()};
     const snapCut=()=>{const c=cut,k=document.createElement('canvas');k.width=c.width;k.height=c.height;k.getContext('2d').drawImage(c,0,0);k.ox=c.ox||0;k.oy=c.oy||0;const u=useCut;pushUn(()=>{cut=k;useCut=u;fit();render()})};
@@ -6481,7 +6481,9 @@ function stkCreate(cb,file){
           if(dd(p,h.edit)<30){openTx(TX);e.preventDefault();return}
           if(dd(p,h.sc)<34){P.set(e.pointerId,p);sdrag={cx:TX.x,cy:TX.y,d0:dd(p,{x:TX.x,y:TX.y})||1,a0:Math.atan2(p.y-TX.y,p.x-TX.x),s0:TX.s,r0:TX.r};e.preventDefault();return}}
           const hi=hitEm(p);if(hi>=0){act='em';ei=hi}else{const ti2=hitTxt(p);if(ti2>=0){act='txt';TX=TL[ti2];ei=-1}else{act='img';ei=-1}}sync();render()}}
-      P.set(e.pointerId,p);last=info();e.preventDefault()});
+      P.set(e.pointerId,p);
+      if(P.size===2&&!mode){const mid=info().m,hi2=hitEm(mid);if(hi2>=0){act='em';ei=hi2;sync()}else{const t2=hitTxt(mid);if(t2>=0){act='txt';TX=TL[t2];ei=-1;sync()}}}
+      last=info();e.preventDefault()});
     cv.addEventListener('pointermove',e=>{if(!P.has(e.pointerId)){if(e.pointerType==='mouse'&&(mode==='er'||mode==='rs')){bpos=pt(e);render()}return}const p=pt(e);P.set(e.pointerId,p);
       if(sdrag){const d=Math.hypot(p.x-sdrag.cx,p.y-sdrag.cy)||1;TX.s=Math.max(.15,Math.min(8,sdrag.s0*d/sdrag.d0));TX.r=sdrag.r0+(Math.atan2(p.y-sdrag.cy,p.x-sdrag.cx)-sdrag.a0);render();e.preventDefault();return}
       if(mode==='ls'&&lsP){lsP.push(p);render();e.preventDefault();return}
