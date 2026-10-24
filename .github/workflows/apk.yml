@@ -1,0 +1,37 @@
+name: Gerar APK do Bippy
+on: workflow_dispatch
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Preparar arquivos do app
+        run: |
+          mkdir www
+          cp index.html manifest.webmanifest sw.js icon-192.png icon-512.png mediabunny.mjs supabase.js u2netp.onnx termos.html privacidade.html www/
+          npm init -y
+          npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          cat > capacitor.config.json <<'EOF'
+          {"appId":"br.com.bippy.app","appName":"Bippy","webDir":"www","android":{"allowMixedContent":false}}
+          EOF
+          npx cap add android
+          npx cap sync android
+      - name: Permissoes de camera e microfone
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<application#<uses-permission android:name="android.permission.CAMERA"/><uses-permission android:name="android.permission.RECORD_AUDIO"/><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/><uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><application#' $M
+          cat $M
+      - name: Gerar APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bippy-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
