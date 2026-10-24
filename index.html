@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5072">
+<meta name="mandai-build" content="20261024-5074">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2746,8 +2746,8 @@ function pickPhoto(cb,title){photoSrc(cb,title)}
 function renderMe(){const b=$('#meBtn');b.style.background=me.photo?photoBg(me.photo):colors[0];b.textContent=me.photo?'':initials(me.name)}
 function fillForm(c,fallback){
   let ph=c.photo||null;
-  const draw=()=>{const fa=$('#fa');fa.style.background=ph?photoBg(ph):fallback;fa.textContent=ph?'':initials($('#fn').value.trim()||'?');$('#fp').textContent=ph?'Alterar foto':'Adicionar foto'};
-  $('#fn').value=c.name||'';draw();$('#fn').oninput=draw;
+  const draw=()=>{const fa=$('#fa');fa.style.background=ph?photoBg(ph):fallback;fa.textContent=ph?'':initials($('#modal #fn').value.trim()||'?');$('#fp').textContent=ph?'Alterar foto':'Adicionar foto'};
+  $('#modal #fn').value=c.name||'';draw();$('#modal #fn').oninput=draw;
   $('#fp').onclick=()=>pickPhoto(p=>{ph=p;draw()});
   $('#fc').onclick=closeModal;
   return ()=>ph;
@@ -2757,7 +2757,7 @@ function contactForm(title,c,save){
   const ph=fillForm(c,c.id?colors[c.id%6]:colors[0]);let dis=c.dis||0;wireMem();document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{dis=+b.dataset.d;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b))});
   if(!c.group){const fp=$('#fp');if(fp)fp.remove()}
   if($('#ft'))$('#ft').value=c.phone||'';if($('#fdsc'))$('#fdsc').value=c.desc||'';
-  $('#fs').onclick=()=>{const n=$('#fn').value.trim();if(!n){$('#fn').focus();return}if(c.group&&!document.querySelector('.mem .m:checked')){$('.mem').style.borderColor='#d93a4f';return}save({name:n,phone:$('#ft')?$('#ft').value.trim():'',photo:ph(),desc:$('#fdsc')?$('#fdsc').value.trim():'',members:[...document.querySelectorAll('.mem .m:checked')].map(i=>+i.value),admins:[...document.querySelectorAll('.mem .adm:checked')].map(i=>+i.value),dis:dis})};
+  $('#fs').onclick=()=>{const n=$('#modal #fn').value.trim();if(!n){$('#modal #fn').focus();return}if(c.group&&!document.querySelector('.mem .m:checked')){$('.mem').style.borderColor='#d93a4f';return}save({name:n,phone:$('#ft')?$('#ft').value.trim():'',photo:ph(),desc:$('#fdsc')?$('#fdsc').value.trim():'',members:[...document.querySelectorAll('.mem .m:checked')].map(i=>+i.value),admins:[...document.querySelectorAll('.mem .adm:checked')].map(i=>+i.value),dis:dis})};
 }
 function editContact(c){if(arguments[0]&&arguments[0].group&&!canEdit(arguments[0])){snack('Só administradores podem alterar os dados do grupo');return}
   if(c.group&&!(c.admins||[]).includes('me')){groupInfo(c);return}
@@ -6240,7 +6240,7 @@ function profile(){
   row('★','Mensagens favoritas',()=>starredView());row('🔒','Privacidade e segurança',privacyMenu);row('🔔','Notificações',notifMenu);if(me.sb&&typeof rtDiag==='function'&&(S.dbg||window._adm))row('🔎','Diagnóstico das mensagens',rtDiag);
   const ft=mk('div','mfoot'),sv=mk('button','btn','Salvar alterações');sv.disabled=true;ft.appendChild(sv);
   const save=quiet=>{const n=$('#fn').value.trim();if(!n){$('#fn').focus();snack('Digite seu nome');return false}
-    me.name=n;me.about=$('#fr').value.trim();try{rtSaveName()}catch(e){}const np=$('#fph').value.trim();if(np!==(me.phone||'')){me.phone=np;if(me.sb&&typeof rtSavePhone==='function')rtSavePhone()}
+    me.name=n;me.about=$('#fr').value.trim();try{rtSaveName().then(er=>{if(er)snack('Nome não salvo no servidor: '+er)})}catch(e){}const np=$('#fph').value.trim();if(np!==(me.phone||'')){me.phone=np;if(me.sb&&typeof rtSavePhone==='function')rtSavePhone()}
     saveAcc();renderMe();renderStories();if(!$('#set').hidden)renderSettings();dirty=false;sv.disabled=true;if(!quiet)snack('Perfil salvo');return true};
   sv.onclick=()=>save(false);
   bk.onclick=()=>{if(dirty&&!save(true))return;el.hidden=true};
@@ -6982,7 +6982,7 @@ function rtSubscribe(){
 }
 /* ===== banco 7: pessoas, grupos, lido, visto por último, temporárias, enquetes, quem viu ===== */
 async function rtSelfSync(){if(!rtOn())return;try{const r=await SB.from('perfis').select('usuario,nome').eq('id',RT.uid).maybeSingle();const d=r&&r.data;if(!d)return;let ch=false;if(d.usuario&&me.user!==d.usuario){me.user=d.usuario;ch=true}if(d.nome&&!me.name){me.name=d.nome;ch=true}if(ch){try{saveAcc()}catch(e){}try{renderMe()}catch(e){}try{if(!$('#set').hidden)renderSettings()}catch(e){}}if(me.name&&d.nome!==me.name)rtSaveName()}catch(e){}}
-async function rtSaveName(){if(!rtOn()||!me.name)return;try{await SB.from('perfis').update({nome:String(me.name).replace(/[<>]/g,'').slice(0,60),recado:String(me.about||'').replace(/[<>]/g,'').slice(0,300)}).eq('id',RT.uid)}catch(e){}}
+async function rtSaveName(){if(!rtOn()||!me.name)return '';try{const r=await SB.from('perfis').update({nome:String(me.name).replace(/[<>]/g,'').slice(0,60),recado:String(me.about||'').replace(/[<>]/g,'').slice(0,300)}).eq('id',RT.uid).select('id');if(r&&r.error)return String(r.error.message||r.error.code||'erro');if(r&&r.data&&!r.data.length)return 'o servidor não aceitou a troca (permissão)';return ''}catch(e){return String((e&&e.message)||e)}}
 function rtPhotoApply(c,p){try{if(c&&p&&!c.photoLocal){const f=p.foto_url||'';if(f!==(c._pf||'')){c._pf=f;c.photo=f&&String(f).startsWith('data:')?f:undefined}}}catch(e){}}
 async function rtPhotoSync(){if(!rtOn()||!me.photo)return;try{const src=String(me.photo);const go=u=>SB.from('perfis').update({foto_url:u,recado:me.about||''}).eq('id',RT.uid).then(()=>{},()=>{});
   if(src.startsWith('data:')){const im=new Image();im.onload=()=>{try{const k=Math.min(1,160/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);go(cv.toDataURL('image/jpeg',.72))}catch(e){}};im.src=src}}catch(e){}}
