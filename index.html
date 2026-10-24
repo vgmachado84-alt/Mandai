@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5089">
+<meta name="mandai-build" content="20261024-5090">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -7319,7 +7319,7 @@ async function realStart(){
   try{const pf=await SB.from('perfis').select('telefone').eq('id',u.id).maybeSingle();
     if(pf&&pf.data&&pf.data.telefone&&!me.phone){me.phone='+'+pf.data.telefone;saveAcc()}
     else if(me.phone&&!(pf&&pf.data&&pf.data.telefone))rtSavePhone(true)}catch(e){}
-  await rtLoad();try{rtPhotoSync();rtSelfSync()}catch(e){}rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
+  await rtLoad();try{rtPhotoSync();rtSelfSync()}catch(e){}setTimeout(()=>obxResume(),2500);rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtOn()){offLoad();rtStatusLoad();rtDeliverSoon();rtReadSoon();rtSeenPing();rtSeenLoad()}else if(rtOn())rtSeenPing()});
 }
 function stLabel(x){const m=x&&x[4],t0=(x&&x[0])||'';return m?(m.k==='vid'?'🎥 Vídeo':'📷 Foto')+(t0?' '+t0:''):(t0||'Status')}
@@ -7415,10 +7415,29 @@ function rtAuto(c,m){const md=m[4];if(!md||!md.remote||md.once||md.src||md._q)re
 async function imgShrink(bl){try{const bm=await createImageBitmap(bl);const k=Math.min(1,2048/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k);const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,h);cx.drawImage(bm,0,0,w,h);try{bm.close()}catch(e){}return await new Promise(r=>cv.toBlob(r,'image/jpeg',.88))}catch(e){return null}}
 const UPING=new WeakSet(),CANC=new WeakSet();
 function rtCancelUp(m){CANC.add(m);UPING.delete(m);try{const c=chats.find(z=>z.msgs.includes(m));if(c){c.msgs=c.msgs.filter(x=>x!==m);if(cur===c)paintMsgs();renderList()}}catch(e){}snack('Envio cancelado')}
+const OBX={db:null,
+  open(){return this.db||(this.db=new Promise((ok,no)=>{try{const q=indexedDB.open('bippy-outbox',1);q.onupgradeneeded=()=>q.result.createObjectStore('o');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}}))},
+  async put(k,v){try{const d=await this.open();await new Promise((ok,no)=>{const t=d.transaction('o','readwrite');t.objectStore('o').put(v,k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}catch(e){}},
+  async del(k){try{const d=await this.open();await new Promise((ok)=>{const t=d.transaction('o','readwrite');t.objectStore('o').delete(k);t.oncomplete=ok;t.onerror=ok})}catch(e){}},
+  async all(){try{const d=await this.open();return await new Promise((ok)=>{const t=d.transaction('o','readonly'),r=t.objectStore('o').getAllKeys(),o=[];const v=t.objectStore('o').getAll();t.oncomplete=()=>ok(r.result.map((k,i)=>[k,v.result[i]]));t.onerror=()=>ok([])})}catch(e){return[]}}};
+function obxKey(chat,m){return (chat.rid||chat.id)+'|'+(m[5]&&m[5].ts||0)}
+async function obxSave(chat,txt,m){try{const md=m[4];if(!md||!md.src||!RT_UP.includes(md.k)||!m[5]||!m[5].ts)return;const bl=await (await fetch(md.src)).blob();const meta=JSON.parse(JSON.stringify(md,(k,v)=>k==='src'?undefined:v));await OBX.put(obxKey(chat,m),{blob:bl,meta,txt,rid:chat.rid,ts:m[5].ts})}catch(e){}}
+async function obxResume(){
+  try{if(!RT.on)return;const L=await OBX.all();for(const [k,o] of L){if(!o||!o.blob){OBX.del(k);continue}
+    const chat=chats.find(c=>c.rid===o.rid);if(!chat){continue}
+    let m=chat.msgs.find(x=>x[5]&&x[5].ts===o.ts&&x[0]==='out');
+    if(m&&m[5].rid){OBX.del(k);continue}
+    if(m&&UPING.has(m))continue;
+    if(m&&m[4]&&m[4].src&&String(m[4].src).startsWith('blob:')&&!m[4].remote)continue;
+    const md=Object.assign({},o.meta,{src:URL.createObjectURL(o.blob)});
+    if(!m){m=['out',o.txt||'',hhmm(),0,md,{st:'sent',ts:o.ts}];chat.msgs.push(m)}else{m[1]=o.txt||'';m[4]=md;m[5].st='sent'}
+    if(cur===chat)paintMsgs();renderList();rtSend(chat,o.txt||'',m)}}catch(e){}}
+window._upN=0;
 async function rtSendMedia(chat,txt,m){
   const md0=m[4],vis=!!(md0&&(md0.k==='img'||md0.k==='vid'));
+  window._upN++;await obxSave(chat,txt,m);
   if(vis){UPING.add(m);try{rtRepaint(m)}catch(e){}}
-  try{return await rtSendMedia0(chat,txt,m)}finally{if(vis){UPING.delete(m);if(!CANC.has(m)){try{rtRepaint(m)}catch(e){}}}}
+  try{const r0=await rtSendMedia0(chat,txt,m);if((m[5]&&m[5].rid)||CANC.has(m))OBX.del(obxKey(chat,m));return r0}finally{window._upN--;if(vis){UPING.delete(m);if(!CANC.has(m)){try{rtRepaint(m)}catch(e){}}}}
 }
 async function rtSendMedia0(chat,txt,m){
   const md=m[4];let path=null,bl0=null;
@@ -7515,14 +7534,14 @@ async function rtOpenWith(p){
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&RT.on)rtSync()});
 let _syncBusy=0;setInterval(async()=>{if(!RT.on||document.hidden||_syncBusy)return;_syncBusy=1;try{const n0=chats.reduce((n,c)=>n+c.msgs.length,0);await rtSync();const n1=chats.reduce((n,c)=>n+c.msgs.length,0);RT.poll=new Date().toLocaleTimeString('pt-BR');if(n1>n0)RT.pn+=n1-n0}finally{_syncBusy=0}},5000);
-addEventListener('online',()=>{if(RT.on)rtSync()});
+addEventListener('online',()=>{if(RT.on){rtSync();setTimeout(obxResume,1500)}});
 (function(){const _rl=renderList;renderList=function(){_rl.apply(this,arguments);muteSoon();try{const L=$('#list');if(me.sb&&RT.on&&!chats.length&&L&&!L.children.length){const p=mk('p','note','Nenhuma conversa ainda.\nToque no botão + e procure alguém pelo @ ou telefone.');p.style.cssText='text-align:center;padding:48px 24px;white-space:pre-line';L.appendChild(p)}}catch(e){}}})();
 </script>
 <script>
 /* atualização automática: se existir uma versão nova publicada, limpa o cache e recarrega uma vez */
 (function(){try{if(!/^https?:/.test(location.protocol))return;var cur=(document.querySelector('meta[name="mandai-build"]')||{}).content;if(!cur)return;
 fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="mandai-build" content="([^"]+)"/);if(!m||m[1]===cur)return;var k='mandai.reloaded';if(sessionStorage.getItem(k)===m[1])return;sessionStorage.setItem(k,m[1]);
-var done=function(){try{location.replace(location.pathname+'?b='+m[1])}catch(e){location.reload()}};var cl=self.caches?caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}):Promise.resolve();
+var done0=function(){try{location.replace(location.pathname+'?b='+m[1])}catch(e){location.reload()}};var done=function(){if(window._upN>0){setTimeout(done,3000);return}done0()};var cl=self.caches?caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}):Promise.resolve();
 cl.then(function(){return navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}):0}).then(done,done)}).catch(function(){})}catch(e){}})();
 </script>
 </body>
