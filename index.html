@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5078">
+<meta name="mandai-build" content="20261024-5079">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2147,11 +2147,14 @@ html{background:var(--panel)}
 .mnr:active{background:var(--chip)}
 .mnr b{display:block;font-weight:600;font-size:15px}.mnr small{display:block;color:var(--mute);font-size:12.5px;margin-top:1px}
 .mna{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff;font-size:14px;font-weight:700;overflow:hidden}
-.mnt{color:var(--out);font-weight:600}.mnt.me{background:color-mix(in srgb,var(--out) 16%,transparent);border-radius:5px;padding:0 2px}
+.mnt{color:var(--out);font-weight:600}.mnt.mnme{background:color-mix(in srgb,var(--out) 16%,transparent);border-radius:5px;padding:0 2px}
 .tov{display:none;position:absolute;inset:0;pointer-events:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;color:var(--ink);background:var(--panel);border:1px solid transparent;box-sizing:border-box;z-index:0}
 .tw.hasmn .tov{display:block}
 .tw.hasmn #txt{position:relative;z-index:1;background:transparent;color:transparent;caret-color:var(--ink)}
 .tov .mnt{background:none;padding:0}
+.mnt,.m .mnt{display:inline!important;width:auto!important;height:auto!important;min-width:0!important;font-size:inherit!important;line-height:inherit!important;vertical-align:baseline!important;place-items:normal!important}
+.m.out .mnt{color:var(--outink,#fff);background:rgba(255,255,255,.24);border-radius:6px;padding:0 4px;font-weight:700}
+.m.out .mnt.mnme{background:rgba(255,255,255,.34)}
 </style>
 </head>
 <body>
@@ -2469,7 +2472,7 @@ function mentionize(el,c){try{if(!c||!c.group||!el||el.textContent.indexOf('@')<
   const re=new RegExp('@(?:'+uniq.map(esc).join('|')+')(?=$|[\\s.,;:!?)])','giu');
   const walk=[];el.childNodes.forEach(n=>{if(n.nodeType===3)walk.push(n)});
   walk.forEach(n=>{const t=n.nodeValue;re.lastIndex=0;let i=0,mm,fr=null;
-    while((mm=re.exec(t))){if(!fr)fr=document.createDocumentFragment();if(mm.index>i)fr.append(t.slice(i,mm.index));const sp=document.createElement('span');sp.className='mnt'+(me&&_nz(mm[0].slice(1))===_nz(me.name)||_nz(mm[0])==='@todos'?' me':'');sp.textContent=mm[0];fr.append(sp);i=mm.index+mm[0].length}
+    while((mm=re.exec(t))){if(!fr)fr=document.createDocumentFragment();if(mm.index>i)fr.append(t.slice(i,mm.index));const sp=document.createElement('span');sp.className='mnt'+(me&&_nz(mm[0].slice(1))===_nz(me.name)||_nz(mm[0])==='@todos'?' mnme':'');sp.textContent=mm[0];fr.append(sp);i=mm.index+mm[0].length}
     if(fr){if(i<t.length)fr.append(t.slice(i));n.replaceWith(fr)}})}catch(e){}}
 function linkTxt(el,t){t=t==null?'':String(t);const re=/https?:\/\/[^\s]+/g;let i=0,mm,any=false;
   while((mm=re.exec(t))){any=true;let u=mm[0],tail='';const q=u.match(/[.,;:!?)\]]+$/);if(q){tail=q[0];u=u.slice(0,-tail.length)}
@@ -3233,7 +3236,7 @@ function paintGrid(k){
 function paintLive(){
   let b=$('#klbn');if(b)b.remove();const c=cur;if(!c||!c.group||!$('#main .head'))return;
   const mine2=CALLS.find(k=>k.c===c),lv=c.live&&c.live.until>Date.now()?c.live:null;if(!mine2&&!lv)return;
-  b=mk('button','klbn'+(mine2?' me':''));b.id='klbn';const v=mine2?mine2.video:lv.video;
+  b=mk('button','klbn'+(mine2?' mnme':''));b.id='klbn';const v=mine2?mine2.video:lv.video;
   const n=mine2?gIn(mine2):lv.ids.length;
   const i=mk('span','kli');i.innerHTML=ico(v?'video':'phone',18);const t2=mk('div','klt');
   t2.append(mk('b',0,mine2?'Você está na chamada':'Chamada '+(v?'de vídeo':'de voz')+' em andamento'),mk('small',0,n+(n===1?' pessoa':' pessoas')+(mine2?'':' · iniciada por '+lv.by)));
