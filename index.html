@@ -17,11 +17,13 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5074">
+<meta name="mandai-build" content="20261024-5075">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Nunito:wght@400;600;700&family=Lora:wght@400;600&family=Bricolage+Grotesque:wght@400;600;700&family=Playfair+Display:ital,wght@1,600&family=Caveat:wght@600&family=DM+Mono:wght@500&family=Anton&family=Chewy&family=Lobster&family=Bangers&family=Pacifico&family=Permanent+Marker&family=Luckiest+Guy&family=Bungee&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Bricolage+Grotesque:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Bricolage+Grotesque:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
+<script>window._fontsMore=function(){if(window._fm)return;window._fm=1;var l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Lora:wght@400;600&family=Playfair+Display:ital,wght@1,600&family=Caveat:wght@600&family=DM+Mono:wght@500&family=Anton&family=Chewy&family=Lobster&family=Bangers&family=Pacifico&family=Permanent+Marker&family=Luckiest+Guy&family=Bungee&display=swap";document.head.appendChild(l)};(window.requestIdleCallback||function(f){setTimeout(f,2500)})(function(){setTimeout(window._fontsMore,1500)},{timeout:6000});</script>
 <style>
 :root{--bg:#f3f7ff;--panel:#fff;--ink:#0f1b3d;--mute:#6b7a99;--line:#e3eaf7;--out:#2b7cf6;--outink:#fff;--in:#fff;--chip:#e6f0ff;--ok:#22b573;--hl:#ffb347}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e18;--panel:#0f1524;--ink:#e9eef8;--mute:#8794ad;--line:#1b2438;--out:#2f7df6;--outink:#fff;--in:#161e31;--chip:#152447}}
@@ -2896,7 +2898,7 @@ function lt(m){if(m[5]&&m[5].del)return delText(m);return m[4]?({img:'📷 Foto'
 function mediaEl(md,big){
   if(md.k==='stk')return stkEl(md,big?220:150);
   if(md.k==='gif')return gifEl(md,big);
-  if(md.k==='img'){const i=document.createElement('img');i.src=md.src;i.className='mi';i.alt='Imagem';if(!big)i.onclick=()=>viewMedia(md);return i}
+  if(md.k==='img'){const i=document.createElement('img');i.decoding='async';i.src=md.src;i.className='mi';i.alt='Imagem';if(!big)i.onclick=()=>viewMedia(md);return i}
   if(md.k==='vid'){const v=document.createElement('video');v.src=md.src+(String(md.src).startsWith('blob:')||String(md.src).startsWith('data:')?'':'#t=0.1');v.className='mi'+(md.note?' round':'');v.playsInline=true;v.preload='metadata';v.muted=!big;v.addEventListener('loadeddata',()=>{if(!big&&v.paused&&!v.currentTime){try{v.currentTime=.1}catch(e){}}});v.addEventListener('loadedmetadata',()=>{if(v.duration===Infinity){const f=()=>{v.removeEventListener('timeupdate',f);v.currentTime=0};v.addEventListener('timeupdate',f);v.currentTime=1e7}});
     if(big){v.controls=true;return v}
     const w=document.createElement('div');w.className='vbub'+(md.note?' round':'');v.controls=false;const pl=document.createElement('span');pl.className='vplay';pl.innerHTML=ico('send',22);pl.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
