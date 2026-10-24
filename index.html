@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4790">
+<meta name="mandai-build" content="20261023-4810">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -369,7 +369,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--out);outline-of
 .m.new{animation:msgin .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes msgin{from{transform:translateY(10px) scale(.97);opacity:0}}
 .tabs{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:color-mix(in srgb,var(--panel) 88%,transparent);border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.tbg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--out);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--panel);font-style:normal;pointer-events:none}.tbd{position:absolute;top:3px;left:calc(50% + 10px);width:10px;height:10px;border-radius:50%;background:var(--out);box-shadow:0 0 0 2px var(--panel);pointer-events:none}.tb{position:relative;transition:color .2s}.tb i{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.unkb{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;background:color-mix(in srgb,var(--out) 16%,var(--panel));border-bottom:1px solid var(--line);font-size:14px}.unkb span{flex:1 1 100%}.unkb button{padding:8px 14px;border-radius:18px;border:0;background:var(--out);color:#fff;font-weight:700;font-size:14px}.unkb button.bl{background:transparent;color:var(--out);border:1px solid var(--out)}.tbg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--out);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--panel);font-style:normal;pointer-events:none}.tbd{position:absolute;top:3px;left:calc(50% + 10px);width:10px;height:10px;border-radius:50%;background:var(--out);box-shadow:0 0 0 2px var(--panel);pointer-events:none}.tb{position:relative;transition:color .2s}.tb i{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
 .tb.on i{transform:translateY(-1px) scale(1.12)}
 .tb.on::after{content:"";position:absolute;top:0;left:50%;width:22px;height:3px;margin-left:-11px;border-radius:0 0 4px 4px;background:var(--out)}
 .fab{background:linear-gradient(145deg,#4a94ff,#2563eb);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 12px 28px color-mix(in srgb,var(--out) 50%,transparent);transition:transform .15s;animation:fabin .5s .2s both cubic-bezier(.3,1.6,.5,1)}
@@ -2430,7 +2430,12 @@ function bubble0(m,anim){
   if(x.react&&Object.keys(x.react).length){const r=document.createElement('div');r.className='rx'+(x.rxNew?' rxp':'');const tot=Object.values(x.react).reduce((a,b)=>a+b,0);r.textContent=Object.keys(x.react).slice(0,3).join('')+(tot>1?' '+tot:'');d.classList.add('hasrx');delete x.rxNew;d.append(r)}
   return d;
 }
-function openChat(id){const r=open0(id);try{applyLook()}catch(e){}setTimeout(()=>{paintLive();paintSusp();paintLocShare()},0);return r}
+function openChat(id){const r=open0(id);try{applyLook()}catch(e){}setTimeout(()=>{paintLive();paintSusp();paintLocShare();try{paintUnk()}catch(e){}},0);return r}
+function paintUnk(){const o=document.getElementById('unkb');if(o)o.remove();const c=cur;if(!c||c.group||!c.unk||c.saved||c.blocked)return;const box=$('#msgs');if(!box||!box.parentNode)return;
+  const d=document.createElement('div');d.id='unkb';d.className='unkb';const t=document.createElement('span');t.textContent=(c.user?'@'+c.user+' ':'Essa pessoa ')+'ainda não está nos seus contatos.';
+  const b1=document.createElement('button');b1.textContent='Salvar contato';b1.onclick=()=>{c.unk=false;c.saved=true;c.unsaved=false;try{bkSaveContact(c)}catch(e){}d.remove();renderList();snack('Contato salvo')};
+  const b2=document.createElement('button');b2.className='bl';b2.textContent='Bloquear';b2.onclick=()=>{c.blocked=true;try{syncBlock(c)}catch(e){}d.remove();renderList();snack('Contato bloqueado')};
+  d.append(t,b1,b2);box.parentNode.insertBefore(d,box)}
 function msgWin(box){const c=cur,n=c._win||80,st=Math.max(0,c.msgs.length-n);
   if(st>0){const b=mk('button','older','↑ Mensagens anteriores ('+st+')');b.style.cssText='display:block;margin:8px auto;padding:8px 16px;border-radius:16px;background:var(--chip);color:var(--out);font-weight:600;font-size:14px';
     b.onclick=()=>{const h=box.scrollHeight;c._win=(c._win||80)+100;paintMsgs();box.scrollTop=box.scrollHeight-h};box.appendChild(b)}
@@ -6532,8 +6537,8 @@ function rtHM(iso){const d=new Date(iso),n=new Date(),y=new Date(n);y.setDate(n.
 function rtNid(){RT.nid=Math.max(RT.nid,...chats.map(x=>+x.id||0))+1;return RT.nid}
 function rtChat(rid,p){let c=chats.find(x=>x.rid===rid);if(c){rtPhotoApply(c,p);return c}
   c=chats.find(x=>x.uid===p.id&&!x.group&&x.stub);
-  if(c){c.rid=rid;c.stub=false;c.hidden=false;c.name=cn(p.nome)||c.name;c.user=cn(p.usuario)||c.user;rtPhotoApply(c,p);c._srv=rtGSnap(c);return c}
-  c={id:rtNid(),rid,uid:p.id,user:cn(p.usuario),name:cn(p.nome)||('@'+cn(p.usuario)),_sn:cn(p.nome)||undefined,phone:p.telefone?'+'+p.telefone:'',online:false,unread:0,msgs:[],reply:[],real:true};rtPhotoApply(c,p);c._srv=rtGSnap(c);chats.push(c);return c}
+  if(c){c.rid=rid;if(c.stub&&!c.saved)c.unk=true;c.stub=false;c.hidden=false;c.name=cn(p.nome)||c.name;c.user=cn(p.usuario)||c.user;rtPhotoApply(c,p);c._srv=rtGSnap(c);return c}
+  c={id:rtNid(),rid,uid:p.id,user:cn(p.usuario),name:cn(p.nome)||('@'+cn(p.usuario)),_sn:cn(p.nome)||undefined,phone:p.telefone?'+'+p.telefone:'',online:false,unread:0,msgs:[],reply:[],real:true,unk:true};rtPhotoApply(c,p);c._srv=rtGSnap(c);chats.push(c);return c}
 const rtCols='id,conversa_id,remetente_id,texto,criado_em,apagada_em,editada_em,tipo,arquivo_url,midia,expira_em';
 function rtPre(c,m){if(!(c.group&&m[0]==='in'&&!m[4]))return '';const p=chats.find(z=>z.id===(m[5]&&m[5].snd));return p?p.name.split(' ')[0]+': ':''}
 function rtPush(r,initial){
@@ -6721,6 +6726,7 @@ function rtSubscribe(){
   .on('postgres_changes',{event:'*',schema:'public',table:'votos_enquete'},p=>{const r=p.new&&p.new.alvo_id?p.new:p.old;if(!r||r.usuario_id===RT.uid)return;const md=RT.polls&&RT.polls[r.alvo_id];if(md){clearTimeout(md._pt);md._pt=setTimeout(()=>rtPollLoad(md),400)}}).subscribe((st,er)=>{RT.status=st+(er?' '+(er.message||er):'');if(st==='SUBSCRIBED')rtSync()});
 }
 /* ===== banco 7: pessoas, grupos, lido, visto por último, temporárias, enquetes, quem viu ===== */
+async function rtSelfSync(){if(!rtOn())return;try{const r=await SB.from('perfis').select('usuario,nome').eq('id',RT.uid).maybeSingle();const d=r&&r.data;if(!d)return;let ch=false;if(d.usuario&&me.user!==d.usuario){me.user=d.usuario;ch=true}if(d.nome&&!me.name){me.name=d.nome;ch=true}if(ch){try{saveAcc()}catch(e){}try{renderMe()}catch(e){}try{if(!$('#set').hidden)renderSettings()}catch(e){}}if(me.name&&d.nome!==me.name)rtSaveName()}catch(e){}}
 async function rtSaveName(){if(!rtOn()||!me.name)return;try{await SB.from('perfis').update({nome:String(me.name).replace(/[<>]/g,'').slice(0,60),recado:String(me.about||'').replace(/[<>]/g,'').slice(0,300)}).eq('id',RT.uid)}catch(e){}}
 function rtPhotoApply(c,p){try{if(c&&p&&!c.photoLocal){const f=p.foto_url||'';if(f!==(c._pf||'')){c._pf=f;c.photo=f&&String(f).startsWith('data:')?f:undefined}}}catch(e){}}
 async function rtPhotoSync(){if(!rtOn()||!me.photo)return;try{const src=String(me.photo);const go=u=>SB.from('perfis').update({foto_url:u,recado:me.about||''}).eq('id',RT.uid).then(()=>{},()=>{});
@@ -6878,7 +6884,7 @@ async function realStart(){
   try{const pf=await SB.from('perfis').select('telefone').eq('id',u.id).maybeSingle();
     if(pf&&pf.data&&pf.data.telefone&&!me.phone){me.phone='+'+pf.data.telefone;saveAcc()}
     else if(me.phone&&!(pf&&pf.data&&pf.data.telefone))rtSavePhone(true)}catch(e){}
-  await rtLoad();try{rtPhotoSync()}catch(e){}rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
+  await rtLoad();try{rtPhotoSync();rtSelfSync()}catch(e){}rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtOn()){offLoad();rtStatusLoad();rtDeliverSoon();rtReadSoon();rtSeenPing();rtSeenLoad()}else if(rtOn())rtSeenPing()});
 }
 function stLabel(x){const m=x&&x[4],t0=(x&&x[0])||'';return m?(m.k==='vid'?'🎥 Vídeo':'📷 Foto')+(t0?' '+t0:''):(t0||'Status')}
