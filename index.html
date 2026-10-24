@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-4980">
+<meta name="mandai-build" content="20261024-5000">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -5874,11 +5874,11 @@ function imgEdit(src,done,opt){
   // mover o retângulo inteiro
   crp.onpointerdown=e=>{if(e.target!==crp)return;e.preventDefault();crp.setPointerCapture(e.pointerId);let lx=e.clientX,ly=e.clientY;crp.onpointermove=ev=>{const r=cv.getBoundingClientRect(),dx=(ev.clientX-lx)/r.width,dy=(ev.clientY-ly)/r.height;lx=ev.clientX;ly=ev.clientY;const w=cr.x1-cr.x0,h=cr.y1-cr.y0;cr.x0=Math.max(0,Math.min(1-w,cr.x0+dx));cr.y0=Math.max(0,Math.min(1-h,cr.y0+dy));cr.x1=cr.x0+w;cr.y1=cr.y0+h;crPaint()};crp.onpointerup=()=>{crp.onpointermove=null}};
   const applyCrop=()=>{const sx=Math.round(cr.x0*W),sy=Math.round(cr.y0*H),sw=Math.round((cr.x1-cr.x0)*W),sh=Math.round((cr.y1-cr.y0)*H),c2=document.createElement('canvas');c2.width=Math.max(8,sw);c2.height=Math.max(8,sh);c2.getContext('2d').drawImage(base,sx,sy,sw,sh,0,0,sw,sh);setBase(c2)};
-  $$('#iok').onclick=()=>{if(mode==='crop'){applyCrop();setMode('draw');return}const f=flat();let u;try{u=f.toDataURL('image/jpeg',.9)}catch(e){snack('Não consegui salvar a edição.');return}ov.remove();done(u)};
+  $$('#iok').onclick=()=>{if(mode==='crop'){applyCrop();if(!(opt&&opt.cropOnly)){setMode('draw');return}}const f=flat();let u;try{u=f.toDataURL('image/jpeg',.9)}catch(e){snack('Não consegui salvar a edição.');return}ov.remove();done(u)};
   $$('#iex').onclick=()=>{ov.remove()};
   window.addEventListener('resize',()=>{if(mode==='crop'&&cr)crPaint()});
   setMode('draw');
-  if(opt&&opt.crop)setTimeout(()=>{try{$$('#iecr').onclick()}catch(e){}},60);
+  if(opt&&opt.crop)setTimeout(()=>{try{$$('#iecr').onclick()}catch(e){}if(opt.cropOnly){['#ietx','#iepn','#ieun','#iecr'].forEach(i=>{const b=$$(i);if(b)b.style.display='none'})}},60);
 }
 function camChoose(on){
   showModal('<h3>Câmera</h3><div class="agrid"></div>');const mc=$('#modal .mc');mc.classList.add('am');const g=mc.querySelector('.agrid');
@@ -6354,6 +6354,18 @@ function segSimple(src){
   const T=48,seen=new Uint8Array(N*N),st=[];edge.forEach(e=>{if(dist(e)<T&&!seen[e]){seen[e]=1;st.push(e)}});
   while(st.length){const i=st.pop(),cx=i%N,cy=(i/N)|0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const nx=cx+dx,ny=cy+dy;if(nx<0||ny<0||nx>=N||ny>=N)return;const j=ny*N+nx;if(!seen[j]&&dist(j)<T){seen[j]=1;st.push(j)}})}
   const m=new Float32Array(N*N);for(let i=0;i<m.length;i++)m[i]=seen[i]?0:1;return{m,N}}
+/* limpa a máscara: tira fiapos finos soltos (ex.: viga do fundo) e pedaços pequenos separados do objeto principal */
+function stkClean(m,N){
+  const A=N*N,b=new Uint8Array(A);for(let i=0;i<A;i++)b[i]=m[i]>.5?1:0;
+  const box=(src,r,mx)=>{const t=new Uint8Array(A),o=new Uint8Array(A);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){let v=mx?0:1;for(let k=-r;k<=r;k++){const xx=x+k;const w=(xx<0||xx>=N)?(mx?0:1):src[y*N+xx];if(mx){if(w){v=1;break}}else{if(!w){v=0;break}}}t[y*N+x]=v}
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){let v=mx?0:1;for(let k=-r;k<=r;k++){const yy=y+k;const w=(yy<0||yy>=N)?(mx?0:1):t[yy*N+x];if(mx){if(w){v=1;break}}else{if(!w){v=0;break}}}o[y*N+x]=v}
+    return o};
+  const er=box(b,6,false),lab=new Int32Array(A),sizes=[0];let n=0;
+  for(let i=0;i<A;i++){if(er[i]&&!lab[i]){n++;let a=0;const st=[i];lab[i]=n;while(st.length){const j=st.pop();a++;const x=j%N,y=(j/N)|0;if(x>0&&er[j-1]&&!lab[j-1]){lab[j-1]=n;st.push(j-1)}if(x<N-1&&er[j+1]&&!lab[j+1]){lab[j+1]=n;st.push(j+1)}if(y>0&&er[j-N]&&!lab[j-N]){lab[j-N]=n;st.push(j-N)}if(y<N-1&&er[j+N]&&!lab[j+N]){lab[j+N]=n;st.push(j+N)}}sizes.push(a)}}
+  if(!n)return m;let big=0;for(let k=1;k<=n;k++)if(sizes[k]>big)big=sizes[k];
+  const keep=new Uint8Array(A);for(let i=0;i<A;i++)if(lab[i]&&sizes[lab[i]]>=big*.15)keep[i]=1;
+  const dl=box(keep,8,true),o=new Float32Array(A);for(let i=0;i<A;i++)o[i]=dl[i]?m[i]:0;return o}
 function stkApply(src,m,N){
   let on=0;for(let i=0;i<m.length;i++)if(m[i]>.5)on++;const fr=on/m.length;if(fr<.02||fr>.97)return null;
   const mc=document.createElement('canvas');mc.width=mc.height=N;const mx=mc.getContext('2d'),id=mx.createImageData(N,N);
@@ -6375,6 +6387,7 @@ async function stkCut(src,force){
   if(!m){try{const s=segSimple(src);if(s){m=s.m;N=s.N}}catch(e){m=null}}
   if(!m)return null;
   if(!force){const b=stkBlobs(m,N);if(b.big>=3||b.frac<.06)return 'whole'}
+  try{const c2=stkClean(m,N);let on=0,o0=0;for(let i=0;i<c2.length;i++){if(c2[i]>.5)on++;if(m[i]>.5)o0++}if(on>c2.length*.02&&on>=o0*.8)m=c2}catch(e){}
   return stkApply(src,m,N)}
 function lumOf(c){const m=/^#?([0-9a-f]{6})$/i.exec(c||'');if(!m)return .5;const n=parseInt(m[1],16);return(.299*(n>>16&255)+.587*(n>>8&255)+.114*(n&255))/255}
 function skColAt(t){if(t<.08)return'#ffffff';if(t>.94)return'#000000';const h=(t-.08)/.86*300,c=(1-Math.abs(2*.5-1)),f=n=>{const k=(n+h/30)%12,a=Math.min(.5,.5)*1;const v=.5-a*Math.max(-1,Math.min(k-3,9-k,1));return Math.round(v*255).toString(16).padStart(2,'0')};return'#'+f(0)+f(8)+f(4)}
@@ -6483,7 +6496,7 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
     q('#skCut').onclick=()=>{if(busy)return;if(useCut){useCut=false;brd=false;fit();sync();render()}else doCut(true)};
     q('#skB').onclick=()=>{if(mode)setMode(mode);brd=true;brdI=(brdI+1)%BP.length;if(!brdI)brd=false;snack(BPN[brdI]);sync();render()};
     q('#skCr').style.display=hasA?'none':'';
-    q('#skCr').onclick=()=>{if(busy)return;if(mode)setMode(mode);let url;try{url=orig.toDataURL('image/jpeg',.92)}catch(e){return}imgEdit(url,u=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1024/Math.max(im.width,im.height));orig.width=Math.max(1,Math.round(im.width*k));orig.height=Math.max(1,Math.round(im.height*k));orig.getContext('2d').drawImage(im,0,0,orig.width,orig.height);cut=null;useCut=false;brd=false;UN.length=0;fit();sync();render();doCut(false)};im.src=u},{crop:true})};
+    q('#skCr').onclick=()=>{if(busy)return;if(mode)setMode(mode);let url;try{url=orig.toDataURL('image/jpeg',.92)}catch(e){return}imgEdit(url,u=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1024/Math.max(im.width,im.height));orig.width=Math.max(1,Math.round(im.width*k));orig.height=Math.max(1,Math.round(im.height*k));orig.getContext('2d').drawImage(im,0,0,orig.width,orig.height);cut=null;useCut=false;brd=false;UN.length=0;fit();sync();render();doCut(false)};im.src=u},{crop:true,cropOnly:true})};
     q('#skRc').onclick=()=>{const w=q('#skrc');w.hidden=!w.hidden;if(w.hidden&&mode)setMode(mode);q('#skemo').hidden=true;sync()};
     q('#skLs').onclick=()=>setMode('ls');q('#skEr').onclick=()=>setMode('er');q('#skRs').onclick=()=>setMode('rs');
     q('#skbd').onclick=()=>setMode(mode);q('#skbr').oninput=e=>{BR.r=+e.target.value;render()};
