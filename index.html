@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5086">
+<meta name="mandai-build" content="20261024-5087">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2557,7 +2557,7 @@ function open0(id){
 }
 function send(media){
   const inp=$('#txt'),v=inp.value.trim();if(!(v||(media&&media.k))||!cur||cur.blocked)return;if(cur.rid&&media&&media.k&&!['img','vid','aud','file','stk','gif','loc','poll','contact'].includes(media.k)){snack('Este tipo de envio chega em breve.');return}if(cur.creating){snack('Criando o grupo… um instante.');return}if(slowBlock(cur))return;
-  const chat=cur,now=new Date(),h=t(now.getHours(),now.getMinutes());if(chat.later==='agora'){chat.later=null;chat.laterAt=0;setTimeout(()=>{try{laterSave();renderLater()}catch(e){}},0)}
+  const chat=cur,now=new Date(),h=t(now.getHours(),now.getMinutes());if(chat.later){chat.later=null;chat.laterAt=0;setTimeout(()=>{try{laterSave();renderLater()}catch(e){}},0)}
   if(replyTo&&replyTo.m&&!replyTo.th&&!replyTo.st)Object.assign(replyTo,qThumb(replyTo.m));const m=['out',v,h,exp(chat),media&&media.k?media:null,Object.assign({st:'sent',ts:Date.now()},replyTo?{reply:replyTo}:{})];replyTo=null;showReply();chat.msgs.push(m);track(m,chat);if(chat.rid)rtSend(chat,v,m);if(chat.self){m[5].st='read';if(media&&media.k==='img')selfImg(m)}
   $('#msgs').appendChild(bubble(m,true));inp.value='';inp.dispatchEvent(new Event('input'));scroll();renderList();
   setTimeout(()=>{
@@ -2584,7 +2584,8 @@ const ad=c=>c.photo?`url(${c.photo}) center/cover`:c.theme!=null?`linear-gradien
 function applyTheme(){const m=$('#main');if(cur&&cur.theme!=null)m.style.setProperty('--out',themes[cur.theme][1]);else m.style.removeProperty('--out')}
 function sheet(h){const s=$('#sheet');s.innerHTML=h;s.hidden=false;return s}
 function closeSheet(){$('#sheet').hidden=true}
-function renderLater(){const el=$('#later');if(!cur||!el)return;el.innerHTML=cur.later?`<div class="later"><span>⏰</span><b>Responder: ${cur.later}</b><button id="done">Concluir</button></div>`:'';if(cur.later)$('#done').onclick=()=>{cur.later=null;renderLater();renderList()}}
+function laterSnooze(c,min){min=min||60;c.later='em '+min+' min';c.laterAt=Date.now()+min*60000;c.laterFired=false;laterSave();try{renderList();if(cur===c)renderLater()}catch(e){}snack('⏰ Adiado por '+(min>=60?min/60+' h':min+' min'))}
+function renderLater(){const el=$('#later');if(!cur||!el)return;el.innerHTML=cur.later?`<div class="later"><span>⏰</span><b>Responder: ${cur.later}</b><button id="snz">Adiar 1 h</button><button id="done">Concluir</button></div>`:'';if(cur.later){$('#snz').onclick=()=>laterSnooze(cur,60);$('#done').onclick=()=>{cur.later=null;renderLater();renderList();laterSave()}}}
 function laterMenu(){laterFor(cur)}
 function themeMenu(){
   const s=sheet('<h3>Tema desta conversa</h3><div class="sw">'+themes.map((t,i)=>`<button style="background:${t[1]}" class="${cur.theme===i?'on':''}" data-i="${i}" aria-label="${t[0]}"></button>`).join('')+'</div><button class="opt" id="rst">Voltar ao padrão</button>');
@@ -2916,8 +2917,8 @@ function laterNotify(c){
   try{if(navigator.vibrate)navigator.vibrate([120,80,120])}catch(e){}
   const body='Hora de responder '+c.name;
   try{const m=['in','⏰ Lembrete: responder '+c.name,t(new Date().getHours(),new Date().getMinutes())];const was=c.blocked;notify(c,m)}catch(e){}
-  snack('⏰ '+body);
-  try{if(document.hidden&&window.Notification&&Notification.permission==='granted')new Notification('Bippy',{body,tag:'later-'+laterKey(c)})}catch(e){}}
+  try{const sn=mk('div','snack','⏰ '+body+' · ');const bt=mk('button','','Adiar 1 h');bt.style.cssText='color:#c4b5fd;font-weight:800;margin-left:6px';bt.onclick=()=>{sn.remove();laterSnooze(c,60)};sn.appendChild(bt);document.body.appendChild(sn);setTimeout(()=>sn.remove(),6000)}catch(e){snack('⏰ '+body)}
+  try{if(document.hidden&&window.Notification&&Notification.permission==='granted'){const o={body,tag:'later-'+laterKey(c),data:{cid:c.rid||'',lk:laterKey(c)},actions:[{action:'snooze',title:'Adiar 1 h'}]};if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification('Bippy',o)).catch(()=>new Notification('Bippy',{body}));else new Notification('Bippy',{body})}}catch(e){}}
 function starSave(){try{let m={};try{m=JSON.parse(localStorage.getItem('bippy.stars')||'{}')||{}}catch(e){}let ch=0;chats.forEach(c=>c.msgs.forEach(x=>{const o=x[5];if(!o||!o.rid)return;if(o.star===true&&!m[o.rid]){m[o.rid]=1;ch=1}else if(o.star===false&&m[o.rid]){delete m[o.rid];ch=1}}));if(ch)localStorage.setItem('bippy.stars',JSON.stringify(m))}catch(e){}}
 function starRestore(){try{const m=JSON.parse(localStorage.getItem('bippy.stars')||'{}')||{};let ch=0;chats.forEach(c=>c.msgs.forEach(x=>{const o=x[5];if(o&&o.rid&&o.star===undefined&&m[o.rid]){o.star=true;ch=1}}));if(ch&&cur)paintMsgs()}catch(e){}}
 setInterval(()=>{starRestore();starSave()},20000);setTimeout(starRestore,2500);document.addEventListener('visibilitychange',()=>{if(document.hidden)starSave()});
@@ -6749,7 +6750,7 @@ async function pushSync(ask){
     if(r&&r.error)throw r.error;return true
   }catch(e){try{rtErr(e)}catch(_){}return false}}
 async function pushOff(){try{if(!('serviceWorker' in navigator))return;const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){const ep=sub.endpoint;try{await SB.from('push_subs').delete().eq('endpoint',ep)}catch(e){}try{await sub.unsubscribe()}catch(e){}}}catch(e){}}
-try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.t==='open'&&d.cid){const c=chats.find(x=>x.rid===d.cid);if(c){try{closePages()}catch(_){}openChat(c.id)}}})}catch(e){}
+try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.t==='snooze'){const c=chats.find(x=>laterKey(x)===d.lk);if(c)laterSnooze(c,60);return}if(d.t==='open'&&d.cid){const c=chats.find(x=>x.rid===d.cid);if(c){try{closePages()}catch(_){}openChat(c.id)}}})}catch(e){}
 function gifPick(cb){nxFile('image/gif,image/webp,image/png',f=>{if(f.size>900*1024){snack('GIF muito grande (máximo 900 KB)');return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
 function buildQr(c){
   const QR=[['👍','Ok, combinado'],['🙏','Obrigado(a)'],['❓','Não entendi, pode repetir?'],['⏰','Já te respondo'],['🚨','Preciso de ajuda'],['📞','Pode me ligar?'],['🏠','Cheguei em casa'],['😴','Estou descansando'],['🍽️','Estou com fome'],['💊','Hora do remédio'],['🚻','Preciso ir ao banheiro'],['❤️','Te amo']];
