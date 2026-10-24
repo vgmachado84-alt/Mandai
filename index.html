@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5084">
+<meta name="mandai-build" content="20261024-5085">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -3132,7 +3132,29 @@ function viewMedia(md){
 }
 
 /* ===== edição de vídeo antes de enviar: cortar, tirar o som e reduzir (feito no aparelho) ===== */
+async function vidFast(src,ed,prog,isCancel){
+  const MB=await (window._mbp||(window._mbp=import('./mediabunny.mjs')));
+  const blob=await (await fetch(src)).blob();
+  const input=new MB.Input({source:new MB.BlobSource(blob),formats:[MB.MP4,MB.QTFF,MB.WEBM,MB.MATROSKA]});
+  const vt=await input.getPrimaryVideoTrack();if(!vt)throw new Error('sem video');
+  const dur=await input.computeDuration(),st=Math.max(0,ed.st||0),en=Math.min(dur,ed.en||dur);
+  const out=new MB.Output({format:new MB.Mp4OutputFormat(),target:new MB.BufferTarget()});
+  const o={input,output:out,trim:{start:st,end:en}};
+  const w=vt.displayWidth,h=vt.displayHeight;
+  if(ed.q){const sh=Math.min(w,h);o.video={quality:ed.q===480?MB.QUALITY_LOW:MB.QUALITY_MEDIUM};if(sh>ed.q){if(w<=h)o.video.width=ed.q;else o.video.height=ed.q}}
+  if(ed.mute)o.audio={discard:true};
+  const conv=await MB.Conversion.init(o);
+  if(!conv.isValid)throw new Error('invalido');
+  if(!ed.mute&&conv.discardedTracks.some(d=>d.track&&d.track.type==='audio'))throw new Error('audio nao suportado');
+  conv.onProgress=p=>{try{prog(p)}catch(e){}};
+  let cancelled=false;const iv=setInterval(()=>{if(isCancel()){cancelled=true;clearInterval(iv);try{conv.cancel()}catch(e){}}},200);
+  try{await conv.execute()}catch(e){if(cancelled)return null;throw e}finally{clearInterval(iv)}
+  if(cancelled)return null;
+  const buf=out.target.buffer;if(!buf||!buf.byteLength)throw new Error('vazio');
+  return {blob:new Blob([buf],{type:'video/mp4'}),type:'video/mp4'}
+}
 async function vidProcess(src,ed,prog,isCancel){
+  try{const fr=await vidFast(src,ed,prog,isCancel);if(fr||isCancel())return fr||null}catch(e){try{console.log('rapido indisponivel:',e&&e.message)}catch(_){}}
   const v=document.createElement('video');v.playsInline=true;v.preload='auto';v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:.02;pointer-events:none';v.src=src;document.body.appendChild(v);
   let ac=null,tm=0;
   try{
