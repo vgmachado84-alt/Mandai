@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5090">
+<meta name="mandai-build" content="20261024-5091">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2917,15 +2917,15 @@ function laterFor(c0,after){
     set(dl(sv.d)+' às '+two(sv.h)+':'+two(sv.m),ts)};
 }
 function laterKey(c){return String(c.rid||c.id)}
-function laterSave(){try{const old=JSON.parse(localStorage.getItem('mandai.later')||'{}'),keys=new Set(chats.map(laterKey)),mp={};
+function laterSave(){try{const old=JSON.parse(localStorage.getItem('mandai.later')||'{}'),keys=new Set(chats.flatMap(c=>[laterKey(c),String(c.id)])),mp={};
   Object.keys(old).forEach(k=>{if(!keys.has(k))mp[k]=old[k]});
-  chats.forEach(c=>{if(c.later&&c.laterAt)mp[laterKey(c)]={l:c.later,at:c.laterAt,f:!!c.laterFired}});
+  chats.forEach(c=>{if(c.later&&c.laterAt){const v={l:c.later,at:c.laterAt,f:!!c.laterFired};mp[laterKey(c)]=v;mp[String(c.id)]=v}});
   localStorage.setItem('mandai.later',JSON.stringify(mp))}catch(e){}}
 function laterCheck(){
   let mp={};try{mp=JSON.parse(localStorage.getItem('mandai.later')||'{}')}catch(e){}
   const n=Date.now();let ch=false;
   chats.forEach(c=>{
-    if(!c._lr){c._lr=1;const o=mp[laterKey(c)];if(o&&!c.later){c.later=o.l;c.laterAt=o.at;c.laterFired=o.f;ch=true}}
+    if(!c._lr){c._lr=1;const o=mp[laterKey(c)]||mp[String(c.id)];if(o&&!c.later){c.later=o.l;c.laterAt=o.at;c.laterFired=o.f;ch=true}}
     if(c.later&&c.laterAt&&!c.laterFired&&n>=c.laterAt){c.laterFired=true;c.later='agora';ch=true;laterNotify(c)}});
   laterSave();if(ch){try{renderList();if(cur)renderLater()}catch(e){}}}
 function laterNotify(c){
@@ -7319,7 +7319,7 @@ async function realStart(){
   try{const pf=await SB.from('perfis').select('telefone').eq('id',u.id).maybeSingle();
     if(pf&&pf.data&&pf.data.telefone&&!me.phone){me.phone='+'+pf.data.telefone;saveAcc()}
     else if(me.phone&&!(pf&&pf.data&&pf.data.telefone))rtSavePhone(true)}catch(e){}
-  await rtLoad();try{rtPhotoSync();rtSelfSync()}catch(e){}setTimeout(()=>obxResume(),2500);rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
+  await rtLoad();try{rtPhotoSync();rtSelfSync()}catch(e){}try{laterCheck()}catch(e){}setTimeout(()=>obxResume(),2500);rtSubscribe();rtStatusLoad();rtPresence();rtBoot();setTimeout(()=>{try{rtInviteOpen()}catch(e){}try{const u=sessionStorage.getItem('mandai.u');if(u){sessionStorage.removeItem('mandai.u');rtPersonOpen(u)}}catch(e){}},1500);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtOn()){offLoad();rtStatusLoad();rtDeliverSoon();rtReadSoon();rtSeenPing();rtSeenLoad()}else if(rtOn())rtSeenPing()});
 }
 function stLabel(x){const m=x&&x[4],t0=(x&&x[0])||'';return m?(m.k==='vid'?'🎥 Vídeo':'📷 Foto')+(t0?' '+t0:''):(t0||'Status')}
