@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4710">
+<meta name="mandai-build" content="20261023-4720">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -369,7 +369,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--out);outline-of
 .m.new{animation:msgin .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes msgin{from{transform:translateY(10px) scale(.97);opacity:0}}
 .tabs{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:color-mix(in srgb,var(--panel) 88%,transparent);border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.tb{position:relative;transition:color .2s}.tb i{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.tbg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--out);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--panel);font-style:normal;pointer-events:none}.tbd{position:absolute;top:3px;left:calc(50% + 10px);width:10px;height:10px;border-radius:50%;background:var(--out);box-shadow:0 0 0 2px var(--panel);pointer-events:none}.tb{position:relative;transition:color .2s}.tb i{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
 .tb.on i{transform:translateY(-1px) scale(1.12)}
 .tb.on::after{content:"";position:absolute;top:0;left:50%;width:22px;height:3px;margin-left:-11px;border-radius:0 0 4px 4px;background:var(--out)}
 .fab{background:linear-gradient(145deg,#4a94ff,#2563eb);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 12px 28px color-mix(in srgb,var(--out) 50%,transparent);transition:transform .15s;animation:fabin .5s .2s both cubic-bezier(.3,1.6,.5,1)}
@@ -2327,8 +2327,16 @@ function selfSave(){const c=chats.find(x=>x.self);if(!c)return;
   if(j===_selfLast)return;try{localStorage.setItem('bippy.self',j);_selfLast=j}catch(e){}}
 function selfImg(m){const d=m[4];if(!d||d.k!=='img'||/^data:/.test(d.src||''))return;const im=new Image();im.onload=()=>{try{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);d.src=c.toDataURL('image/jpeg',.72)}catch(e){}};im.src=d.src}
 setInterval(()=>{try{selfSave()}catch(e){}},3000);
+function tabBadges(){try{
+  const un=chats.filter(c=>!c.hidden&&!c.stub&&!c.blocked&&!c.pending&&c.unread).length;
+  let stN=false;try{stN=sActive().some(c=>!seen[c.id])||(typeof stat==='object'&&false)}catch(e){}
+  const set=(t,node)=>{const b=document.querySelector('#tabs .tb[data-t="'+t+'"]');if(!b)return;b.querySelectorAll('.tbg,.tbd').forEach(x=>x.remove());if(node)b.appendChild(node)};
+  let a=null;if(un){a=document.createElement('span');a.className='tbg';a.textContent=un>99?'99+':un;a.setAttribute('aria-label',un+' conversa(s) não lida(s)')}set('c',a);
+  let d=null;if(stN){d=document.createElement('span');d.className='tbd';d.setAttribute('aria-label','Status novo')}set('s',d);
+}catch(e){}}
+setInterval(tabBadges,1500);
 function renderList(){
-  try{selfEnsure()}catch(e){}
+  try{selfEnsure()}catch(e){}try{tabBadges()}catch(e){}
   const f=$('#q').value.toLowerCase();
   if(sMode&&sKind&&sKind!=='unread'&&sKind!=='groups'){renderKind();return}
   $('#list').innerHTML='';if(requests.length){const rr=document.createElement('button');rr.className='rq2';rr.textContent='📨 Pedidos de conversa ('+requests.length+')';rr.onclick=reqMenu;$('#list').appendChild(rr)}
