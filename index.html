@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5040">
+<meta name="mandai-build" content="20261024-5060">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -355,6 +355,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--out);outline-of
 .compose{align-items:flex-end;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));gap:8px;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 #txt{width:100%;resize:none;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);outline:0;background:var(--panel);color:var(--ink);font:inherit;font-size:16px;line-height:1.35;padding:14px 48px 14px 18px;min-height:50px;max-height:120px;border-radius:26px;box-shadow:0 2px 10px rgba(15,27,61,.06);transition:box-shadow .2s,border-color .2s;display:block}
 #txt::placeholder{color:var(--mute);opacity:.85}
+#txt{scrollbar-width:none;-ms-overflow-style:none}#txt::-webkit-scrollbar{display:none;width:0;height:0}
 .tw:focus-within #txt{border-color:color-mix(in srgb,var(--out) 60%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--out) 14%,transparent),0 10px 28px color-mix(in srgb,var(--out) 16%,transparent)}
 .tw.flash #txt{animation:fl .5s}
 .emo{top:auto;bottom:13px;transform:none}
@@ -6558,6 +6559,21 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
     if(hasA){cut=stkTrim(orig)||orig;useCut=true;brd=false;fit();sync();render()}else doCut(false)};
   if(file)go(file);else nxFile('image/*',go)}
 function stkPick(cb){nxFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d'),sq=Math.min(im.width,im.height);x.save();rrect(x,8,8,N-16,N-16,60);x.clip();x.drawImage(im,(im.width-sq)/2,(im.height-sq)/2,sq,sq,8,8,N-16,N-16);x.restore();x.lineWidth=10;x.strokeStyle='#fff';rrect(x,8,8,N-16,N-16,60);x.stroke();cb(c.toDataURL('image/webp',.82))};im.src=r.result};r.readAsDataURL(f)})}
+
+/* colar imagem na caixa de mensagem (ex.: objeto copiado do Google Fotos) → enviar como figurinha ou foto */
+async function stkFromImg(f,cb){let bm;try{bm=await createImageBitmap(f)}catch(e){snack('Não consegui abrir a imagem');return}
+  const c0=document.createElement('canvas');c0.width=bm.width;c0.height=bm.height;c0.getContext('2d').drawImage(bm,0,0);
+  const tr=stkTrim(c0)||c0;let sz=512,d='';
+  for(;;){const c=document.createElement('canvas');c.width=c.height=sz;const x=c.getContext('2d'),k=Math.min((sz-24)/tr.width,(sz-24)/tr.height),w=tr.width*k,h=tr.height*k;x.drawImage(tr,(sz-w)/2,(sz-h)/2,w,h);let ok=false;for(const q of [.8,.62,.45]){d=c.toDataURL('image/webp',q);if(d.length<=40000){ok=true;break}}if(ok||sz<=256)break;sz=Math.round(sz*.8)}
+  cb(d)}
+function pasteImg(f){
+  const url=URL.createObjectURL(f);
+  showModal('<h3>Imagem colada</h3><div style="text-align:center;margin:6px 0 14px"><img id="pmi" alt="Imagem colada" style="max-width:70%;max-height:200px;border-radius:12px;background:conic-gradient(#ddd 25%,#fff 0 50%,#ddd 0 75%,#fff 0) 0 0/16px 16px"></div><button class="btn" id="pm1">Enviar como figurinha</button><button class="btn ghost" id="pm2">Enviar como foto</button><button class="btn ghost" id="pm3">Editar figurinha</button><button class="btn ghost" id="pmx">Cancelar</button>');
+  $('#pmi').src=url;$('#pmx').onclick=closeModal;
+  $('#pm1').onclick=()=>{closeModal();stkFromImg(f,d=>{try{send({k:'stk',src:d})}catch(e){}})};
+  $('#pm2').onclick=()=>{closeModal();multiReview([{k:'img',src:url,name:f.name||'imagem.png',size:fmtSize(f.size)}])};
+  $('#pm3').onclick=()=>{closeModal();stkCreate(src=>{S.mystk=[src,...(S.mystk||[])].slice(0,60);try{persist()}catch(e){}try{send({k:'stk',src})}catch(e){}},f)}}
+document.addEventListener('paste',e=>{try{if(!cur||!e.target||e.target.id!=='txt')return;const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.kind==='file'&&x.type.startsWith('image/'));if(!it)return;const f=it.getAsFile();if(!f)return;e.preventDefault();pasteImg(f)}catch(er){}});
 function gifPick(cb){nxFile('image/gif,image/webp,image/png',f=>{if(f.size>900*1024){snack('GIF muito grande (máximo 900 KB)');return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
 function buildQr(c){
   const QR=[['👍','Ok, combinado'],['🙏','Obrigado(a)'],['❓','Não entendi, pode repetir?'],['⏰','Já te respondo'],['🚨','Preciso de ajuda'],['📞','Pode me ligar?'],['🏠','Cheguei em casa'],['😴','Estou descansando'],['🍽️','Estou com fome'],['💊','Hora do remédio'],['🚻','Preciso ir ao banheiro'],['❤️','Te amo']];
