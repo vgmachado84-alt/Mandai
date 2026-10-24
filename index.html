@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5082">
+<meta name="mandai-build" content="20261024-5083">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2165,6 +2165,14 @@ html{background:var(--panel)}
 .vsh{position:absolute;top:50%;width:26px;height:44px;margin:-22px 0 0 -13px;display:grid;place-items:center;touch-action:none}.vsh::after{content:"";width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .vtinf{display:flex;align-items:center;gap:10px;margin-top:10px}.vtinf button{width:44px;height:36px;border-radius:18px;border:0;background:rgba(0,0,0,.5);color:#fff;display:grid;place-items:center}.vtinf .vtp{flex:none;padding:7px 14px;border-radius:18px;background:rgba(0,0,0,.5);color:#fff;font-size:15px}
 .rvtb .rvq{font-weight:800;font-size:14px}.rvtb .rvq.on{background:#fff;color:#111}
+.prv .rvtb{top:calc(12px + env(safe-area-inset-top,0px));right:12px;gap:8px}.prv .rvtb button{width:36px;height:36px}.prv .rvtb button svg{width:18px;height:18px}
+.prv .rvtb .rvq{font-size:12px;letter-spacing:.2px}
+.vtl{top:calc(58px + env(safe-area-inset-top,0px))!important;left:10px!important;right:10px!important}
+.vst{height:38px!important;margin:0 10px!important}
+.vsh{width:24px!important;height:34px!important;margin:-17px 0 0 -12px!important}.vsh::after{width:10px!important;height:10px!important}
+.vtinf{margin-top:8px!important;gap:8px!important}.vtinf button{width:36px!important;height:28px!important;border-radius:14px!important}.vtinf button svg{width:16px;height:16px}
+.vtinf .vtp{padding:5px 11px!important;font-size:12.5px!important;border-radius:14px!important}
+.prvi video::-webkit-media-controls-mute-button,.prvi video::-webkit-media-controls-volume-slider,.prvi video::-webkit-media-controls-volume-control-container{display:none!important}
 </style>
 </head>
 <body>
@@ -3159,7 +3167,7 @@ async function vidThumbs(src,dur,n){const v=document.createElement('video');v.mu
 function vtlSetup(o,it,v){
   const q=x=>o.querySelector(x),bar=q('#vst'),fil=q('#vsf'),ha=q('#vsa'),hb=q('#vsb'),sx=q('#vsx'),mu=q('#vmu'),pl=q('#vpl'),qb=q('#prvq');
   const ed=it.ed||(it.ed={st:0,en:0,q:0,mute:false,dur:0});
-  const SPK='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>',
+  const SPK='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>',
     ON=SPK+'<path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',OFF=SPK+'<line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
   const info=()=>{if(!ed.dur){pl.textContent='';return}const f=(ed.en-ed.st)/ed.dur,k=ed.q===480?.2:ed.q===720?.45:1,edited=ed.q||ed.mute||f<.99,b=it.m.bytes?it.m.bytes*f*(edited?(ed.q?k:.85):1):0;pl.textContent=fmt(ed.en-ed.st)+(b?' • '+fmtSize(b):'')};
   const layout=()=>{const w=bar.clientWidth,d=ed.dur||1,a=ed.st/d*w,b=ed.en/d*w;ha.style.left=a+'px';hb.style.left=b+'px';sx.style.left=a+'px';sx.style.width=Math.max(0,b-a)+'px'};
@@ -3182,7 +3190,7 @@ function multiReview(list){
   const old=document.getElementById('prv');if(old)old.remove();
   const items=list.map(m=>({m,cap:''}));let sel=0;
   const o=document.createElement('div');o.id='prv';o.className='prv';
-  o.innerHTML='<div class="prvi" id="prvi"></div><div class="rvtb"><button type="button" id="prvq" class="rvq" hidden aria-label="Qualidade do vídeo">HD</button><button type="button" id="prvd" aria-label="Baixar sem enviar">'+ico('download',22)+'</button><button type="button" id="prve" aria-label="Editar foto">'+ico('edit',22)+'</button></div><div class="vtl" id="vtl" hidden><div class="vst" id="vst"><div class="vsf" id="vsf"></div><div class="vsx" id="vsx"></div><div class="vsh" id="vsa"></div><div class="vsh" id="vsb"></div></div><div class="vtinf"><button type="button" id="vmu" aria-label="Som do vídeo"></button><span class="vtp" id="vpl"></span></div></div><button class="cx" id="prvx" aria-label="Cancelar" style="position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;z-index:3">'+ico('x',22)+'</button><div class="prvth" id="prvth"></div><div class="cap2"><button type="button" class="prvadd" id="prvadd" aria-label="Adicionar mais fotos ou vídeos"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v5a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h7"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 18l-5-5-8 8"/><path d="M19 2v6M16 5h6"/></svg></button><input id="prvc" placeholder="Adicione uma legenda…" maxlength="120" autocomplete="off" aria-label="Legenda"><button class="send" id="prvs" aria-label="Enviar">'+ico('send',22)+'<b id="prvn"></b></button></div>';
+  o.innerHTML='<div class="prvi" id="prvi"></div><div class="rvtb"><button type="button" id="prvq" class="rvq" hidden aria-label="Qualidade do vídeo">HD</button><button type="button" id="prvd" aria-label="Baixar sem enviar">'+ico('download',22)+'</button><button type="button" id="prve" aria-label="Editar foto">'+ico('edit',22)+'</button></div><div class="vtl" id="vtl" hidden><div class="vst" id="vst"><div class="vsf" id="vsf"></div><div class="vsx" id="vsx"></div><div class="vsh" id="vsa"></div><div class="vsh" id="vsb"></div></div><div class="vtinf"><button type="button" id="vmu" aria-label="Som do vídeo"></button><span class="vtp" id="vpl"></span></div></div><button class="cx" id="prvx" aria-label="Cancelar" style="position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;z-index:3;display:grid;place-items:center">'+ico('x',18)+'</button><div class="prvth" id="prvth"></div><div class="cap2"><button type="button" class="prvadd" id="prvadd" aria-label="Adicionar mais fotos ou vídeos"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v5a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h7"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 18l-5-5-8 8"/><path d="M19 2v6M16 5h6"/></svg></button><input id="prvc" placeholder="Adicione uma legenda…" maxlength="120" autocomplete="off" aria-label="Legenda"><button class="send" id="prvs" aria-label="Enviar">'+ico('send',22)+'<b id="prvn"></b></button></div>';
   document.body.appendChild(o);const q=x=>o.querySelector(x),box=q('#prvi'),th=q('#prvth'),ci=q('#prvc');
   const paint=()=>{if(!items.length){o.remove();return}if(sel>=items.length)sel=items.length-1;const it=items[sel],m=it.m;
     box.innerHTML='';const e=m.k==='vid'?mediaEl(m,true):document.createElement('img');if(m.k!=='vid'){e.src=m.src;e.alt='Foto'}else{e.controls=true;e.autoplay=false}box.appendChild(e);
