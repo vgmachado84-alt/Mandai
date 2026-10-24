@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5060">
+<meta name="mandai-build" content="20261024-5070">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -4048,8 +4048,8 @@ function notifMenu(){
   $('#n3').textContent='Vibração: '+(notifS.vib?'Ativada':'Desativada');
   $('#n3b').textContent='Som de mensagens: '+(notifS.snd?'Ativado':'Desativado');$('#n3c').textContent='Sons de chamadas: '+(notifS.csnd?'Ativados':'Desativados');
   $('#n3b').onclick=()=>{notifS.snd=!notifS.snd;if(notifS.snd)SND.test();notifMenu()};$('#n3c').onclick=()=>{notifS.csnd=!notifS.csnd;if(notifS.csnd)SND.conn();notifMenu()};
-  $('#n1').onclick=()=>{notifS.on=!notifS.on;notifMenu()};
-  $('#n2').onclick=()=>{notifS.prev=!notifS.prev;notifMenu()};
+  $('#n1').onclick=()=>{notifS.on=!notifS.on;notifMenu();pushSync(true)};
+  $('#n2').onclick=()=>{notifS.prev=!notifS.prev;notifMenu();pushSync(false)};
   $('#n3').onclick=()=>{notifS.vib=!notifS.vib;notifMenu()};
   const test=md=>{const c=chats.find(x=>!x.group&&!x.blocked&&x!==cur);closeModal();if(c)setTimeout(()=>incoming(c,md?'':'Oi! Isso é um teste de notificação 🙂',md),600)};
   $('#n4o').onclick=()=>{const cv=document.createElement('canvas');cv.width=360;cv.height=480;const g=cv.getContext('2d'),gr=g.createLinearGradient(0,0,360,480);gr.addColorStop(0,'#6a5cff');gr.addColorStop(1,'#ff7aa8');g.fillStyle=gr;g.fillRect(0,0,360,480);g.fillStyle='#fff';g.font='300 40px sans-serif';g.textAlign='center';g.fillText('Foto de teste',180,250);test({k:'img',src:cv.toDataURL('image/jpeg',.8),once:true})};
@@ -4371,7 +4371,7 @@ function storageView(){
   $('#stc').onclick=()=>{chats.forEach(c=>{c.msgs=c.msgs.filter(m=>!(m[4]&&['img','vid','aud'].includes(m[4].k)))});closeModal();renderList();if(cur)paintMsgs()};
   $('#stx').onclick=closeModal;
 }
-function quitNow(){$('#set').hidden=true;if(SB&&me.sb)SB.auth.signOut().catch(()=>{});me.user=null;if(dbAcc){dbAcc.delete().catch(()=>{});lastSaved=''}try{localStorage.removeItem('prosa.acc')}catch(e){}closeModal();wipeState().finally(()=>location.reload())}
+function quitNow(){$('#set').hidden=true;if(SB&&me.sb){pushOff().finally(()=>SB.auth.signOut().catch(()=>{}))}me.user=null;if(dbAcc){dbAcc.delete().catch(()=>{});lastSaved=''}try{localStorage.removeItem('prosa.acc')}catch(e){}closeModal();wipeState().finally(()=>location.reload())}
 function deactAccount(){
   dlg('Desativar sua conta?',[['Cancelar'],['Desativar',async()=>{
     if(_real()){let r;try{r=await SB.rpc('desativar_minha_conta')}catch(e){r={error:e}}if(r&&r.error){snack('Não foi possível desativar agora');return}}
@@ -4387,7 +4387,7 @@ function deleteAccount(){
 function logout(){
   showModal('<h3>Sair da conta?</h3><p class="note" style="text-align:center">'+(me.sb?'Para voltar, entre com seu e-mail e senha.':'Você precisará da frase de recuperação para voltar.')+'</p><button class="btn danger" id="lo1">Sair</button><button class="btn ghost" id="lo2">Cancelar</button>');
   $('#lo2').onclick=closeModal;
-  $('#lo1').onclick=()=>{$('#set').hidden=true;if(SB&&me.sb)SB.auth.signOut().catch(()=>{});me.user=null;if(dbAcc){dbAcc.delete().catch(()=>{});lastSaved=''}try{localStorage.removeItem('prosa.acc')}catch(e){}closeModal();wipeState().finally(()=>location.reload())};
+  $('#lo1').onclick=()=>{$('#set').hidden=true;if(SB&&me.sb){pushOff().finally(()=>SB.auth.signOut().catch(()=>{}))}me.user=null;if(dbAcc){dbAcc.delete().catch(()=>{});lastSaved=''}try{localStorage.removeItem('prosa.acc')}catch(e){}closeModal();wipeState().finally(()=>location.reload())};
 }
 let QRL=null;
 function qrReal(text,cb){
@@ -6574,6 +6574,25 @@ function pasteImg(f){
   $('#pm2').onclick=()=>{closeModal();multiReview([{k:'img',src:url,name:f.name||'imagem.png',size:fmtSize(f.size)}])};
   $('#pm3').onclick=()=>{closeModal();stkCreate(src=>{S.mystk=[src,...(S.mystk||[])].slice(0,60);try{persist()}catch(e){}try{send({k:'stk',src})}catch(e){}},f)}}
 document.addEventListener('paste',e=>{try{if(!cur||!e.target||e.target.id!=='txt')return;const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.kind==='file'&&x.type.startsWith('image/'));if(!it)return;const f=it.getAsFile();if(!f)return;e.preventDefault();pasteImg(f)}catch(er){}});
+
+/* notificações com o app fechado (Web Push) */
+const VAPID_PUB='BNxkWzdlxfcKtN27GllOCoyKKHx7P7Luq1Ae3DCqfwo6M1rt8C6Yai7qOfGPQvsGFd9d5-JfpkRN_lStBIcQGmM';
+const _u8=b=>{const p='='.repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))};
+const _b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function pushSync(ask){
+  try{
+    if(!rtOn()||!('serviceWorker' in navigator)||!('PushManager' in window)||!window.Notification)return false;
+    const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+    if(!notifS.on){if(sub){const ep=sub.endpoint;try{await sub.unsubscribe()}catch(e){}try{await SB.from('push_subs').delete().eq('endpoint',ep)}catch(e){}}return false}
+    if(Notification.permission==='default'&&ask)try{await Notification.requestPermission()}catch(e){}
+    if(Notification.permission!=='granted'){if(ask)snack('Ative as notificações do Bippy nas configurações do navegador');return false}
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_u8(VAPID_PUB)});
+    const j=sub.toJSON(),k=j.keys||{};
+    const r=await SB.from('push_subs').upsert({usuario_id:RT.uid,endpoint:j.endpoint,p256dh:k.p256dh,auth:k.auth,prev:!!notifS.prev},{onConflict:'endpoint'});
+    if(r&&r.error)throw r.error;return true
+  }catch(e){try{rtErr(e)}catch(_){}return false}}
+async function pushOff(){try{if(!('serviceWorker' in navigator))return;const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){const ep=sub.endpoint;try{await SB.from('push_subs').delete().eq('endpoint',ep)}catch(e){}try{await sub.unsubscribe()}catch(e){}}}catch(e){}}
+try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.t==='open'&&d.cid){const c=chats.find(x=>x.rid===d.cid);if(c){try{closePages()}catch(_){}openChat(c.id)}}})}catch(e){}
 function gifPick(cb){nxFile('image/gif,image/webp,image/png',f=>{if(f.size>900*1024){snack('GIF muito grande (máximo 900 KB)');return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
 function buildQr(c){
   const QR=[['👍','Ok, combinado'],['🙏','Obrigado(a)'],['❓','Não entendi, pode repetir?'],['⏰','Já te respondo'],['🚨','Preciso de ajuda'],['📞','Pode me ligar?'],['🏠','Cheguei em casa'],['😴','Estou descansando'],['🍽️','Estou com fome'],['💊','Hora do remédio'],['🚻','Preciso ir ao banheiro'],['❤️','Te amo']];
@@ -6903,6 +6922,8 @@ async function rtLoad(){
     (gc.data||[]).forEach(cv=>rtGroupApply(cv,(gp.data||[]).filter(q=>q.conversa_id===cv.id)));
     (m.data||[]).slice().sort((a,b)=>a.criado_em<b.criado_em?-1:1).forEach(r=>rtPush(r,true));
     chats.forEach(delApply);renderList();rtOnceSync();try{renderChips()}catch(e){}
+    try{pushSync(false)}catch(e){}
+    try{const q0=new URLSearchParams(location.search).get('c');if(q0){const c0=chats.find(x=>x.rid===q0);if(c0){history.replaceState(null,'',location.pathname);openChat(c0.id)}}}catch(e){}
   }catch(e){rtErr(e);snack('Sem conexão para carregar as conversas.')}
 }
 let _gpb=0;
