@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261023-4780">
+<meta name="mandai-build" content="20261023-4790">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -4085,6 +4085,7 @@ function onboarding(){
           if(av.data===false){back();m.textContent='Esse @ já está em uso. Escolha outro.';m.classList.add('bad');$('#on2').focus();return}
           const r=await SB.auth.signUp({email:e,password:a,options:{emailRedirectTo:location.origin+location.pathname,data:{usuario:u,nome:n,maior_de_18:true,nascimento:bv,telefone:rtTel($('#on7').value)}}});
           if(r.error)throw r.error;
+          if(r.data&&r.data.user&&Array.isArray(r.data.user.identities)&&r.data.user.identities.length===0){back();err($('#on3'),'Esse e-mail já tem uma conta no Bippy. Entre com ele, ou use outro e-mail.');return}
           if(!r.data.session){back();confirmMail(e,n,u);return}
           enterReal(n,u,e);
         }catch(x){back();err($('#on3'),sbMsg(x))}})();
