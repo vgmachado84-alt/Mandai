@@ -17,7 +17,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5070">
+<meta name="mandai-build" content="20261024-5072">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2451,7 +2451,7 @@ function bubble0(m,anim){
 function openChat(id){const r=open0(id);try{applyLook()}catch(e){}setTimeout(()=>{paintLive();paintSusp();paintLocShare();try{paintUnk()}catch(e){}},0);return r}
 function paintUnk(){const o=document.getElementById('unkb');if(o)o.remove();const c=cur;if(!c||c.group||!c.unk||c.saved||c.blocked)return;const box=$('#msgs');if(!box||!box.parentNode)return;
   const d=document.createElement('div');d.id='unkb';d.className='unkb';const t=document.createElement('span');t.textContent=(c.user?'@'+c.user+' ':'Essa pessoa ')+'ainda não está nos seus contatos.';
-  const b1=document.createElement('button');b1.textContent='Salvar contato';b1.onclick=()=>{c.unk=false;c.saved=true;c.unsaved=false;try{bkSaveContact(c)}catch(e){}d.remove();renderList();snack('Contato salvo')};
+  const b1=document.createElement('button');b1.textContent='Salvar contato';b1.onclick=()=>saveContactAsk(c,d);
   const b2=document.createElement('button');b2.className='bl';b2.textContent='Bloquear';b2.onclick=()=>{c.blocked=true;try{syncBlock(c)}catch(e){}d.remove();renderList();snack('Contato bloqueado')};
   d.append(t,b1,b2);box.parentNode.insertBefore(d,box)}
 function msgWin(box){const c=cur,n=c._win||80,st=Math.max(0,c.msgs.length-n);
@@ -2762,7 +2762,7 @@ function contactForm(title,c,save){
 function editContact(c){if(arguments[0]&&arguments[0].group&&!canEdit(arguments[0])){snack('Só administradores podem alterar os dados do grupo');return}
   if(c.group&&!(c.admins||[]).includes('me')){groupInfo(c);return}
   contactForm(c.group?'Editar grupo':'Editar contato',c,d=>{
-    c.name=d.name;if(c.group){c.desc=d.desc;c.members=d.members;c.admins=['me',...d.admins.filter(id=>d.members.includes(id))]}else c.phone=d.phone;c.photo=d.photo;if(d.dis!==(c.dis||0)){c.dis=d.dis;c.msgs.push(['sys',d.dis?'Mensagens temporárias ativadas: novas mensagens somem após '+(d.dis===24?'24 horas':'7 dias')+'.':'Mensagens temporárias desativadas.'])}closeModal();renderList();renderStories();
+    c.name=d.name;if(c.group){c.desc=d.desc;c.members=d.members;c.admins=['me',...d.admins.filter(id=>d.members.includes(id))]}else{c.phone=d.phone;csPut(c,{apelido:d.name})}c.photo=d.photo;if(d.dis!==(c.dis||0)){c.dis=d.dis;c.msgs.push(['sys',d.dis?'Mensagens temporárias ativadas: novas mensagens somem após '+(d.dis===24?'24 horas':'7 dias')+'.':'Mensagens temporárias desativadas.'])}closeModal();renderList();renderStories();
     if(cur===c){const h=$('.head .av');h.style.background=ad(c);h.textContent=ini(c.name);$('.head .meta b').textContent=c.name;$('#st').textContent=sub(c);openChat(c.id)}
   });
   dangerBtns(c);
@@ -2784,7 +2784,7 @@ function confirmDel(c){
   $('#dm').textContent='“'+c.name+'” e todas as mensagens serão apagados.';
   $('#dn').onclick=closeModal;
   $('#dy').onclick=()=>{
-    bkDelContact(c);const was=cur===c;if(c.rid||c.uid){try{hideMsgs(c.msgs)}catch(e){}if(c.rid&&!c.group){delSet().add(c.rid);delSave()}c.msgs=[];c.hidden=true;c.unsaved=true;c.saved=false;c.unk=true;c.pin=false;c.later=null;c.unread=0}else chats.splice(chats.indexOf(c),1);if(was)cur=null;closeModal();if(!was){renderList();renderStories();return}
+    bkDelContact(c);const was=cur===c;if(c.rid||c.uid){try{hideMsgs(c.msgs)}catch(e){}if(c.rid&&!c.group){delSet().add(c.rid);delSave();csPut(c,{excluido:true,salvo:false,apelido:null})}c.msgs=[];c.hidden=true;c.unsaved=true;c.saved=false;c.unk=true;c.pin=false;c.later=null;c.unread=0}else chats.splice(chats.indexOf(c),1);if(was)cur=null;closeModal();if(!was){renderList();renderStories();return}
     $('#app').classList.remove('open');$('#main').innerHTML='<p class="empty">Selecione uma conversa para começar.<br>Cada uma pode ter o seu próprio tema.</p>';
     renderList();renderStories();
   };
@@ -5490,7 +5490,7 @@ function contactCard(md,wrap){
     const save=async()=>{let z=find();
       if(!z){const p=await cardPerson(md);if(p){z=rtPerson(p)}}
       if(!z){z={id:newId(),name:md.name,phone:md.phone||'',user:md.user||'',online:false,unread:0,msgs:[],hidden:true,reply:['Oi! Tudo bem?','Combinado!']};chats.push(z);try{bkSaveContact(z)}catch(e){}}
-      z.unsaved=false;z.saved=true;if(md.name&&(!z.name||z.name[0]==='@'||z.name==='Participante'))z.name=md.name;if(!z.phone&&md.phone)z.phone=md.phone;
+      z.unsaved=false;z.saved=true;csPut(z,{salvo:true,excluido:false});if(md.name&&(!z.name||z.name[0]==='@'||z.name==='Participante'))z.name=md.name;if(!z.phone&&md.phone)z.phone=md.phone;
       snack('Contato salvo');renderList();paint()};
     if(isSaved(x)){mkb('Abrir conversa',goChat,1)}
     else{mkb('Salvar contato',save,1);mkb('Conversar',goChat)}
@@ -6769,7 +6769,17 @@ const rtErr=e=>{RT.err=String((e&&(e.message||e.error_description||e.code))||e||
 try{RT.seen=JSON.parse(localStorage.getItem('mandai.seen')||'{}')}catch(e){}
 function delSet(){if(!window._dls){try{window._dls=new Set(JSON.parse(localStorage.getItem('mandai.delc')||'[]'))}catch(e){window._dls=new Set()}}return window._dls}
 function delSave(){try{localStorage.setItem('mandai.delc',JSON.stringify([...delSet()].slice(-500)))}catch(e){}}
-function delApply(c){if(c&&c.rid&&!c.group&&delSet().has(c.rid)&&!(c.msgs||[]).length){c.hidden=true;c.unsaved=true;c.saved=false;c.unk=true}}
+function csMap(){return RT.cs||(RT.cs={})}
+async function csLoad(){try{const r=await SB.from('contatos_salvos').select('contato_id,apelido,salvo,excluido').eq('dono_id',RT.uid).limit(5000);if(r&&r.data){const m={};r.data.forEach(x=>{m[x.contato_id]=x});RT.cs=m}}catch(e){}}
+function csPut(c,p){try{if(!c||c.group||!c.uid||typeof RT==='undefined'||!RT||!RT.uid||!SB||!rtOn())return;const m=csMap(),o=m[c.uid]||{contato_id:c.uid,apelido:null,salvo:false,excluido:false};Object.assign(o,p);m[c.uid]=o;SB.from('contatos_salvos').upsert({dono_id:RT.uid,contato_id:c.uid,apelido:o.apelido||null,salvo:!!o.salvo,excluido:!!o.excluido,atualizado_em:new Date().toISOString()},{onConflict:'dono_id,contato_id'}).then(()=>{},()=>{})}catch(e){}}
+function csApply(c){const o=c&&c.uid&&!c.group&&csMap()[c.uid];if(!o)return;
+  if(o.excluido){if(!(c.msgs||[]).length&&c.rid){delSet().add(c.rid);delSave();c.hidden=true;c.unsaved=true;c.saved=false;c.unk=true}return}
+  if(o.apelido)c.name=o.apelido;
+  if(o.salvo){c.unk=false;c.saved=true;c.unsaved=false}}
+function saveContactAsk(c,d){showModal('<h3>Salvar contato</h3><label class="fld"><span>Nome</span><input id="scn" maxlength="30" autocomplete="off"></label><button class="btn" id="scs">Salvar</button><button class="btn ghost" id="scc">Cancelar</button>');
+  const i=$('#scn');i.value=c.name||'';setTimeout(()=>{try{i.focus();i.select()}catch(e){}},60);$('#scc').onclick=closeModal;
+  $('#scs').onclick=()=>{const n=i.value.trim();if(!n){i.focus();return}c.name=n;c.unk=false;c.saved=true;c.unsaved=false;try{bkSaveContact(c)}catch(e){}csPut(c,{salvo:true,excluido:false,apelido:n});closeModal();if(d&&d.remove)d.remove();renderList();try{if(cur===c){const h=$('.head .meta b');if(h)h.textContent=c.name}}catch(e){}snack('Contato salvo')}}
+function delApply(c){if(c&&c.rid&&!c.group&&!(c.msgs||[]).length&&(delSet().has(c.rid)||(c._hn>0&&!c.saved))){if(!delSet().has(c.rid)){delSet().add(c.rid);delSave()}c.hidden=true;c.unsaved=true;c.saved=false;c.unk=true}}
 function rtSaveSeen(){try{localStorage.setItem('mandai.seen',JSON.stringify(RT.seen))}catch(e){}}
 function rtTel(v){let d=String(v||'').replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d}
 function rtHM(iso){const d=new Date(iso),n=new Date(),y=new Date(n);y.setDate(n.getDate()-1);
@@ -6784,10 +6794,10 @@ function rtChat(rid,p){let c=chats.find(x=>x.rid===rid);if(c){rtPhotoApply(c,p);
 const rtCols='id,conversa_id,remetente_id,texto,criado_em,apagada_em,editada_em,tipo,arquivo_url,midia,expira_em';
 function rtPre(c,m){if(!(c.group&&m[0]==='in'&&!m[4]))return '';const p=chats.find(z=>z.id===(m[5]&&m[5].snd));return p?p.name.split(' ')[0]+': ':''}
 function rtPush(r,initial){
-  const c=chats.find(x=>x.rid===r.conversa_id);if(!c)return;if(hidSet().has(r.id))return;
+  const c=chats.find(x=>x.rid===r.conversa_id);if(!c)return;if(hidSet().has(r.id)){if(initial)c._hn=(c._hn||0)+1;return}
   if(!RT.last||r.criado_em>RT.last)RT.last=r.criado_em;
   if(c.msgs.some(m=>m[5]&&m[5].rid===r.id))return;
-  if(!initial&&r.remetente_id!==RT.uid&&c.rid&&delSet().has(c.rid)){delSet().delete(c.rid);delSave();c.hidden=false;c.unsaved=false;c.unk=true}
+  if(!initial&&r.remetente_id!==RT.uid&&c.rid&&delSet().has(c.rid)){delSet().delete(c.rid);delSave();csPut(c,{excluido:false});c.hidden=false;c.unsaved=false;c.unk=true}
   if(r.expira_em&&Date.parse(r.expira_em)<=Date.now())return;
   const mine=r.remetente_id===RT.uid;
   if(r.tipo==='sistema'){
@@ -6921,7 +6931,7 @@ async function rtLoad(){
     (o.data||[]).forEach(x=>{if(x.perfis){const c=rtChat(x.conversa_id,x.perfis),seg=(rows.find(z=>z.conversa_id===x.conversa_id).conversas||{}).mensagens_temporarias_seg;c.dis=seg?seg/3600:0;c._srv=rtGSnap(c)}});
     (gc.data||[]).forEach(cv=>rtGroupApply(cv,(gp.data||[]).filter(q=>q.conversa_id===cv.id)));
     (m.data||[]).slice().sort((a,b)=>a.criado_em<b.criado_em?-1:1).forEach(r=>rtPush(r,true));
-    chats.forEach(delApply);renderList();rtOnceSync();try{renderChips()}catch(e){}
+    await csLoad();chats.forEach(csApply);chats.forEach(delApply);renderList();rtOnceSync();try{renderChips()}catch(e){}
     try{pushSync(false)}catch(e){}
     try{const q0=new URLSearchParams(location.search).get('c');if(q0){const c0=chats.find(x=>x.rid===q0);if(c0){history.replaceState(null,'',location.pathname);openChat(c0.id)}}}catch(e){}
   }catch(e){rtErr(e);snack('Sem conexão para carregar as conversas.')}
