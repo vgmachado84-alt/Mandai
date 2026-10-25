@@ -92,3 +92,48 @@ public class MainActivity extends BridgeActivity {
 }
 JAVA
 echo "barras nativas ok"
+
+# 4) aparecer na lista "Compartilhar" do Android (texto e links)
+python3 - <<'PY'
+import re,glob
+f='android/app/src/main/AndroidManifest.xml'
+s=open(f,encoding='utf-8').read()
+filt='''
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+'''
+if 'android.intent.action.SEND' not in s:
+    i=s.index('</activity>')
+    s=s[:i]+filt+'        '+s[i:]
+    open(f,'w',encoding='utf-8').write(s)
+    print('share ok')
+j=glob.glob('android/app/src/main/java/**/MainActivity.java',recursive=True)[0]
+t=open(j,encoding='utf-8').read()
+t=t.replace('public class MainActivity extends BridgeActivity {','''public class MainActivity extends BridgeActivity {
+    private String pend = "";
+    private void grab(android.content.Intent i) {
+        try {
+            if (i != null && android.content.Intent.ACTION_SEND.equals(i.getAction())) {
+                String x = i.getStringExtra(android.content.Intent.EXTRA_TEXT);
+                if (x != null && x.length() > 0) pend = x;
+            }
+        } catch (Exception e) {}
+    }
+    @Override
+    protected void onNewIntent(android.content.Intent i) {
+        super.onNewIntent(i);
+        setIntent(i);
+        grab(i);
+    }
+''',1)
+t=t.replace('        public void set(final String top','''        public String shared() { String x = pend; pend = ""; return x; }
+
+        @JavascriptInterface
+        public void set(final String top''',1)
+t=t.replace('super.onCreate(savedInstanceState);','super.onCreate(savedInstanceState);\n        grab(getIntent());',1)
+open(j,'w',encoding='utf-8').write(t)
+print('java ok')
+PY
