@@ -25,7 +25,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5125">
+<meta name="mandai-build" content="20261025-5127">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -1130,6 +1130,12 @@ body.callmin .app{height:calc(100% - 46px - env(safe-area-inset-top,0px));margin
 .onbv:has(.obwel) .obwel{height:100%;min-height:0}
 @media (max-height:700px){.obwel .obnx{font-size:42px;margin-top:6px}.obwel .obhero{padding-top:0}.obwel .obbot{gap:8px}.obfs{margin:8px 0}.obwel .obi{width:76px;height:76px}.obfi{width:50px;height:50px;margin-bottom:3px}.obfi svg{width:24px;height:24px}.obwel .obp{height:50px}.obwel .obo{height:46px}.obfe b{font-size:15px}.obfe small{font-size:12.5px}.obwel .obtag{margin-top:10px}.obwel .obsw{margin-top:6px}.obwel .obtm{font-size:11px}}
 .obwel{position:relative;z-index:1}
+.obwel .obhero{padding-top:0;justify-content:center;transform:translateY(8vh)}
+.obwel .obbot{align-items:center;gap:10px;padding-bottom:6px}
+.obwel .obp,.obwel .obo{width:min(78%,300px);flex:none;align-self:center}
+.obwel .obp{height:48px;border-radius:24px;font-size:17px}
+.obwel .obo{height:42px;border-radius:21px;font-size:15px}
+@media (max-height:700px){.obwel .obp{height:46px}.obwel .obo{height:40px}}
 .obwt .w1{fill:var(--wv-w1)}.obwt .w2{fill:var(--wv-w2)}.obwb .w3{fill:var(--wv-w3)}.obwb .w4{fill:var(--wv-w4)}
 .wl{stroke:var(--wv-wl);stroke-width:1.6;opacity:.9}
 :root{--wv-w1:rgba(150,110,255,.10);--wv-w2:rgba(150,110,255,.12);--wv-w3:rgba(150,110,255,.14);--wv-w4:rgba(150,110,255,.22);--wv-wl:rgba(140,90,255,.55)}
@@ -2100,6 +2106,22 @@ html:root[data-theme="dark"][data-acc="2"]{--bg:#0a0719;--panel:#110c27;--ink:#f
 #prp:not(.pro2) .gact span{background:none;width:auto;height:auto;color:var(--out)}
 #prp:not(.pro2) .gact>* small{font-size:13px;color:var(--ink)}
 .vp .vr .vlk{margin-left:auto;font-size:24px;line-height:1}
+
+/* build 5126: janela de quem viu (estilo Instagram) */
+.vp{z-index:7;max-height:86%;min-height:30%;background:#0f131b;color:#fff;border-radius:22px 22px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.vpb{position:absolute;inset:0;z-index:6}
+.vp .vpx{position:absolute;right:10px;top:10px;width:42px;height:42px;border:0;background:none;color:#fff;display:grid;place-items:center}
+.vp .vph{display:flex;align-items:center;gap:14px;padding:6px 44px 6px 2px;font-size:17px;font-weight:600}
+.vp .vph .vpe{display:flex;align-items:center;gap:7px}
+.vp h3{font-size:16px;font-weight:700;margin:12px 0 8px}
+.vp .vr{padding:9px 0}
+.vp .vr b{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vp .vr small{opacity:.6;font-size:12px}
+.vp .vav{position:relative;flex:none;display:block}
+.vp .vav .av{width:46px;height:46px}
+.vp .vhb{position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#ff3b8d,#ff6b4a);display:grid;place-items:center;font-style:normal;font-size:12px;border:2px solid #0f131b}
+.vp .vpn{opacity:.65;padding:8px 0}
+#viewer:has(#vp) .vbar,#viewer:has(#vp) .vrp{visibility:hidden}
 /* lista de conversas: o topo (faixa, busca, filtros) rola junto com os contatos */
 .pane#pc{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .pane#pc .list{overflow:visible;flex:1 0 auto;min-height:0;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
@@ -2762,9 +2784,11 @@ function stReplied(m){const q=m&&m[0]==='in'&&m[5]&&m[5].reply;return !!(q&&q.wh
 function stReplies(st){const o=new Set();if(!st||!st.sid)return o;chats.forEach(c=>{if(c.group)return;c.msgs.forEach(m=>{if(m[5]&&m[5].reply&&m[5].reply.sid===st.sid&&stReplied(m))o.add(c.id)})});return o}
 function stLikes(st){const o=new Map();if(!st||!st.sid)return o;chats.forEach(c=>{if(c.group)return;c.msgs.forEach(m=>{if(m[5]&&m[5].reply&&m[5].reply.sid===st.sid){const e=stLike(m);if(e)o.set(c.id,e)}})});return o}
 function viewers(){
-  clearTimeout(sv.timer);const v=$('#viewer');v.classList.add('paused');$('#vp')?.remove();
+  clearTimeout(sv.timer);const v=$('#viewer');v.classList.add('paused');$('#vp')?.remove();$('#vpb')?.remove();
   const lk=stLikes(sv.list[sv.i]),rp=stReplies(sv.list[sv.i]),vs=(sv.list[sv.i][3]||[]).slice();lk.forEach((e,id)=>{if(!vs.some(x=>x[0]===id))vs.push([id,'curtiu'])});vs.sort((a,b)=>(lk.has(b[0])?1:0)-(lk.has(a[0])?1:0));const p=document.createElement('div');p.className='vp';p.id='vp';
-  p.innerHTML=`<h3>Visto por ${vs.length}${lk.size?' · '+lk.size+(lk.size>1?' curtidas':' curtida'):''}</h3>`+(vs.length?vs.map(x=>{const c=chats.find(y=>y.id===x[0]);return `<div class="vr"><span class="av" style="background:${ad(c)}">${ini(c.name)}</span><b>${esc(c.name)}</b><small>${x[1]}</small>${lk.has(x[0])?'<span class="vlk">'+lk.get(x[0])+'</span>':(rp.has(x[0])?'<span class="vlk" title="respondeu">💬</span>':'')}</div>`}).join(''):'<p style="color:var(--mute)">Ninguém viu ainda. Os contatos aparecem aqui assim que abrirem.</p>')+'<button class="opt" id="vc">Fechar</button>';
+  const ex=lk.size?'<span class="vpl2">❤️ '+lk.size+'</span>':'';
+  p.innerHTML=`<button class="vpx" id="vc" aria-label="Fechar">${ico('x',22)}</button><div class="vph"><span class="vpe">${ico('eyev',20)} <b>${vs.length}</b></span>${ex}</div><h3>Pessoas que viram seu status</h3>`+(vs.length?vs.map(x=>{const c=chats.find(y=>y.id===x[0]);if(!c)return '';const hb=lk.has(x[0])?'<i class="vhb">'+lk.get(x[0])+'</i>':(rp.has(x[0])?'<i class="vhb">💬</i>':'');return `<div class="vr"><span class="vav"><span class="av" style="background:${ad(c)}">${ini(c.name)}</span>${hb}</span><b>${esc(c.name)}</b><small>${x[1]}</small></div>`}).join(''):'<p class="vpn">Ninguém viu ainda. Os contatos aparecem aqui assim que abrirem.</p>');
+  const bk=document.createElement('div');bk.className='vpb';bk.id='vpb';bk.onclick=e=>{e.stopPropagation();$('#vc').onclick()};v.appendChild(bk);
   v.appendChild(p);
   $('#vc').onclick=()=>{v.classList.remove('paused');show()};
 }
@@ -4370,7 +4394,7 @@ function onboarding(){
   const eyeB=()=>{const b=mk('button','obe');b.type='button';b.innerHTML=ico('eye',20);b.setAttribute('aria-label','Mostrar ou ocultar senha');return b};
   function fld(ic,label,ph,id,opt){opt=opt||{};const l=mk('label','obf');const i=mk('span','obx');i.innerHTML=ic;const w=mk('span','obw');const t=mk('small',0,label);const inp=document.createElement('input');inp.id=id;inp.placeholder=ph;inp.autocomplete='off';inp.maxLength=opt.max||60;if(opt.type)inp.type=opt.type;if(opt.cap)inp.autocapitalize='off';w.append(t,inp);l.append(i,w);if(opt.pw){const e=eyeB();e.onclick=ev=>{ev.preventDefault();inp.type=inp.type==='password'?'text':'password';e.classList.toggle('off',inp.type==='password')};e.classList.add('off');l.appendChild(e)}return l}
   function welcome(){
-    o.innerHTML='<svg class="obwt" viewBox="0 0 400 320" preserveAspectRatio="xMaxYMin slice" aria-hidden="true"><path d="M400 0V200C330 120 250 90 150 70C90 58 40 40 0 0Z" class="w1"/><path d="M400 20V150C340 100 270 70 190 52C130 40 80 24 40 0H400Z" class="w2"/><path d="M0 0C60 70 150 90 240 120C310 144 360 190 400 250" fill="none" class="wl"/></svg><svg class="obwb" viewBox="0 0 400 190" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path d="M0 120C60 80 130 70 210 100C290 130 350 120 400 80V190H0Z" class="w3"/><path d="M0 150C70 118 150 118 230 142C300 162 360 156 400 130V190H0Z" class="w4"/></svg><div class="ob2 obwel"><div class="obhero"><img class="obi" src="'+BIPPY_MARK+'" width="112" height="112" alt=""><div class="obnx">Bippy</div><p class="obtag">Boas conversas<br>tornam tudo melhor</p><svg class="obsw" viewBox="0 0 120 12" width="110" height="12" aria-hidden="true"><defs><linearGradient id="obsg" x1="0" x2="1"><stop offset="0" stop-color="#7c4dff" stop-opacity=".25"/><stop offset=".5" stop-color="#8a55ff"/><stop offset="1" stop-color="#5a3df0"/></linearGradient></defs><path d="M4 9C30 3 70 2 116 6" fill="none" stroke="url(#obsg)" stroke-width="3.2" stroke-linecap="round"/></svg></div><div class="obfs"><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.4"/></svg></span><b>Conversas</b><small>Rápidas e seguras</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2a4.6 4.6 0 0 1 5 4.3"/></svg></span><b>Grupos</b><small>Mais próximos</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg></span><b>Chamadas</b><small>Com qualidade</small></div><div class="obfe"><span class="obfi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z"/><rect x="9.5" y="10.5" width="5" height="4.5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg></span><b>Privacidade</b><small>É a nossa prioridade</small></div></div><div class="obbot"><button class="obp" id="obgo">Começar <i>→</i></button><button class="obo" id="obhv">Já tenho uma conta</button><p class="obtm">Ao continuar, você concorda com nossos <a id="obt1">Termos de Uso</a> e <a id="obt2">Política de Privacidade</a>.</p></div></div>';
+    o.innerHTML='<svg class="obwt" viewBox="0 0 400 320" preserveAspectRatio="xMaxYMin slice" aria-hidden="true"><path d="M400 0V200C330 120 250 90 150 70C90 58 40 40 0 0Z" class="w1"/><path d="M400 20V150C340 100 270 70 190 52C130 40 80 24 40 0H400Z" class="w2"/><path d="M0 0C60 70 150 90 240 120C310 144 360 190 400 250" fill="none" class="wl"/></svg><svg class="obwb" viewBox="0 0 400 190" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path d="M0 120C60 80 130 70 210 100C290 130 350 120 400 80V190H0Z" class="w3"/><path d="M0 150C70 118 150 118 230 142C300 162 360 156 400 130V190H0Z" class="w4"/></svg><div class="ob2 obwel"><div class="obhero"><img class="obi" src="'+BIPPY_MARK+'" width="112" height="112" alt=""><div class="obnx">Bippy</div><p class="obtag">Boas conversas<br>tornam tudo melhor</p><svg class="obsw" viewBox="0 0 120 12" width="110" height="12" aria-hidden="true"><defs><linearGradient id="obsg" x1="0" x2="1"><stop offset="0" stop-color="#7c4dff" stop-opacity=".25"/><stop offset=".5" stop-color="#8a55ff"/><stop offset="1" stop-color="#5a3df0"/></linearGradient></defs><path d="M4 9C30 3 70 2 116 6" fill="none" stroke="url(#obsg)" stroke-width="3.2" stroke-linecap="round"/></svg></div><div class="obbot"><button class="obp" id="obgo">Começar <i>→</i></button><button class="obo" id="obhv">Já tenho uma conta</button><p class="obtm">Ao continuar, você concorda com nossos <a id="obt1">Termos de Uso</a> e <a id="obt2">Política de Privacidade</a>.</p></div></div>';
     $('#obgo').onclick=signup;$('#obhv').onclick=login;
     $('#obt1').onclick=()=>legalPage('termos');
     $('#obt2').onclick=()=>legalPage('priv');
@@ -6200,7 +6224,7 @@ function imgEdit(src,done,opt){
       else{x.fillStyle=t.col;L.forEach((l,k)=>x.fillText(l,lx,y0+k*lh))}
       if(withUi&&i===sel&&mode==='text'){const w=t.bw||(t._w+t.s*.9),h=t._h+t.s*.4,R=W*.022;x.save();x.setLineDash([W*.008,W*.008]);x.lineWidth=Math.max(1.5,W*.0028);x.strokeStyle='rgba(255,255,255,.95)';x.shadowColor='#000';x.shadowBlur=4;x.strokeRect(t.x-w/2,t.y-h/2,w,h);x.restore();
         x.save();x.fillStyle='#fff';x.strokeStyle='rgba(0,0,0,.5)';x.lineWidth=W*.003;x.setLineDash([]);const ry=t.y-h/2-W*.06;x.beginPath();x.moveTo(t.x,t.y-h/2);x.lineTo(t.x,ry);x.stroke();
-        const dot=(px,py)=>{x.beginPath();x.arc(px,py,R,0,7);x.fill();x.stroke()};dot(t.x,ry);if(t.bw){dot(t.x-w/2,t.y);dot(t.x+w/2,t.y)}x.restore()}
+        const dot=(px,py)=>{x.beginPath();x.arc(px,py,R,0,7);x.fill();x.stroke()};dot(t.x,ry);if(t.bw){for(const sx of[-1,1])for(const sy of[-1,1])dot(t.x+sx*w/2,t.y+sy*h/2);for(const sx of[-1,1]){const pw=R*.7,ph=R*1.9,px=t.x+sx*w/2-pw/2,py=t.y-ph/2;x.beginPath();if(x.roundRect)x.roundRect(px,py,pw,ph,pw/2);else x.rect(px,py,pw,ph);x.fill();x.stroke()}}x.restore()}
       x.restore()})};
   const paint=()=>draw(cv,true);
   const setBase=img=>{filt='';sel=-1;try{if(fr&&fr._paint)fr._paint()}catch(e){}W=img.width;H=img.height;base.width=cv.width=ink.width=W;base.height=cv.height=ink.height=H;base.getContext('2d').drawImage(img,0,0);ink.getContext('2d').clearRect(0,0,W,H);texts=[];strokes=[];paint()};
@@ -6217,19 +6241,19 @@ function imgEdit(src,done,opt){
   let drag=null,pinch=null,tapSel=false,moved=false,sw0=0,swOn=false;const ptrs={};const trash=mkTrash();
   const hist=[];
   const hitT=(x,y)=>{for(let i=texts.length-1;i>=0;i--){const t=texts[i],r=t.r||0,c=Math.cos(r),sn=Math.sin(r),dx=x-t.x,dy=y-t.y,lx=dx*c+dy*sn,ly=-dx*sn+dy*c,w=t.bw||((t._w||t.s*t.t.length*.6)+t.s*.9),h=(t._h||t.s*1.3)+t.s*.5;if(Math.abs(lx)<=w/2&&Math.abs(ly)<=h/2)return i}return -1};
-  const hitH=(x,y)=>{const t=texts[sel];if(!t)return null;const r=t.r||0,c=Math.cos(r),sn=Math.sin(r),dx=x-t.x,dy=y-t.y,lx=dx*c+dy*sn,ly=-dx*sn+dy*c,w=t.bw||((t._w||0)+t.s*.9),h=(t._h||t.s*1.3)+t.s*.4,R=W*.05;if(Math.hypot(lx,ly+h/2+W*.06)<R)return 'rot';if(t.bw){if(Math.hypot(lx+w/2,ly)<R)return 'l';if(Math.hypot(lx-w/2,ly)<R)return 'r'}return null};
+  const hitH=(x,y)=>{const t=texts[sel];if(!t)return null;const r=t.r||0,c=Math.cos(r),sn=Math.sin(r),dx=x-t.x,dy=y-t.y,lx=dx*c+dy*sn,ly=-dx*sn+dy*c,w=t.bw||((t._w||0)+t.s*.9),h=(t._h||t.s*1.3)+t.s*.4,R=W*.05;if(Math.hypot(lx,ly+h/2+W*.06)<R)return 'rot';if(t.bw){for(const sx of[-1,1])for(const sy of[-1,1])if(Math.hypot(lx-sx*w/2,ly-sy*h/2)<R)return 'c';if(Math.hypot(lx+w/2,ly)<R)return 'l';if(Math.hypot(lx-w/2,ly)<R)return 'r'}return null};
   cv.onpointerdown=e=>{if(mode==='crop')return;e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs[e.pointerId]=[e.clientX,e.clientY];
     const ks=Object.keys(ptrs);if(ks.length===2&&sel>=0&&texts[sel]){const[a2,b2]=ks.map(k=>ptrs[k]);pinch={d0:Math.hypot(a2[0]-b2[0],a2[1]-b2[1])||1,s0:texts[sel].s,bw0:texts[sel].bw,a0:Math.atan2(b2[1]-a2[1],b2[0]-a2[0]),r0:texts[sel].r||0};drag=null;return}
     const[x,y]=pt(e);moved=false;
-    if(mode==='text'&&sel>=0&&texts[sel]){const hh=hitH(x,y);if(hh){drag={h:hh,i:sel};return}}
+    if(mode==='text'&&sel>=0&&texts[sel]){const hh=hitH(x,y);if(hh){const t0=texts[sel],dx0=x-t0.x,dy0=y-t0.y;drag={h:hh,i:sel,s0:t0.s,bw0:t0.bw,d0:Math.hypot(dx0,dy0)||1};return}}
     {const hi=hitT(x,y);
       if(hi>=0&&(mode==='text'||mode==='draw'||mode==='view')){tapSel=(mode==='text'&&hi===sel);sel=hi;if(mode!=='text')setMode('text');drag={i:hi,dx:texts[hi].x-x,dy:texts[hi].y-y};paint();return}
       if(mode==='text'){sel=-1;if(emb)setMode('view');else paint();return}
       if(mode==='view'){sw0=e.clientY;swOn=true;return}}
     if(mode==='draw'){snap();texts._last=0;const g=ink.getContext('2d');g.lineCap='round';g.lineJoin='round';g.strokeStyle=col;g.lineWidth=sizeOf();g.beginPath();g.moveTo(x,y);g.lineTo(x+.01,y+.01);g.stroke();drag={d:1,x,y};hist.push(null)}};
   cv.onpointermove=e=>{if(ptrs[e.pointerId])ptrs[e.pointerId]=[e.clientX,e.clientY];
-    if(pinch&&sel>=0&&texts[sel]){const ks=Object.keys(ptrs);if(ks.length>=2){const[a2,b2]=ks.slice(0,2).map(k=>ptrs[k]),d=Math.hypot(a2[0]-b2[0],a2[1]-b2[1])||1;const tt=texts[sel];if(tt.bw&&pinch.bw0)tt.bw=Math.max(tt.s*2,Math.min(W*1.2,pinch.bw0*d/pinch.d0));else tt.s=Math.max(14,Math.min(W*.35,pinch.s0*d/pinch.d0));tt.r=pinch.r0+(Math.atan2(b2[1]-a2[1],b2[0]-a2[0])-pinch.a0);paint()}return}
-    if(drag&&drag.h){const t=texts[drag.i];if(!t)return;const[hx,hy]=pt(e);if(drag.h==='rot'){let a=Math.atan2(hy-t.y,hx-t.x)+Math.PI/2;const q=Math.PI/4,n=Math.round(a/q);if(Math.abs(a-n*q)<.07)a=n*q;t.r=a}else{const r=t.r||0,lx=(hx-t.x)*Math.cos(r)+(hy-t.y)*Math.sin(r);t.bw=Math.max(t.s*2,Math.min(W*1.2,2*Math.abs(lx)))}paint();return}
+    if(pinch&&sel>=0&&texts[sel]){const ks=Object.keys(ptrs);if(ks.length>=2){const[a2,b2]=ks.slice(0,2).map(k=>ptrs[k]),d=Math.hypot(a2[0]-b2[0],a2[1]-b2[1])||1;const tt=texts[sel];if(tt.bw&&pinch.bw0){tt.s=Math.max(14,Math.min(W*.35,pinch.s0*d/pinch.d0));tt.bw=Math.max(tt.s*2,Math.min(W*1.2,pinch.bw0*d/pinch.d0))}else tt.s=Math.max(14,Math.min(W*.35,pinch.s0*d/pinch.d0));tt.r=pinch.r0+(Math.atan2(b2[1]-a2[1],b2[0]-a2[0])-pinch.a0);paint()}return}
+    if(drag&&drag.h){const t=texts[drag.i];if(!t)return;const[hx,hy]=pt(e);if(drag.h==='rot'){let a=Math.atan2(hy-t.y,hx-t.x)+Math.PI/2;const q=Math.PI/4,n=Math.round(a/q);if(Math.abs(a-n*q)<.07)a=n*q;t.r=a}else if(drag.h==='c'){const k=Math.hypot(hx-t.x,hy-t.y)/drag.d0;t.s=Math.max(14,Math.min(W*.35,drag.s0*k));t.bw=Math.max(t.s*2,Math.min(W*1.2,drag.bw0*k))}else{const r=t.r||0,lx=(hx-t.x)*Math.cos(r)+(hy-t.y)*Math.sin(r);t.bw=Math.max(t.s*2,Math.min(W*1.2,2*Math.abs(lx)))}paint();return}
     if(!drag)return;const[x,y]=pt(e);if(drag.d){const g=ink.getContext('2d');g.beginPath();g.moveTo(drag.x,drag.y);g.lineTo(x,y);g.stroke();drag.x=x;drag.y=y;paint()}else{const t=texts[drag.i];const nx=x+drag.dx,ny=y+drag.dy;if(Math.hypot(nx-t.x,ny-t.y)>W*.006)moved=true;t.x=nx;t.y=ny;if(moved){trash.show();trash.move(e.clientX,e.clientY)}paint()}};
   const pend=e=>{delete ptrs[e.pointerId];if(Object.keys(ptrs).length<2)pinch=null;const was=drag;drag=null;
     if(was&&was.i!==undefined){if(moved&&trash.over()&&e.type==='pointerup'){texts.splice(was.i,1);sel=-1;if(emb)setMode('view');else paint()}else if(tapSel&&!moved&&e.type==='pointerup')openTxt(was.i)}
@@ -6259,7 +6283,7 @@ function imgEdit(src,done,opt){
     const w=document.createElement('div');w.className='ietx2';w.innerHTML='<div class="tp"><button type="button" id="txd" aria-label="Concluir">'+CHK+'</button></div><div class="md"><div class="sz" id="txz"><i></i></div><div class="te" id="txe" contenteditable="true" role="textbox" spellcheck="false" autocapitalize="sentences"></div></div><div class="bt"><div class="ch" id="txc"></div><div class="tbar"><button type="button" id="txf" aria-label="Fonte">Aa</button><button type="button" id="txk" aria-label="Cor"><i class="cwh"></i></button><button type="button" id="txa" aria-label="Alinhamento"></button><button type="button" id="txb" aria-label="Fundo do texto"></button><button type="button" id="txx" aria-label="Caixa de texto"></button></div></div>';
     document.body.appendChild(w);document.body.classList.add('txo');const te=w.querySelector('#txe'),cc=w.querySelector('#txc'),sz=w.querySelector('#txz'),kn=sz.firstChild,fb=w.querySelector('#txf'),kb=w.querySelector('#txk'),ab=w.querySelector('#txa'),bb=w.querySelector('#txb'),xb=w.querySelector('#txx');let box=!!(ed&&ed.bw);
     if(ed)te.textContent=ed.t;
-    const look=()=>{te.style.width=box?'100%':'';te.style.font=fnt(tf,px(vv));te.style.lineHeight='1.3';te.style.textAlign=tal==='l'?'left':tal==='r'?'right':'center';
+    const look=()=>{sz.style.display=box?'none':'';te.style.display=box?'block':'';te.style.margin=box?'0 auto':'';te.style.width=box?Math.round(Math.min((ed&&ed.bw||W*.7)/rK,w.querySelector('.md').clientWidth-92)||0)+'px':'';te.style.font=fnt(tf,px(vv));te.style.lineHeight='1.3';te.style.textAlign=tal==='l'?'left':tal==='r'?'right':'center';
       te.style.padding=tst===1?'.22em .55em':'.1em .3em';te.style.borderRadius=tst===1?'.12em':'0';
       if(tst===1){te.style.background=tcol;te.style.color=lumH(tcol)>.6?'#000':'#fff';te.style.textShadow='none'}
       else if(tst===0){te.style.background='transparent';te.style.color=tcol;te.style.textShadow=lumH(tcol)<.15?'0 0 3px #fff,0 0 3px #fff,0 0 6px #fff':'0 0 3px #000,0 0 3px #000,0 0 7px #000'}
