@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5144">
+<meta name="mandai-build" content="20261025-5146">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2365,6 +2365,7 @@ body.dragt .ced .ccap,body.dragt .ced .cbot2,body.dragt .ced .edhint{visibility:
 .mpkf span{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mpkf button{width:52px;height:52px;border-radius:50%;border:0;background:#8a55ff;color:#fff;display:grid;place-items:center}
 #viewer .scap{background:none!important;text-shadow:0 1px 3px rgba(0,0,0,.55)!important;font-weight:400!important}
+.uprt{position:absolute;left:8px;bottom:10px;display:flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 10px;border:0;border-radius:17px;background:rgba(0,0,0,.55);color:#fff;font:600 14px system-ui;z-index:2}
 </style>
 </head>
 <body>
@@ -2724,7 +2725,7 @@ function bubble0(m,anim){
       ph.onclick=e=>{e.stopPropagation();md0._got=true;ph.replaceWith(mediaEl(md0))};d.append(ph)}
     else if(md0.remote&&!md0.src&&!md0.once&&md0.k!=='aud'){const ph=document.createElement('button');ph.type='button';ph.className='mdl';ph.innerHTML='<span class="mdi">'+ico(md0.k==='vid'?'video':md0.k==='aud'?'mic':md0.k==='file'?'download':'image',26)+'</span><b></b>';const lb=ph.querySelector('b');const _auto=!md0.err&&(md0._p||md0._q||m[0]==='out'||(cur&&!dlManual(cur)));lb.textContent=md0.err?'Tentar baixar de novo':(_auto?'Carregando…':'Baixar'+(md0.size?' · '+md0.size:''));if(_auto)ph.classList.add('ld');if(md0.th){ph.style.cssText+=';background-image:url('+md0.th+');background-size:cover;background-position:center;width:240px;max-width:100%;height:240px;max-height:none;min-height:0';ph.classList.add('hasth')}
       ph.onclick=e=>{e.stopPropagation();lb.textContent='Baixando…';md0.err=0;rtGet(md0).then(()=>{md0._got=true;rtRepaint(m)}).catch(()=>{md0.err=1;lb.textContent='Falhou. Toque para tentar de novo';snack('Não baixou: '+(md0._em||'sem resposta do servidor'))})};d.append(ph)}
-    else{const me=mediaEl(md0);if(m[0]==='out'&&UPING.has(m)&&(md0.k==='img'||md0.k==='vid')){const wr=document.createElement('div');wr.className='upw';wr.append(me);const rg=document.createElement('button');rg.type='button';rg.className='upr';rg.setAttribute('aria-label','Cancelar envio');rg.innerHTML='<svg class="upsp" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3"/><circle cx="22" cy="22" r="19" fill="none" stroke="#3ddc84" stroke-width="3" stroke-linecap="round" stroke-dasharray="34 90"/></svg><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';rg.onclick=e=>{e.stopPropagation();rtCancelUp(m)};rg.onpointerdown=e=>e.stopPropagation();wr.append(rg);d.append(wr)}else d.append(me)}}
+    else{const me=mediaEl(md0);if(m[0]==='out'&&!UPING.has(m)&&m[5]&&m[5].st==='fail'&&!m[5].rid&&(md0.k==='img'||md0.k==='vid')){const wr=document.createElement('div');wr.className='upw';wr.append(me);const rb=document.createElement('button');rb.type='button';rb.className='uprt';rb.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg><span>Tentar novamente</span>';rb.onpointerdown=e=>e.stopPropagation();rb.onclick=e=>{e.stopPropagation();const c0=chats.find(z=>z.msgs.includes(m));if(!c0)return;m[5].st='sent';rtSend(c0,m[1]||'',m)};wr.append(rb);d.append(wr)}else if(m[0]==='out'&&UPING.has(m)&&(md0.k==='img'||md0.k==='vid')){const wr=document.createElement('div');wr.className='upw';wr.append(me);const rg=document.createElement('button');rg.type='button';rg.className='upr';rg.setAttribute('aria-label','Cancelar envio');rg.innerHTML='<svg class="upsp" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3"/><circle cx="22" cy="22" r="19" fill="none" stroke="#3ddc84" stroke-width="3" stroke-linecap="round" stroke-dasharray="34 90"/></svg><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';rg.onclick=e=>{e.stopPropagation();rtCancelUp(m)};rg.onpointerdown=e=>e.stopPropagation();wr.append(rg);d.append(wr)}else d.append(me)}}
   if(m[1]||!m[4])d.append(s);if(m[0]!=='sys')d.append(sm);if(m[4]&&(!m[1]||/^\u200b$/.test(m[1]))&&(m[4].k==='img'||m[4].k==='vid')&&!m[4].note&&!x.reply&&!x.fwd&&!x.del)d.classList.add('mo');
   if(x.react&&Object.keys(x.react).length){const r=document.createElement('div');r.className='rx'+(x.rxNew?' rxp':'');const tot=Object.values(x.react).reduce((a,b)=>a+b,0);r.textContent=Object.keys(x.react).slice(0,3).join('')+(tot>1?' '+tot:'');d.classList.add('hasrx');delete x.rxNew;d.append(r)}
   return d;
@@ -5624,6 +5625,7 @@ function logo(h,id){
 }
 function tickHtml(m){
   const x=m[5]||{};if(x.del)return '';
+  if(!x.rid&&(x.st==='fail'||(typeof UPING!=='undefined'&&UPING.has(m))))return '<svg class="tick" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" role="img" aria-label="Aguardando"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
   let st=x.st||(privacy.read?'read':'delivered');if(st==='read'&&!privacy.read)st='delivered';
   const one='<path d="M3 6.5l3.5 3.5L14 2.5"/>',two='<path d="M1 6.5l3.5 3.5L11 2.5M7 10.2l.6.6L16 2.5"/>';
   return '<svg class="tick '+st+'" viewBox="0 0 17 12" width="16" height="12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="'+({sent:'Enviada',delivered:'Entregue',read:'Lida'}[st])+'">'+(st==='sent'?one:two)+'</svg>';
@@ -7518,7 +7520,7 @@ function legalPage(k){
   function chk(){try{var B=window.BippyBars;if(!B)return;if(B.shared){var t=B.shared();if(t)go(t)}
     if(B.sharedFile){var got=[];(function nxt(i){if(i>=5){fin();return}var j='';try{j=B.sharedFile()}catch(e){}if(!j){fin();return}try{var f=JSON.parse(j);var su=f.b64?('data:'+(f.mime||'application/octet-stream')+';base64,'+f.b64):((window.Capacitor&&Capacitor.convertFileSrc)?Capacitor.convertFileSrc('file://'+f.path):'https://localhost/_capacitor_file_'+f.path);fetch(su).then(function(r){return r.blob()}).then(function(bl){got.push(mdOf(f,bl));nxt(i+1)}).catch(function(){nxt(i+1)})}catch(e){nxt(i+1)}})(0);
       function fin(){if(!got.length)return;when(function(){fwdMenu(got.map(function(md){return ['out','','',0,md,null]}),{share:true})})}}}catch(e){}}
-  window.bippyShare=go;
+  window.bippyShare=go;window.bippyChk=chk;
   window.addEventListener('focus',chk);document.addEventListener('visibilitychange',function(){if(!document.hidden)chk()});setTimeout(chk,800);
   try{var q=new URLSearchParams(location.search),t=[q.get('title'),q.get('text'),q.get('url')].filter(function(x){return x}).join('\n');if(t&&(q.has('text')||q.has('url'))){history.replaceState(null,'',location.pathname);go(t)}}catch(e){}
 })();

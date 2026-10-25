@@ -185,6 +185,13 @@ t=t.replace('public class MainActivity extends BridgeActivity {','''public class
         super.onNewIntent(i);
         setIntent(i);
         grab(i);
+        try {
+            getBridge().getWebView().postDelayed(new Runnable() {
+                public void run() {
+                    try { getBridge().getWebView().evaluateJavascript("window.bippyChk&&window.bippyChk()", null); } catch (Exception e) {}
+                }
+            }, 350);
+        } catch (Exception e) {}
     }
 ''',1)
 t=t.replace('        public void set(final String top','''        public String shared() { String x = pend; pend = ""; return x; }
