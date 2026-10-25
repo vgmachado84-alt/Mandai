@@ -53,3 +53,42 @@ open(f'{R}/values-night/styles.xml','w',encoding='utf-8').write('''<?xml version
 ''')
 print('barras (noite) ok')
 PY
+
+# 3) barras do sistema acompanham a cor do app (ponte nativa)
+D=$(dirname $(find android/app/src/main/java -name MainActivity.java | head -1))
+PK=$(grep -h "^package" $D/MainActivity.java | sed 's/package \(.*\);/\1/')
+cat > $D/MainActivity.java <<JAVA
+package $PK;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.webkit.JavascriptInterface;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    public class Bars {
+        @JavascriptInterface
+        public void set(final String top, final boolean topLight, final String bottom, final boolean bottomLight) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    try {
+                        getWindow().setStatusBarColor(Color.parseColor(top));
+                        getWindow().setNavigationBarColor(Color.parseColor(bottom));
+                        WindowInsetsControllerCompat w = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+                        w.setAppearanceLightStatusBars(topLight);
+                        w.setAppearanceLightNavigationBars(bottomLight);
+                    } catch (Exception e) {}
+                }
+            });
+        }
+    }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getBridge().getWebView().addJavascriptInterface(new Bars(), "BippyBars");
+    }
+}
+JAVA
+echo "barras nativas ok"
