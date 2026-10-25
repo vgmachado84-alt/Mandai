@@ -3,7 +3,8 @@
 <head><script>
 /* tira o desenho padrão grande (círculo com triângulo) que o Android mostra em vídeos sem imagem */
 (function(){var P='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';var ce=document.createElement.bind(document);document.createElement=function(t,o){var e=ce(t,o);try{if(String(t).toLowerCase()==='video')e.setAttribute('poster',P)}catch(x){}return e};
-try{document.addEventListener('loadeddata',function(e){var v=e.target;if(v&&v.tagName==='VIDEO'&&v.getAttribute('poster')===P)v.removeAttribute('poster')},true)}catch(x){}
+try{if(location.hostname==='localhost'){var EV=[],lg=function(t){EV.push(t);if(EV.length>6)EV.shift()};var ac=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){lg('a.click '+(this.download?'download':'link')+' '+String(this.href).slice(0,12));return ac.apply(this,arguments)};var pl=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){lg('play');return pl.apply(this,arguments)};var wo=window.open;window.open=function(u){lg('open '+String(u).slice(0,20));return wo.apply(window,arguments)};document.addEventListener('fullscreenchange',function(){lg('fullscreen')});document.addEventListener('webkitfullscreenchange',function(){lg('wk-fullscreen')});window.addEventListener('beforeunload',function(){lg('beforeunload')});document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')lg('oculto');else try{snack('Diag: '+EV.join(' > '))}catch(x){}})}}catch(x){}
+try{document.addEventListener('loadeddata',function(e){var v=e.target;if(!v||v.tagName!=='VIDEO'||v.getAttribute('poster')!==P||!v.videoWidth)return;try{var k=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight)),c=ce('canvas');c.width=Math.max(2,Math.round(v.videoWidth*k));c.height=Math.max(2,Math.round(v.videoHeight*k));c.getContext('2d').drawImage(v,0,0,c.width,c.height);v.setAttribute('poster',c.toDataURL('image/jpeg',.7))}catch(x){}},true)}catch(x){}
 try{new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType!==1)return;var l=n.tagName==='VIDEO'?[n]:(n.querySelectorAll?Array.prototype.slice.call(n.querySelectorAll('video')):[]);l.forEach(function(v){if(!v.hasAttribute('poster'))v.setAttribute('poster',P)})})})}).observe(document.documentElement,{childList:true,subtree:true})}catch(x){}})();
 </script>
 <script>
@@ -23,7 +24,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5105">
+<meta name="mandai-build" content="20261024-5107">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
