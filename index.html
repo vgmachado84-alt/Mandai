@@ -25,7 +25,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5133">
+<meta name="mandai-build" content="20261025-5134">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2343,6 +2343,9 @@ body.dragt .ced .ccap,body.dragt .ced .cbot2,body.dragt .ced .edhint{visibility:
 .mpkr b{font-size:16px;font-weight:600;flex:1}.mpkr small{color:rgba(255,255,255,.55)}
 .edat{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:none;color:#fff;font-size:22px;font-weight:600;display:grid;place-items:center}
 #edcap #edci{padding-right:56px}
+
+.fwcap{position:sticky;bottom:0;z-index:2;width:calc(100% - 28px);box-sizing:border-box;margin:8px 14px;background:var(--panel,#10101f);padding:12px 16px;border-radius:22px;border:0;background:rgba(128,128,128,.18);color:inherit;font:inherit;font-size:16px}
+.edat.on{color:#8ad0ff}
 </style>
 </head>
 <body>
@@ -2589,16 +2592,22 @@ function renderList(){
   if(!$('#list').children.length)$('#list').innerHTML='<p class="empty">Nenhuma conversa encontrada.</p>';
 }
 function kickPaint(){let n=0;const f=()=>{try{document.body.style.willChange=n%2?'':'transform';void document.body.offsetHeight}catch(e){}n++;if(n<16)setTimeout(f,70);else try{document.body.style.willChange=''}catch(e){}};f();try{window.dispatchEvent(new Event('resize'))}catch(e){}}
-function stMentionSend(ids){
-  ids.forEach(id=>{const c=chats.find(y=>y.id===id);if(!c||c.blocked||c.group||c.pending)return;const d=new Date(),nm=['out','\u2063📣 '+((me&&me.name)||'Alguém')+' mencionou você em um status',t(d.getHours(),d.getMinutes()),exp(c),null,{st:'sent',ts:Date.now()}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,nm[1],nm)});
-  try{renderList()}catch(e){}}
+function stMentionSend(ids,st){
+  const go=async()=>{
+    try{if(typeof rtOn==='function'&&rtOn()&&st){for(let i=0;i<40&&!st.sid;i++)await new Promise(r=>setTimeout(r,300))}}catch(e){}
+    let th=null;const md=st&&st[4];
+    try{if(md&&(md.k==='img'||md.k==='vid')){th=md.th||null;if(!th){const r=await thMake(md);th=r&&r.th}}}catch(e){}
+    ids.forEach(id=>{const c=chats.find(y=>y.id===id);if(!c||c.blocked||c.group||c.pending)return;
+      const rep={who:'Status',text:st?stLabel(st):'Status',s:st};if(th)rep.th=th;else if(!md&&st){try{rep.bg=sb[(st[1]||0)%sb.length];rep.e=String(st[0]||'').trim().slice(0,2)}catch(e){}}
+      const d=new Date(),nm=['out','\u2063@ Você mencionou '+c.name+'.',t(d.getHours(),d.getMinutes()),exp(c),null,{st:'sent',ts:Date.now(),reply:rep}];
+      c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,'\u2063@ '+((me&&me.name)||'Alguém')+' mencionou você.',nm)});
+    try{renderList()}catch(e){}};
+  go()}
 function stmFix(d,m){
   if(typeof m[1]!=='string'||m[1].charCodeAt(0)!==0x2063||d.classList.contains('isdel'))return;
-  const c=cur,s=d.querySelector('span'),nm=c?c.name:'';if(s)s.textContent=m[0]==='out'?'📣 Você marcou '+nm+' em um status':'📣 '+nm+' marcou você em um status';
-  const b=document.createElement('button');b.type='button';b.className='stmb';b.textContent='Ver status';
-  b.onclick=e=>{e.stopPropagation();if(m[0]==='out'){if(mine.length)play([['me','Meu status',mine]]);else snack('Esse status não está mais disponível');return}
-    const L=c&&stat[c.id];if(L&&L.length)play([[String(c.id),c.name,L]]);else snack('Esse status não está mais disponível')};
-  const sm=d.querySelector('small');d.insertBefore(b,sm||null)}
+  const c=cur,nm=c?c.name:'',sp=[...d.querySelectorAll(':scope > span')].pop();
+  if(sp)sp.textContent=m[0]==='out'?'@ Você mencionou '+nm+'.':'@ '+nm+' mencionou você.';
+  const qb=d.querySelector('.qt b');if(qb)qb.textContent=m[0]==='out'?'Seu status':'Status de '+nm}
 function bubble(m,anim){
   const onceMd=m[4]&&m[4].once&&m[4].k!=='stk'?m[4]:null;
   const d=onceMd?(()=>{const m2=m.slice();m2[4]=null;m2[1]='';const dd=bubble0(m2,anim);dd._m=m;return dd})():bubble0(m,anim);
@@ -3766,10 +3775,10 @@ function dropMenu(anchor,root,onClose){
   bg.onclick=()=>close(true);bg.append(pop);document.body.appendChild(bg);
   return {render,close};
 }
-function fwdStatus(st0){
+function fwdStatus(st0,share){
   if(!st0)return;const media=st0[4]&&(st0[4].k==='img'||st0[4].k==='vid')?st0[4]:null;
   const m=['out',st0[0]||(st0[5]&&st0[5].cap)||'','',0,media?JSON.parse(JSON.stringify(Object.assign({},media,{_orig:undefined,_file:undefined}))):null,{fwd:true}];
-  closeV();fwdMenu([m]);
+  closeV();fwdMenu([m],share?{share:true,ext:()=>shareData(st0).then(ok=>{if(!ok)snack('Compartilhar não está disponível neste aparelho')})}:undefined);
 }
 async function shareData(st0){
   const media=st0[4]&&(st0[4].k==='img'||st0[4].k==='vid')?st0[4]:null,txt=st0[0]||'Meu status no Bippy';
@@ -3787,6 +3796,7 @@ async function shareData(st0){
   return false;
 }
 async function shareSt(){
+  {const s0=sv.list&&sv.list[sv.i];if(s0){fwdStatus(s0,true);return}}
   const st0=sv.list&&sv.list[sv.i];if(!st0)return;clearTimeout(sv.timer);$('#viewer').classList.add('paused');
   const resume=()=>{if(!$('#viewer').hidden&&$('#vt'))show()};
   const ok=await shareData(st0);if(!ok)snack('Compartilhar não está disponível neste aparelho');resume();
@@ -3808,8 +3818,7 @@ function viewerMenu(anchor,own){
       {t:'Editar status',fn:()=>{if(!st0||mine.indexOf(st0)<0){snack('Só dá para editar seus status');resume();return}closeV();compose(null,null,null,st0)}},
       {t:'Excluir status',fn:()=>{const ix=mine.indexOf(st0);if(ix>=0){rtStatusDel(mine[ix]);mine.splice(ix,1)}renderStories();snack('Status excluído');if(!mine.length)closeV();else{sv.list=mine;sv.i=Math.min(sv.i,mine.length-1);show()}}},
       {t:'Salvar no aparelho',fn:()=>{if(!media){snack('Só fotos e vídeos podem ser salvos');resume();return}const a=document.createElement('a');a.href=media.src;a.download='bippy-status'+(media.k==='vid'?'.mp4':'.jpg');document.body.appendChild(a);a.click();a.remove();snack('Salvo');resume()}},
-      {t:'Encaminhar para contatos',fn:()=>fwdStatus(st0)},
-      {t:'Compartilhar fora do app',fn:()=>shareSt()}
+      {t:'Encaminhar para contatos',fn:()=>fwdStatus(st0)}
     ]);
     return;
   }
@@ -5351,6 +5360,7 @@ function openMsgMenu(m,el){
   const goMulti=()=>{closeMsgMenu();window._selNoPill=true;sel=[m];paintSel()};
   if(!gone)add('corner','Responder',()=>selReply());
   if(!gone)add('fwd','Encaminhar',()=>selFwd());
+  if(!gone)add('share','Compartilhar',()=>{sel=[];fwdMenu(m,{share:true,ext:()=>shareMsg(m)})});
   const txt=(!m[4]&&m[1])?String(x.pre&&String(m[1]).startsWith(x.pre)?String(m[1]).slice(x.pre.length):m[1]):'';
   if(!gone&&txt)add('copy','Copiar',()=>{sel=[];copyText(txt)});
   if(!gone)add('star',x.star?'Desfavoritar':'Favoritar',()=>{sel=[];x.star=!x.star;paintMsgs()});
@@ -5448,7 +5458,7 @@ function cleanView(){
 function selMore(){
   closePop();const one=sel.length===1,m=sel[0],allStar=sel.every(x=>x[5]&&x[5].star),pop=mk('div','pop');pop.id='pop';
   const it=[[allStar?'Desfavoritar':'Favoritar',()=>{sel.forEach(x=>{const o=x[5]=x[5]||{};o.star=!allStar});endSel()}]];
-  if(one&&!(m[5]&&m[5].del))it.push(['Compartilhar',()=>{endSel();shareMsg(m)}]);
+  if(one&&!(m[5]&&m[5].del))it.push(['Compartilhar',()=>{endSel();fwdMenu(m,{share:true,ext:()=>shareMsg(m)})}]);
   if(one&&!(m[5]&&m[5].del))it.push([(m[5]&&m[5].pin)?'Desafixar':'Fixar',()=>{endSel();pinAsk(m,()=>{try{paintMsgs()}catch(e){}})}]);
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<9e5&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
@@ -5458,13 +5468,14 @@ function selMore(){
   it.forEach(([lb,fn])=>{const b=mk('button',0,lb);b.onclick=()=>{closePop();fn()};pop.appendChild(b)});
   $('#main').appendChild(pop);setTimeout(()=>document.addEventListener('click',closePop,{once:true}),0);
 }
-async function fwdSend(c,m){
+async function fwdSend(c,m,o){
+  o=o||{fwd:true};
   const d=new Date();let md=null;
   if(m[4]){try{md=JSON.parse(JSON.stringify(m[4]))}catch(e){md=Object.assign({},m[4])}
     if(md.remote&&!md.src&&md.path){try{await rtGet(md)}catch(e){md=null}}
     if(md){delete md.remote;delete md.path;delete md._path;delete md._p;delete md._q;delete md.opened;delete md.err}}
   if(m[4]&&!md){snack('Não consegui baixar a mídia para encaminhar');return}
-  const nm=['out',m[1],t(d.getHours(),d.getMinutes()),exp(c),md,{fwd:true,st:'sent',ts:Date.now()}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,nm[1],nm);
+  const nm=['out',(o.cap&&md)?o.cap:m[1],t(d.getHours(),d.getMinutes()),exp(c),md,Object.assign({st:'sent',ts:Date.now()},o.fwd!==false?{fwd:true}:{})];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,nm[1],nm);
   if(cur===c){try{const bx=$('#msgs');if(bx){bx.appendChild(bubble(nm,true));scroll()}}catch(e){}}
 }
 async function shareMsg(m){const md=m[4];if(md&&md.remote&&!md.src){try{await rtGet(md)}catch(e){}}
@@ -5473,14 +5484,15 @@ function fwQuick(d,m){
   const md=m[4];if(!md||(md.k!=='img'&&md.k!=='vid')||md.once||d.classList.contains('isdel')||(m[5]&&m[5].del))return;
   const b=document.createElement('button');b.type='button';b.className='fwq';b.setAttribute('aria-label','Encaminhar');b.innerHTML=ico('fwd',18);
   b.onclick=e=>{e.stopPropagation();fwdMenu(m)};b.onpointerdown=e=>e.stopPropagation();d.appendChild(b)}
-function fwdMenu(arg){
-  const ms=Array.isArray(arg[0])?arg:[arg],el=$('#fwp'),pick=new Set();el.hidden=false;el.innerHTML='';
+function fwdMenu(arg,opt){
+  opt=opt||{};const ms=Array.isArray(arg[0])?arg:[arg],el=$('#fwp'),pick=new Set();el.hidden=false;el.innerHTML='';
   const hd=mk('div','sh'),bk=bkb();bk.onclick=()=>{el.hidden=true};
-  const tt=mk('div');tt.append(mk('h2',0,'Encaminhar para…'),mk('small',0,ms.length+(ms.length>1?' mensagens':' mensagem')));tt.firstChild.style.fontSize='18px';tt.lastChild.style.color='var(--mute)';
+  const tt=mk('div');tt.append(mk('h2',0,opt.share?'Compartilhar com…':'Encaminhar para…'),mk('small',0,ms.length+(ms.length>1?' mensagens':' mensagem')));tt.firstChild.style.fontSize='18px';tt.lastChild.style.color='var(--mute)';
   hd.append(bk,tt);
+  if(opt.ext){const xb=mk('button','ib');xb.type='button';xb.style.marginLeft='auto';xb.innerHTML=ico('share',22);xb.setAttribute('aria-label','Outros aplicativos');xb.onclick=()=>{el.hidden=true;opt.ext()};hd.append(xb)}
   const q=mk('input','search');q.placeholder='Buscar conversas';q.setAttribute('aria-label','Buscar conversas');
   const list=mk('div'),foot=mk('div','fwb'),names=mk('span'),go=mk('button');go.innerHTML=ico('send',22);go.setAttribute('aria-label','Enviar');foot.hidden=true;foot.append(names,go);
-  const upd=()=>{foot.hidden=!pick.size;names.textContent=[...pick].map(c=>c.name).join(', ')};
+  const upd=()=>{foot.hidden=!pick.size;names.textContent=[...pick].map(c=>c.name).join(', ');if(typeof capIn!=='undefined'&&capIn)capIn.style.bottom=pick.size?'74px':'0'};
   const paint=()=>{
     list.innerHTML='';list.appendChild(mk('div','fwl','Conversas recentes'));const f=q.value.trim().toLowerCase();
     chats.filter(c=>!c.blocked&&!c.pending&&(!f||c.name.toLowerCase().includes(f))).forEach(c=>{
@@ -5493,12 +5505,13 @@ function fwdMenu(arg){
   q.oninput=paint;paint();
   go.onclick=()=>{
     const n=pick.size;if(!n)return;
-    pick.forEach(c=>ms.forEach(m=>{fwdSend(c,m)}));
+    pick.forEach(c=>ms.forEach(m=>{fwdSend(c,m,{cap:capIn?capIn.value.trim():'',fwd:!opt.share})}));
     const one=n===1?[...pick][0]:null;el.hidden=true;renderList();
     if(one){if(cur===one){paintMsgs();const bx=$('#msgs');if(bx)bx.scrollTop=bx.scrollHeight}else openChat(one.id)}
     else{if(cur&&pick.has(cur))paintMsgs();snack('Encaminhada para '+n+' conversas')}
   };
-  el.append(hd,q,list,foot);
+  const capIn=(opt.share&&ms.some(m=>m[4]&&(m[4].k==='img'||m[4].k==='vid')))?mk('input','fwcap'):null;if(capIn){capIn.placeholder='Adicione uma legenda…';capIn.setAttribute('aria-label','Legenda');capIn.maxLength=200}
+  el.append(hd,q,list);if(capIn)el.append(capIn);el.append(foot);
 }
 Object.assign(P,{back:'<path d="M15 18l-6-6 6-6"/>'});
 function bkb(x){const b=mk('button','ib bkb'+(x?' '+x:''));b.innerHTML=ico('back',22);b.setAttribute('aria-label','Voltar');return b}
@@ -6451,7 +6464,7 @@ function compose(target,pre,preCap,editSt){
   const FX=[['Original',''],['Vívido','saturate(1.45) contrast(1.06)'],['Preto e branco','grayscale(1)'],['Quente','sepia(.35) saturate(1.25)'],['Frio','hue-rotate(-12deg) saturate(1.15) brightness(1.03)'],['Vintage','sepia(.55) contrast(.92) brightness(1.04)'],['Noir','grayscale(1) contrast(1.3)'],['Dourado','sepia(.5) saturate(1.5) hue-rotate(-10deg)'],['Dramático','contrast(1.25) saturate(1.1) brightness(.95)'],['Suave','brightness(1.08) contrast(.9) saturate(1.1)']];
   const FONTS=['sans','serif','hand','mono'];
   v.innerHTML='<div class="ced"><div class="ctop"><button class="gl" id="edx" aria-label="Fechar">'+ico('x',22)+'</button><div class="ctl"><button class="gl" id="edf" aria-label="Fonte">Aa</button><button class="gl" id="edp" aria-label="Fundo">'+ico('palette',20)+'</button><button class="gl" id="edc" aria-label="Cortar vídeo">'+ico('scissors',20)+'</button><button class="gl" id="eds" aria-label="Figurinhas">'+ico('sticker',20)+'</button><button class="gl" id="edmo" aria-label="Enquete e localização">'+ico('plus',20)+'</button><button class="gl" id="edpen" aria-label="Desenhar" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 4-8 7-8s1 7 4 7 3-9 7-11"/></svg></button><button class="gl" id="edsv" aria-label="Baixar sem publicar" hidden>'+ico('download',20)+'</button><button class="gl" id="edhd" aria-label="Qualidade HD">HD</button><button class="gl" id="edt" aria-label="Duração">'+ico('clock',20)+'</button></div></div><div class="vstrip" id="edstrip" hidden><div class="vth" id="edth"></div><div class="vwin" id="edwin"><i class="vhd vhl" id="edhl"></i><i class="vhd vhr" id="edhr"></i></div></div><div class="vinfo" id="edvi" hidden><button class="gl" id="edmu" aria-label="Som do vídeo"></button><span id="edvt"></span></div><div class="cmid"><div class="pv" id="edpv" hidden></div><textarea class="edt f-sans" id="edtx" maxlength="200" placeholder="Digite seu status" aria-label="Texto do status"></textarea><div class="cstk" id="edstk"></div></div><div class="edfl" id="edfl" hidden></div><div class="edhint" id="edhint" hidden>Deslize para cima para filtros</div><div class="ccap" id="edcap" hidden><input id="edci" maxlength="200" placeholder="Adicione uma legenda…" aria-label="Legenda" autocomplete="off"></div><div class="cbot2"><button class="gl" id="edpi" aria-label="Galeria">'+ico('image',20)+'</button><button class="spill" id="eddst" aria-label="Escolher quem vê">'+ico('statusring',18)+'<span id="eddn"></span><i class="cdc">▾</i></button><button class="pubx2" id="edpub" aria-label="Publicar">'+ico('send',24)+'</button></div></div>';
-  const paint=()=>{v.style.background=sb[c%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');$('#edtx').className='edt f-'+FONTS[fi];$('#eddn').textContent=dest?dest.name:'Status ('+(chats.filter(x=>!x.group&&!x.blocked&&!x.pending).length)+' contatos)';const ds0=$('#eddst');ds0.classList.toggle('lock',!!locked);const cc=ds0.querySelector('.cdc');if(cc)cc.hidden=!!locked};
+  const paint=()=>{v.style.background=sb[c%sb.length];v.style.backgroundSize='';v.classList.remove('meshv');$('#edtx').className='edt f-'+FONTS[fi];$('#eddn').textContent=(dest?dest.name:'Status ('+(chats.filter(x=>!x.group&&!x.blocked&&!x.pending).length)+' contatos)')+(ment.length?' + @':'');const ds0=$('#eddst');ds0.classList.toggle('lock',!!locked);const cc=ds0.querySelector('.cdc');if(cc)cc.hidden=!!locked};
   const stk=()=>{
     const need=!!(md||poll),ci=$('#edci'),tx0=$('#edtx');if(need&&!tx0.hidden&&!ci.value)ci.value=tx0.value;if(!need&&tx0.hidden&&ci.value&&!tx0.value)tx0.value=ci.value;tx0.hidden=need;$('#edcap').hidden=false;{const cd=document.querySelector('.ced');if(cd){cd.classList.toggle('medm',!!md);cd.classList.toggle('vidm',!!(md&&md.k==='vid'));cd.classList.toggle('imgm',!!(md&&md.k==='img'))}v.style.background=md?'#000':sb[c%sb.length]}
     {const pe=$('#edpen'),ps=$('#edsv');if(pe)pe.hidden=!(md&&(md.k==='img'||md.k==='vid'));if(ps)ps.hidden=!(md&&(md.k==='img'||md.k==='vid'))}
@@ -6520,7 +6533,7 @@ function compose(target,pre,preCap,editSt){
         else{ps.set(e.pointerId,[e.clientX,e.clientY]);const [a,b]=[...ps.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1])||1;o.s=Math.max(.12,Math.min(1.2,s0*d/d0));o.r=r0+(Math.atan2(b[1]-a[1],b[0]-a[0])-a0)*180/Math.PI;const k=w.firstChild;stkSz(k,Math.round(o.s*W));set()}};
       w.onpointerup=w.onpointercancel=e=>{if(e.target.closest&&e.target.closest('.stkh'))return;ps.delete(e.pointerId);if(e.type==='pointerup'&&!mvd&&(o.md.bal!=null||o.md.mus!=null||o.md.hash!=null||o.md.men!=null)&&!ps.size){tr.hide();stkAsk(o.md,m=>{o.md=m;stDraw()});return}if(e.type==='pointerup'&&tr.over()){tr.hide();stks.splice(i,1);stDraw();return}tr.hide()};
       L.appendChild(w)})};
-  {const insM=(f,c)=>{if(!ment.includes(c.id))ment.push(c.id);let v=f.value;if(/@$/.test(v))v=v.slice(0,-1);f.value=(v+(v&&!/\s$/.test(v)?' ':'')+'@'+c.name+' ').slice(0,200);f.focus()};
+  {const insM=(f,c)=>{if(!ment.includes(c.id))ment.push(c.id);let v=f.value;if(/@$/.test(v))f.value=v.slice(0,-1);paint();const ab=$('#edat');if(ab)ab.classList.add('on');snack('Vai avisar '+c.name);f.focus()};
     const open=f=>pickPeople(false,'Marcar contato',cs=>insM(f,cs[0]));
     const cap=$('#edcap');if(cap){cap.style.position='relative';const ab=document.createElement('button');ab.type='button';ab.className='edat';ab.id='edat';ab.setAttribute('aria-label','Marcar contato');ab.textContent='@';ab.onpointerdown=e=>e.preventDefault();ab.onclick=()=>open($('#edci'));cap.appendChild(ab)}
     [$('#edci'),$('#edtx')].forEach(f=>{if(f)f.addEventListener('input',e=>{if(e.data==='@')open(f)})})}
@@ -6542,13 +6555,14 @@ function compose(target,pre,preCap,editSt){
     let lid=null;if(lyS){lid='l'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);try{mcPut('ly:'+lid,new Blob([JSON.stringify(lyS)],{type:'application/json'}))}catch(e){}}
     const cap0=(md||poll)?'':$('#edci').value.trim();
     const tx=((md||poll)?$('#edci').value:$('#edtx').value).trim();if(!tx&&!md&&!poll&&!loc&&!music&&!stks.length){$('#edtx').focus();return}
+    let lastSt=null;
     const post=m=>{
       if(m){delete m._orig;delete m._file;m.hd=hd;if(m.k==='vid'&&fx)m.filter=FX[fx][1]}
-      const st=[tx,c,'agora',[],m,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music,stks:stks.length?stks.map(o=>Object.assign({},o)):undefined,cap:cap0||undefined,ment:mids.size?[...mids]:undefined,lid:lid||undefined,ovl:(m&&m.k==='vid'&&ovl)?ovl:undefined}];
+      const st=lastSt=[tx,c,'agora',[],m,{f:FONTS[fi],exp:Date.now()+dur*36e5,dur,poll,loc,music,stks:stks.length?stks.map(o=>Object.assign({},o)):undefined,cap:cap0||undefined,ment:mids.size?[...mids]:undefined,lid:lid||undefined,ovl:(m&&m.k==='vid'&&ovl)?ovl:undefined}];
       if(dest){st[5].by='Você';(stat[dest.id]=stat[dest.id]||[]).push(st);seen[dest.id]=true;seenCnt[String(dest.id)]=stat[dest.id].length;return}
       {const ex=editSt?mine.indexOf(editSt):-1;if(ex>=0){if(rtOn())rtStatusDel(editSt);mine.splice(ex,1,st)}else mine.push(st)}if(rtOn())rtStatusPublish(st);else{simViews(st);simVotes(st)}seen.me=false};
     const mids=new Set(ment);stks.forEach(o=>{if(o.md&&o.md.cid)mids.add(o.md.cid)});
-    const done=n=>{if(!dest&&!editSt&&mids.size)try{stMentionSend([...mids])}catch(e){}sv.key='';S.stBg=c;closeV();snack(editSt?'Status atualizado':dest?'Status publicado no grupo '+dest.name:(n>1?n+' status publicados por '+dur+' h':'Status publicado por '+dur+' h'))};
+    const done=n=>{if(!dest&&!editSt&&mids.size)try{stMentionSend([...mids],lastSt)}catch(e){}sv.key='';S.stBg=c;closeV();snack(editSt?'Status atualizado':dest?'Status publicado no grupo '+dest.name:(n>1?n+' status publicados por '+dur+' h':'Status publicado por '+dur+' h'))};
     const go=()=>{
       if(md&&md.k==='vid'&&!md.dur&&!md._dq){md._dq=1;snack('Verificando o vídeo…');vidDur(md.src,d=>{if(d>0){md.dur=d;md.from=0;md.to=Math.min(30,d)}go()});return}
       if(md&&md.k==='vid'&&md.dur>31){
