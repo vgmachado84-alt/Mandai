@@ -162,6 +162,21 @@ t=t.replace('        public void set(final String top','''        public String 
         @JavascriptInterface
         public void set(final String top''',1)
 t=t.replace('super.onCreate(savedInstanceState);','super.onCreate(savedInstanceState);\n        grab(getIntent());',1)
+t=t.replace('        grab(getIntent());','''        grab(getIntent());
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                try {
+                    getBridge().getWebView().evaluateJavascript("(function(){try{return window.__bBack?(window.__bBack()?1:0):0}catch(e){return 0}})()", new android.webkit.ValueCallback<String>() {
+                        public void onReceiveValue(String v) {
+                            if (!"1".equals(v)) moveTaskToBack(true);
+                        }
+                    });
+                } catch (Exception e) {
+                    moveTaskToBack(true);
+                }
+            }
+        });''',1)
 open(j,'w',encoding='utf-8').write(t)
 print('java ok')
 PY

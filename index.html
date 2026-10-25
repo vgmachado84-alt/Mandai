@@ -25,7 +25,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5131">
+<meta name="mandai-build" content="20261025-5133">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2326,6 +2326,23 @@ body.dragt .ced .ccap,body.dragt .ced .cbot2,body.dragt .ced .edhint{visibility:
 .stkv.pl-hash b,.stkv.pl-men b{background:linear-gradient(90deg,#8a55ff,#e0409a);-webkit-background-clip:text;background-clip:text;color:transparent}
 
 .m .stmb{display:block;margin:6px 0 2px;padding:8px 16px;border:0;border-radius:18px;background:var(--out,#1f6fe8);color:#fff;font-weight:700;font-size:14px}
+
+.obwel .obhero{pointer-events:none}.obwel .obp,.obwel .obo{position:relative;z-index:3}
+
+.fwq{position:absolute;top:50%;margin-top:-18px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(120,130,150,.22);color:inherit;display:grid;place-items:center;opacity:.85}
+.m.out .fwq{right:calc(100% + 8px)}.m.in .fwq{left:calc(100% + 8px)}.selmode .fwq{display:none}
+.mntb{position:absolute;left:14px;bottom:92px;z-index:3;padding:7px 14px;border-radius:18px;background:rgba(138,85,255,.92);color:#fff;font-size:13px;font-weight:700;pointer-events:none}
+.mpk{position:fixed;inset:0;z-index:100010;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}
+.mpkb{width:100%;max-height:72vh;display:flex;flex-direction:column;background:#10101f;color:#fff;border-radius:22px 22px 0 0;padding:8px 0 calc(10px + env(safe-area-inset-bottom,0px))}
+.mpkh{display:block;width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:4px auto 8px}
+.mpkb h3{margin:0 0 8px;text-align:center;font-size:17px}
+.mpkq{margin:0 14px 8px;padding:12px 16px;border-radius:22px;border:0;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:16px}
+.mpkl{overflow:auto;flex:1}
+.mpkr{display:flex;align-items:center;gap:14px;width:100%;padding:10px 18px;background:none;border:0;color:#fff;font:inherit;text-align:left}
+.mpkr .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:none}
+.mpkr b{font-size:16px;font-weight:600;flex:1}.mpkr small{color:rgba(255,255,255,.55)}
+.edat{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:none;color:#fff;font-size:22px;font-weight:600;display:grid;place-items:center}
+#edcap #edci{padding-right:56px}
 </style>
 </head>
 <body>
@@ -2571,8 +2588,9 @@ function renderList(){
   if(sMode&&f)searchMsgs(f);
   if(!$('#list').children.length)$('#list').innerHTML='<p class="empty">Nenhuma conversa encontrada.</p>';
 }
+function kickPaint(){let n=0;const f=()=>{try{document.body.style.willChange=n%2?'':'transform';void document.body.offsetHeight}catch(e){}n++;if(n<16)setTimeout(f,70);else try{document.body.style.willChange=''}catch(e){}};f();try{window.dispatchEvent(new Event('resize'))}catch(e){}}
 function stMentionSend(ids){
-  ids.forEach(id=>{const c=chats.find(y=>y.id===id);if(!c||c.blocked||c.group||c.pending)return;const d=new Date(),nm=['out','\u2063📣 '+((me&&me.name)||'Alguém')+' mencionou você em um status',t(d.getHours(),d.getMinutes()),exp(c),null,{st:'sent'}];c.msgs.push(nm);track(nm,c)});
+  ids.forEach(id=>{const c=chats.find(y=>y.id===id);if(!c||c.blocked||c.group||c.pending)return;const d=new Date(),nm=['out','\u2063📣 '+((me&&me.name)||'Alguém')+' mencionou você em um status',t(d.getHours(),d.getMinutes()),exp(c),null,{st:'sent',ts:Date.now()}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,nm[1],nm)});
   try{renderList()}catch(e){}}
 function stmFix(d,m){
   if(typeof m[1]!=='string'||m[1].charCodeAt(0)!==0x2063||d.classList.contains('isdel'))return;
@@ -2584,7 +2602,7 @@ function stmFix(d,m){
 function bubble(m,anim){
   const onceMd=m[4]&&m[4].once&&m[4].k!=='stk'?m[4]:null;
   const d=onceMd?(()=>{const m2=m.slice();m2[4]=null;m2[1]='';const dd=bubble0(m2,anim);dd._m=m;return dd})():bubble0(m,anim);
-  try{stmFix(d,m)}catch(e){}
+  try{stmFix(d,m);fwQuick(d,m)}catch(e){}
   if(onceMd&&!d.classList.contains('isdel')){const md=onceMd,mine=m[0]==='out',lbl=md.k==='img'?'Foto':md.k==='vid'?'Vídeo':'Mensagem de voz';
     const card=document.createElement('button');card.type='button';card.className='oncec'+(md.opened?' done':'');
     const ci=document.createElement('span');ci.className='oncei';ci.textContent=md.opened?'':'1';if(md.opened)ci.innerHTML=ico(md.k==='aud'?'mic':md.k==='vid'?'video':'image',20);
@@ -3860,7 +3878,7 @@ function openCam(cb,m0,opts){
     const LIM=mode==='note'?60:(LIMIT||(mode==='foto'?60:0));tk=setInterval(()=>{const s=(Date.now()-t0)/1000;rt.textContent=fmt(s);const pr=LIM?Math.min(1,s/LIM):0;const sh0=$('#sh');if(sh0)sh0.style.setProperty('--p',pr);const rg=document.querySelector('#cring circle');if(rg)rg.style.strokeDashoffset=307.9*(1-pr);if(LIM&&s>=LIM&&mr.state!=='inactive')mr.stop()},100);
   }
   function review(m){
-    clearInterval(tk);{const os=stream;setTimeout(()=>{try{if(os)os.getTracks().forEach(k=>k.stop())}catch(e){}if(stream===os)stream=null},400)}if(opts&&opts.direct){close();setTimeout(()=>{try{cb(m,'')}catch(e){try{$('#viewer').hidden=true;$('#viewer').innerHTML=''}catch(_){}snack('Não consegui abrir o editor. Tente de novo.')}},280);return}el.hidden=false;el.classList.remove('note','recing');
+    clearInterval(tk);{const os=stream;setTimeout(()=>{try{if(os)os.getTracks().forEach(k=>k.stop())}catch(e){}if(stream===os)stream=null},400)}if(opts&&opts.direct){try{const vv=$('#cv');if(vv){vv.pause();vv.srcObject=null}if(stream)stream.getTracks().forEach(k=>k.stop());stream=null}catch(e){}close();setTimeout(()=>{try{cb(m,'');kickPaint()}catch(e){try{$('#viewer').hidden=true;$('#viewer').innerHTML=''}catch(_){}snack('Não consegui abrir o editor. Tente de novo.')}},280);return}el.hidden=false;el.classList.remove('note','recing');
     el.innerHTML='<div class="cvid" id="rv"></div><button class="cx" id="rx" aria-label="Descartar">'+ico('x',22)+'</button><div class="cap2 v3"><div class="cap3"><button class="remo" id="remo" aria-label="Emoji" type="button">'+ico('smile',24)+'</button><input id="rcap" placeholder="Adicione uma legenda…" aria-label="Legenda" maxlength="120" autocomplete="off"><button class="once" id="ronce" type="button" aria-label="Visualização única" aria-pressed="false">1</button></div><div class="bot3"><span class="rcp" id="rcp"></span><button class="send" id="rsend" aria-label="Enviar">'+ico('send',22)+'</button></div></div>';
     try{$('#rcp').textContent=(cur&&cur.name)||''}catch(e){}
     $('#ronce').onclick=e=>{const b=e.currentTarget;m.once=!m.once;b.classList.toggle('on',!!m.once);b.setAttribute('aria-pressed',m.once?'true':'false');snack(m.once?'Visualização única: some depois de aberta':'Visualização única desativada')};
@@ -5430,6 +5448,7 @@ function cleanView(){
 function selMore(){
   closePop();const one=sel.length===1,m=sel[0],allStar=sel.every(x=>x[5]&&x[5].star),pop=mk('div','pop');pop.id='pop';
   const it=[[allStar?'Desfavoritar':'Favoritar',()=>{sel.forEach(x=>{const o=x[5]=x[5]||{};o.star=!allStar});endSel()}]];
+  if(one&&!(m[5]&&m[5].del))it.push(['Compartilhar',()=>{endSel();shareMsg(m)}]);
   if(one&&!(m[5]&&m[5].del))it.push([(m[5]&&m[5].pin)?'Desafixar':'Fixar',()=>{endSel();pinAsk(m,()=>{try{paintMsgs()}catch(e){}})}]);
   if(one&&m[0]==='in')it.push(['Responder depois',()=>{endSel();laterMenu()}]);
   if(one&&m[0]==='out'&&!m[4]&&m[1]&&m[5]&&m[5].ts&&Date.now()-m[5].ts<9e5&&!m[5].del)it.push(['Editar',()=>{m[5]=m[5]||{};endSel();editMsg(m)}]);
@@ -5439,6 +5458,21 @@ function selMore(){
   it.forEach(([lb,fn])=>{const b=mk('button',0,lb);b.onclick=()=>{closePop();fn()};pop.appendChild(b)});
   $('#main').appendChild(pop);setTimeout(()=>document.addEventListener('click',closePop,{once:true}),0);
 }
+async function fwdSend(c,m){
+  const d=new Date();let md=null;
+  if(m[4]){try{md=JSON.parse(JSON.stringify(m[4]))}catch(e){md=Object.assign({},m[4])}
+    if(md.remote&&!md.src&&md.path){try{await rtGet(md)}catch(e){md=null}}
+    if(md){delete md.remote;delete md.path;delete md._path;delete md._p;delete md._q;delete md.opened;delete md.err}}
+  if(m[4]&&!md){snack('Não consegui baixar a mídia para encaminhar');return}
+  const nm=['out',m[1],t(d.getHours(),d.getMinutes()),exp(c),md,{fwd:true,st:'sent',ts:Date.now()}];c.msgs.push(nm);track(nm,c);if(c.rid)rtSend(c,nm[1],nm);
+  if(cur===c){try{const bx=$('#msgs');if(bx){bx.appendChild(bubble(nm,true));scroll()}}catch(e){}}
+}
+async function shareMsg(m){const md=m[4];if(md&&md.remote&&!md.src){try{await rtGet(md)}catch(e){}}
+  const ok=await shareData([m[1]||'',0,'',[],md]);if(!ok)snack('Compartilhar não está disponível neste aparelho')}
+function fwQuick(d,m){
+  const md=m[4];if(!md||(md.k!=='img'&&md.k!=='vid')||md.once||d.classList.contains('isdel')||(m[5]&&m[5].del))return;
+  const b=document.createElement('button');b.type='button';b.className='fwq';b.setAttribute('aria-label','Encaminhar');b.innerHTML=ico('fwd',18);
+  b.onclick=e=>{e.stopPropagation();fwdMenu(m)};b.onpointerdown=e=>e.stopPropagation();d.appendChild(b)}
 function fwdMenu(arg){
   const ms=Array.isArray(arg[0])?arg:[arg],el=$('#fwp'),pick=new Set();el.hidden=false;el.innerHTML='';
   const hd=mk('div','sh'),bk=bkb();bk.onclick=()=>{el.hidden=true};
@@ -5459,7 +5493,7 @@ function fwdMenu(arg){
   q.oninput=paint;paint();
   go.onclick=()=>{
     const n=pick.size;if(!n)return;
-    pick.forEach(c=>ms.forEach(m=>{const d=new Date();const nm=['out',m[1],t(d.getHours(),d.getMinutes()),exp(c),m[4]?JSON.parse(JSON.stringify(m[4])):null,{fwd:true,st:'sent'}];c.msgs.push(nm);track(nm,c)}));
+    pick.forEach(c=>ms.forEach(m=>{fwdSend(c,m)}));
     const one=n===1?[...pick][0]:null;el.hidden=true;renderList();
     if(one){if(cur===one){paintMsgs();const bx=$('#msgs');if(bx)bx.scrollTop=bx.scrollHeight}else openChat(one.id)}
     else{if(cur&&pick.has(cur))paintMsgs();snack('Encaminhada para '+n+' conversas')}
@@ -6087,6 +6121,7 @@ function addExtras(vt,s){
   if(x.poll)w.prepend(buildPoll(x.poll,{status:true,own:sv.key==='me'}));
   if(x.loc){const p=mk('span','pill');p.innerHTML=ico('pin',16)+'<span></span>';p.lastChild.textContent=x.loc;w.appendChild(p)}
   if(x.music){const p=mk('span','pill');p.innerHTML=ico('musicn',16)+'<span></span>';p.lastChild.textContent=x.music;w.appendChild(p)}
+  if(x.ment&&typeof RT!=='undefined'&&RT.uid&&x.ment.includes(RT.uid)&&s[5]!==undefined){const bn=mk('div','mntb','@ Você foi mencionado(a)');vt.appendChild(bn)}
   if(x.stks&&x.stks.length){const L=mk('div','stkvl'),W=vt.getBoundingClientRect().width||innerWidth;x.stks.forEach(o=>{const d=mk('div','stkov');d.style.left=(o.x*100)+'%';d.style.top=(o.y*100)+'%';d.style.transform='translate(-50%,-50%) rotate('+(o.r||0)+'deg)';d.appendChild(stkEl(o.md,Math.round(o.s*W)));L.appendChild(d)});vt.appendChild(L)}
   if(x.ovl){const oi=document.createElement('img');oi.className='ovlv';oi.src=x.ovl;oi.alt='';vt.appendChild(oi)}
   if(x.poll){const pl=w.querySelector('.vpoll');const c=mk('div','stkc');
@@ -6485,8 +6520,10 @@ function compose(target,pre,preCap,editSt){
         else{ps.set(e.pointerId,[e.clientX,e.clientY]);const [a,b]=[...ps.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1])||1;o.s=Math.max(.12,Math.min(1.2,s0*d/d0));o.r=r0+(Math.atan2(b[1]-a[1],b[0]-a[0])-a0)*180/Math.PI;const k=w.firstChild;stkSz(k,Math.round(o.s*W));set()}};
       w.onpointerup=w.onpointercancel=e=>{if(e.target.closest&&e.target.closest('.stkh'))return;ps.delete(e.pointerId);if(e.type==='pointerup'&&!mvd&&(o.md.bal!=null||o.md.mus!=null||o.md.hash!=null||o.md.men!=null)&&!ps.size){tr.hide();stkAsk(o.md,m=>{o.md=m;stDraw()});return}if(e.type==='pointerup'&&tr.over()){tr.hide();stks.splice(i,1);stDraw();return}tr.hide()};
       L.appendChild(w)})};
-  {const ctl=document.querySelector('.ced .ctl');if(ctl){const ab=document.createElement('button');ab.className='gl';ab.id='edat';ab.setAttribute('aria-label','Marcar contato');ab.textContent='@';ab.style.fontWeight='800';const sb=ctl.querySelector('#eds');ctl.insertBefore(ab,sb?sb.nextSibling:null);
-    ab.onclick=()=>pickPeople(true,'Marcar contatos',cs=>{cs.forEach(x=>{if(!ment.includes(x.id))ment.push(x.id)});const f=(md||poll)?$('#edci'):$('#edtx');f.value=(f.value+(f.value&&!/\s$/.test(f.value)?' ':'')+cs.map(x=>'@'+x.name).join(' ')+' ').slice(0,200);f.focus()})}}
+  {const insM=(f,c)=>{if(!ment.includes(c.id))ment.push(c.id);let v=f.value;if(/@$/.test(v))v=v.slice(0,-1);f.value=(v+(v&&!/\s$/.test(v)?' ':'')+'@'+c.name+' ').slice(0,200);f.focus()};
+    const open=f=>pickPeople(false,'Marcar contato',cs=>insM(f,cs[0]));
+    const cap=$('#edcap');if(cap){cap.style.position='relative';const ab=document.createElement('button');ab.type='button';ab.className='edat';ab.id='edat';ab.setAttribute('aria-label','Marcar contato');ab.textContent='@';ab.onpointerdown=e=>e.preventDefault();ab.onclick=()=>open($('#edci'));cap.appendChild(ab)}
+    [$('#edci'),$('#edtx')].forEach(f=>{if(f)f.addEventListener('input',e=>{if(e.data==='@')open(f)})})}
   $('#eds').onclick=()=>{
     STK_TAP=m=>{closeModal();STK_TAP=null;stks.push({md:m.src?{k:'stk',src:m.src}:m.live?{k:'stk',live:m.live}:m.bal!=null?{k:'stk',bal:m.bal,t:m.t}:(m.mus!=null||m.hash!=null||m.men!=null)?Object.assign({k:'stk'},m):{k:'stk',e:m.e,t:m.t,c1:m.c1,c2:m.c2},x:.5,y:.5,s:(m.mus!=null||m.hash!=null||m.men!=null)?.6:.42,r:0});stDraw()};
     showModal('<div id="stpk" style="max-height:62vh;overflow:auto"></div><button class="btn ghost" id="stpx">Fechar</button>');
@@ -7174,10 +7211,13 @@ function stkSheet(md,m,after){
   $('#sfx').onclick=closeModal;
 }
 let STK_TAP=null;function pickPeople(multi,title,cb){
-  const pk=new Set(),cs=chats.filter(c=>!c.group&&!c.blocked&&!c.pending&&!c.saved);
-  showModal('<h3>'+title+'</h3><div class="mem">'+(cs.map(x=>`<label class="mr"><input class="pp" type="checkbox" value="${x.id}"><span class="av" style="background:${ad(x)}">${ini(x.name)}</span><b>${esc(x.name)}</b></label>`).join('')||'<p class="vpn">Nenhum contato ainda.</p>')+'</div><button class="btn" id="ppo">Pronto</button><button class="btn ghost" id="ppx">Cancelar</button>');
-  const bx=[...document.querySelectorAll('.pp')];if(!multi)bx.forEach(b=>b.onchange=()=>{if(b.checked)bx.forEach(o=>{if(o!==b)o.checked=false})});
-  $('#ppx').onclick=closeModal;$('#ppo').onclick=()=>{const ids=bx.filter(b=>b.checked).map(b=>+b.value);if(!ids.length){closeModal();return}closeModal();cb(ids.map(id=>chats.find(y=>y.id===id)).filter(Boolean))}}
+  document.querySelector('.mpk')?.remove();
+  const cs=chats.filter(c=>!c.group&&!c.blocked&&!c.pending&&!c.self&&!c.saved);
+  const w=document.createElement('div');w.className='mpk';
+  w.innerHTML='<div class="mpkb"><i class="mpkh"></i><h3>'+esc(title||'Marcar contato')+'</h3><input class="mpkq" placeholder="Buscar contato" aria-label="Buscar contato" autocomplete="off"><div class="mpkl"></div></div>';
+  const L=w.querySelector('.mpkl'),q=w.querySelector('.mpkq');
+  const paint=()=>{L.innerHTML='';const f=q.value.trim().toLowerCase();cs.filter(c=>!f||c.name.toLowerCase().includes(f)||String(c.user||'').toLowerCase().includes(f)).forEach(c=>{const b=document.createElement('button');b.type='button';b.className='mpkr';b.innerHTML='<span class="av" style="background:'+ad(c)+'">'+ini(c.name)+'</span><b>'+esc(c.name)+'</b>'+(c.user?'<small>@'+esc(c.user)+'</small>':'');b.onclick=()=>{w.remove();cb([c])};L.appendChild(b)});if(!L.children.length)L.innerHTML='<p class="vpn">Nenhum contato encontrado.</p>'};
+  q.oninput=paint;paint();w.onclick=e=>{if(e.target===w)w.remove()};document.body.appendChild(w)}
 function stkNeed(md){return md.bal!=null&&md.t==null||md.mus===''||md.hash===''||md.men===''}
 function stkAsk(md,cb){
   if(md.men!=null){pickPeople(false,'Marcar quem?',cs=>{const c=cs[0];cb(Object.assign({},md,{men:c.name,cid:c.id}))});return}
@@ -7237,6 +7277,7 @@ function buildGif(c){
   const vis=e=>e&&!e.hidden&&e.offsetParent!==null;
   const clk=q=>{const e=document.querySelector(q);if(e&&e.getClientRects().length){e.click();return true}return false};
   function back(){
+    {const mk0=document.querySelector('.mpk');if(mk0){mk0.remove();return true}}
     if(clk('.ietx2 #txd'))return true;
     const m0=$('#modal');if(vis(m0)){closeModal();return true}
     if(clk('#ied #iex')||clk('#ied2 #iex'))return true;
@@ -7257,6 +7298,7 @@ function buildGif(c){
     if(typeof _tab!=='undefined'&&_tab!=='c'&&typeof tab==='function'){tab('c');return true}
     return false;
   }
+  window.__bBack=()=>{let h=false;try{h=back()}catch(e){}return !!h};
   try{history.pushState({nx:1},'')}catch(e){}
   addEventListener('popstate',()=>{let h=false;try{h=back()}catch(e){}if(h){try{history.pushState({nx:1},'')}catch(e){}}});
 })();
@@ -7766,7 +7808,7 @@ function rtOn(){try{return !!(RT.on&&RT.uid&&SB)}catch(e){return false}}
 function rtAgo(iso){const m=Math.max(0,Math.round((Date.now()-Date.parse(iso))/6e4));return m<1?'agora':m<60?'há '+m+' min':'há '+Math.floor(m/60)+' h'}
 function rtCleanStat(){try{if(!rtOn())return;Object.keys(stat).forEach(k=>{const c=chats.find(x=>String(x.id)===k);if(!c||!c.real)delete stat[k]})}catch(e){}}
 function rtStItem(r){const d=r.dados||{};let md=null;if(d.md&&d.md.path){md=Object.assign({},d.md);md.remote=true;md.src=null}
-  const it=[r.conteudo||'',Number(r.fundo)||0,rtAgo(r.criado_em),[],md,{f:d.f,exp:Date.parse(r.expira_em),dur:d.dur,poll:d.poll,loc:d.loc,music:d.music,stks:d.stks,ovl:d.ovl,lid:d.lid,cap:d.cap}];it.sid=r.id;if(it[5].poll){const pl=it[5].poll=Object.assign({},it[5].poll);pl.opts=(pl.opts||[]).map(o=>({t:o.t,em:o.em,st:o.st,img:o.img,v:0,voters:[]}));pl.vk=r.id;pl.mine=-1;pl._n=1;pl.own=r.autor_id===RT.uid}return it}
+  const it=[r.conteudo||'',Number(r.fundo)||0,rtAgo(r.criado_em),[],md,{f:d.f,exp:Date.parse(r.expira_em),dur:d.dur,poll:d.poll,loc:d.loc,music:d.music,stks:d.stks,ovl:d.ovl,lid:d.lid,cap:d.cap,ment:d.ment}];it.sid=r.id;if(it[5].poll){const pl=it[5].poll=Object.assign({},it[5].poll);pl.opts=(pl.opts||[]).map(o=>({t:o.t,em:o.em,st:o.st,img:o.img,v:0,voters:[]}));pl.vk=r.id;pl.mine=-1;pl._n=1;pl.own=r.autor_id===RT.uid}return it}
 function rtStPlace(row){RT.sids=RT.sids||new Set();if(RT.sids.has(row.id))return;RT.sids.add(row.id);const it=rtStItem(row);
   if(row.autor_id===RT.uid)mine.push(it);else{const c=chats.find(x=>x.uid===row.autor_id);if(!c)return;(stat[c.id]=stat[c.id]||[]).push(it)}
   if(it[5].poll)rtPollLoad(it[5].poll);const md=it[4];if(md&&md.remote&&md.k!=='vid')rtGet(md).then(()=>{try{renderStories()}catch(e){}}).catch(()=>{})}
@@ -7785,7 +7827,7 @@ async function rtStatusPublish(st){
       if(!md.poster||md.k==='vid'){const po=await new Promise(r=>stPoster(md,r));if(po)md.poster=po}
       dm={poster:md.poster&&md.poster.length<14000?md.poster:undefined,k:md.k,path,hd:md.hd,filter:md.filter,size:md.size,note:md.note,from:md.from,to:md.to,dur:md.dur,mime:md.mime}}
     const x=st[5]||{};
-    const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,stks:x.stks,ovl:x.ovl,lid:x.lid,cap:x.cap,poll:x.poll,md:dm}}).select('id').single();
+    const ins=await SB.from('status').insert({autor_id:RT.uid,tipo:md?md.k:'texto',conteudo:st[0],fundo:String(st[1]),expira_em:new Date(x.exp||Date.now()+864e5).toISOString(),dados:{f:x.f,dur:x.dur,loc:x.loc,music:x.music,stks:x.stks,ovl:x.ovl,lid:x.lid,cap:x.cap,ment:(x.ment||[]).map(id=>{const c=chats.find(y=>y.id===id);return c&&c.uid}).filter(Boolean),poll:x.poll,md:dm}}).select('id').single();
     if(ins.error)throw ins.error;st.sid=ins.data.id;RT.sids=RT.sids||new Set();RT.sids.add(ins.data.id);if(x.poll){x.poll.vk=ins.data.id;RT.polls=RT.polls||{};RT.polls[ins.data.id]=x.poll}}
   catch(e){rtErr(e);snack('Não consegui publicar o status para os contatos. Verifique a internet e o arquivo 6 do banco.')}}
 async function rtStatusDel(st){try{if(st&&st.sid){await SB.from('status').delete().eq('id',st.sid);const p=st[4]&&st[4].path;if(p&&!mine.some(x=>x!==st&&x[4]&&x[4].path===p))SB.storage.from('midia').remove([p])}}catch(e){}}
