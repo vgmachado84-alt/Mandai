@@ -132,8 +132,47 @@ t=t.replace('public class MainActivity extends BridgeActivity {','''public class
 t=t.replace('        public void set(final String top','''        public String shared() { String x = pend; pend = ""; return x; }
 
         @JavascriptInterface
+        public void shareFile(String b64, String mime, String name, String text) {
+            try {
+                final android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_SEND);
+                if (b64 != null && b64.length() > 0) {
+                    byte[] d = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+                    java.io.File dir = new java.io.File(getCacheDir(), "shared");
+                    dir.mkdirs();
+                    java.io.File f = new java.io.File(dir, name);
+                    java.io.FileOutputStream o = new java.io.FileOutputStream(f);
+                    o.write(d);
+                    o.close();
+                    android.net.Uri u = androidx.core.content.FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", f);
+                    i.setType(mime);
+                    i.putExtra(android.content.Intent.EXTRA_STREAM, u);
+                    i.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } else {
+                    i.setType("text/plain");
+                }
+                if (text != null && text.length() > 0) i.putExtra(android.content.Intent.EXTRA_TEXT, text);
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        try { startActivity(android.content.Intent.createChooser(i, "Compartilhar")); } catch (Exception e) {}
+                    }
+                });
+            } catch (Exception e) {}
+        }
+
+        @JavascriptInterface
         public void set(final String top''',1)
 t=t.replace('super.onCreate(savedInstanceState);','super.onCreate(savedInstanceState);\n        grab(getIntent());',1)
 open(j,'w',encoding='utf-8').write(t)
 print('java ok')
 PY
+
+# 5) pasta de cache liberada para compartilhar arquivos (FileProvider)
+mkdir -p android/app/src/main/res/xml
+cat > android/app/src/main/res/xml/file_paths.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="my_images" path="." />
+    <cache-path name="my_cache_images" path="." />
+</paths>
+XML
+echo "file_paths ok"
