@@ -204,17 +204,19 @@ t=t.replace('        public void set(final String top','''        public String 
                 if (inbox.size() == 0) return "";
                 String[] it = inbox.remove(0);
                 java.io.File f = new java.io.File(it[0]);
-                java.io.FileInputStream in = new java.io.FileInputStream(f);
-                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
-                byte[] b = new byte[65536];
-                int n;
-                while ((n = in.read(b)) > 0) bo.write(b, 0, n);
-                in.close();
-                f.delete();
                 org.json.JSONObject o = new org.json.JSONObject();
                 o.put("name", it[1]);
                 o.put("mime", it[2]);
-                o.put("b64", android.util.Base64.encodeToString(bo.toByteArray(), android.util.Base64.NO_WRAP));
+                o.put("path", f.getAbsolutePath());
+                if (f.length() <= 1500000L) {
+                    java.io.FileInputStream in = new java.io.FileInputStream(f);
+                    java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                    byte[] b = new byte[65536];
+                    int n;
+                    while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+                    in.close();
+                    o.put("b64", android.util.Base64.encodeToString(bo.toByteArray(), android.util.Base64.NO_WRAP));
+                }
                 return o.toString();
             } catch (Exception e) {
                 return "";
