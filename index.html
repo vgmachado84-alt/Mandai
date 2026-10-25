@@ -25,7 +25,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261024-5109">
+<meta name="mandai-build" content="20261024-5111">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2290,6 +2290,7 @@ async function admNivel(){if(window._nv!==undefined)return window._nv;let nv=nul
 const NV_LBL={total:'Total',suporte:'Suporte',comunicacao:'Comunicação'};
 /* canal oficial: avisos do Bippy para todos (só leitura) */
 var OFF={list:[],ok:false,adm:undefined,pg:null,prof:{nome:'Bippy',foto:'',desc:''}};
+try{var _oc=JSON.parse(localStorage.getItem('bippy.offc')||'null');if(_oc&&_oc.l&&_oc.l.length){OFF.list=_oc.l;if(_oc.p)OFF.prof=_oc.p;OFF.ok=true}}catch(e){}
 function offAv(){const f=OFF.prof.foto;return f?'<img alt="" src="'+f+'" style="width:100%;height:100%;object-fit:cover">':'<img alt="" src="'+BIPPY_MARK+'" style="width:62%;height:62%;object-fit:contain;margin:19%">'}
 const offAvSt='background:#fff;padding:0;overflow:hidden;border-radius:50%';
 const offTs=x=>Date.parse(x.criado_em)||0;
@@ -2312,7 +2313,7 @@ async function offLoad(){
     const since=(typeof RT!=='undefined'&&RT.since)||0,all=r.data.filter(x=>offTs(x)>=since).concat(pp&&pp.data?pp.data.map(x=>({id:x.id,texto:x.texto,criado_em:x.criado_em,p:1})):[]).sort((a,b)=>offTs(a)-offTs(b));
     if(pr&&pr.data)OFF.prof={nome:pr.data.nome||'Bippy',foto:pr.data.foto||'',desc:pr.data.descricao||''};
     const had=OFF.ok?OFF.list.length:-1,sig=JSON.stringify(all.map(x=>x.id))+JSON.stringify(OFF.prof).length+(OFF.prof.nome||'')+(OFF.prof.desc||'')+(OFF.prof.foto||'').length;if(OFF.ok&&sig===OFF._sig)return;
-    OFF._sig=sig;OFF.list=all;OFF.ok=true;
+    OFF._sig=sig;OFF.list=all;OFF.ok=true;try{const pf=Object.assign({},OFF.prof);if((pf.foto||'').length>150000)pf.foto='';localStorage.setItem('bippy.offc',JSON.stringify({l:all,p:pf}))}catch(e){}
     const open=OFF.pg&&OFF.pg.el&&document.body.contains(OFF.pg.el);
     if(open){offMarkSeen();OFF.pg.paint()}else if(had>=0&&OFF.list.length>had)snack('Novo aviso do Bippy');
     try{renderList()}catch(e){}
@@ -6613,11 +6614,11 @@ function stkCreate(cb,file){
       c.lineWidth=14;c.strokeStyle=T.sk||(lm>.5?'#000':'#fff');c.fillStyle=fs;
       L.forEach((l,i)=>{const y=-hh/2+lh*(i+.5);if(T.mode===0)c.strokeText(l,ax,y);c.fillText(l,ax,y)});c.restore()};
     const hdl=T=>{const bx=-T._w/2-26,by=-T._h/2-12,bw=T._w+52,bh=T._h+24,co=Math.cos(T.r),si=Math.sin(T.r),tr=(lx,ly)=>({x:T.x+(lx*co-ly*si)*T.s,y:T.y+(lx*si+ly*co)*T.s});return{del:tr(bx,by),edit:tr(bx+bw,by),sc:tr(bx+bw,by+bh)}};
-    let sdrag=null;
+    let sdrag=null;const LAY=document.createElement('canvas'),TB=document.createElement('canvas');LAY.width=LAY.height=TB.width=TB.height=M;
     function render(ex){
       x.clearRect(0,0,M,M);const c=base(),w=c.width,h=c.height;
-      const lay=document.createElement('canvas');lay.width=lay.height=M;const lx=lay.getContext('2d');lx.save();lx.translate(IM.x,IM.y);lx.rotate(IM.r);lx.scale(IM.s,IM.s);lx.imageSmoothingQuality='high';lx.drawImage(c,-w/2,-h/2);lx.restore();
-      if(brd&&brdI){const bw=BP[brdI][0],t=document.createElement('canvas');t.width=t.height=M;const tx=t.getContext('2d');tx.drawImage(lay,0,0);tx.globalCompositeOperation='source-in';tx.fillStyle=BP[brdI][1];tx.fillRect(0,0,M,M);const nn=bw>12?40:28;for(let a=0;a<nn;a++)x.drawImage(t,Math.cos(a/nn*6.2832)*bw,Math.sin(a/nn*6.2832)*bw)}
+      const lay=LAY,lx=lay.getContext('2d');lx.clearRect(0,0,M,M);lx.save();lx.translate(IM.x,IM.y);lx.rotate(IM.r);lx.scale(IM.s,IM.s);lx.imageSmoothingQuality='high';lx.drawImage(c,-w/2,-h/2);lx.restore();
+      if(brd&&brdI){const bw=BP[brdI][0],t=TB,tx=t.getContext('2d');tx.globalCompositeOperation='source-over';tx.clearRect(0,0,M,M);tx.drawImage(lay,0,0);tx.globalCompositeOperation='source-in';tx.fillStyle=BP[brdI][1];tx.fillRect(0,0,M,M);const nn=bw>12?40:28;for(let a=0;a<nn;a++)x.drawImage(t,Math.cos(a/nn*6.2832)*bw,Math.sin(a/nn*6.2832)*bw)}
       x.drawImage(lay,0,0);
       TL.forEach(T=>drawTxt(x,T,true));
       if(!ex&&act==='txt'&&TL.includes(TX)&&TX._w){const T=TX,h=hdl(T);x.save();x.translate(T.x,T.y);x.rotate(T.r);x.scale(T.s,T.s);x.setLineDash([10,8]);x.lineWidth=3/T.s;x.strokeStyle='rgba(90,90,90,.9)';x.strokeRect(-T._w/2-26,-T._h/2-12,T._w+52,T._h+24);x.restore();
@@ -6744,7 +6745,7 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
     q('#sks').onclick=()=>{if(busy)return;act='';mode='';bpos=null;render(true);let d='',sz=M;const tryEx=()=>{const c=document.createElement('canvas');c.width=c.height=sz;c.getContext('2d').drawImage(cv,0,0,sz,sz);for(const qq of [.8,.62,.45]){d=c.toDataURL('image/webp',qq);if(d.length<=40000)return true}return false};
       while(!tryEx()&&sz>256)sz=Math.round(sz*.8);ov.remove();cb(d)};
     fit();sync();render();
-    if(hasA){cut=stkTrim(orig)||orig;useCut=true;brd=false;fit();sync();render()}else doCut(false)};
+    if(hasA){cut=stkTrim(orig)||orig;useCut=true;brd=false;fit();sync();render()}else{fit();sync();render();setTimeout(()=>{try{snack('Toque em Recortar para tirar o fundo')}catch(e){}},400)}};
   if(file)go(file);else nxFile('image/*',go)}
 function stkPick(cb){nxFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d'),sq=Math.min(im.width,im.height);x.save();rrect(x,8,8,N-16,N-16,60);x.clip();x.drawImage(im,(im.width-sq)/2,(im.height-sq)/2,sq,sq,8,8,N-16,N-16);x.restore();x.lineWidth=10;x.strokeStyle='#fff';rrect(x,8,8,N-16,N-16,60);x.stroke();cb(c.toDataURL('image/webp',.82))};im.src=r.result};r.readAsDataURL(f)})}
 
@@ -7135,7 +7136,7 @@ async function rtLoad(){
       gids.length?SB.from('conversas').select('*').in('id',gids):none,
       gids.length?SB.from('participantes').select('conversa_id,usuario_id,papel,saiu_em,suspenso_ate,perfis(id,usuario,nome,telefone,foto_url)').in('conversa_id',gids):none]);
     if(o.error)throw o.error;
-    if(RT.stale){chats.length=0;RT.stale=false}
+    if(RT.stale){const keepIds=new Set(all);for(let i=chats.length-1;i>=0;i--){const c0=chats[i];if(c0.rid&&!keepIds.has(c0.rid))chats.splice(i,1)}RT.stale=false}
     (o.data||[]).forEach(x=>{if(x.perfis){const c=rtChat(x.conversa_id,x.perfis),seg=(rows.find(z=>z.conversa_id===x.conversa_id).conversas||{}).mensagens_temporarias_seg;c.dis=seg?seg/3600:0;c._srv=rtGSnap(c)}});
     (gc.data||[]).forEach(cv=>rtGroupApply(cv,(gp.data||[]).filter(q=>q.conversa_id===cv.id)));
     (m.data||[]).slice().sort((a,b)=>a.criado_em<b.criado_em?-1:1).forEach(r=>rtPush(r,true));
