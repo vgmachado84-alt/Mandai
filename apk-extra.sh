@@ -222,6 +222,28 @@ t=t.replace('        public void set(final String top','''        public String 
         }
 
         @JavascriptInterface
+        public void openFile(String b64, String mime, String name) {
+            try {
+                byte[] d = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+                java.io.File dir = new java.io.File(getCacheDir(), "shared");
+                dir.mkdirs();
+                java.io.File f = new java.io.File(dir, name);
+                java.io.FileOutputStream o = new java.io.FileOutputStream(f);
+                o.write(d);
+                o.close();
+                android.net.Uri u = androidx.core.content.FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", f);
+                final android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+                i.setDataAndType(u, mime);
+                i.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        try { startActivity(android.content.Intent.createChooser(i, "Abrir com")); } catch (Exception e) { android.widget.Toast.makeText(MainActivity.this, "Nenhum app para abrir este arquivo", android.widget.Toast.LENGTH_LONG).show(); }
+                    }
+                });
+            } catch (Exception e) {}
+        }
+
+        @JavascriptInterface
         public void shareFile(String b64, String mime, String name, String text) {
             try {
                 final android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_SEND);
