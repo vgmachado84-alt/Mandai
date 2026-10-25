@@ -105,20 +105,78 @@ filt='''
                 <data android:mimeType="text/plain" />
             </intent-filter>
 '''
+filt2='''
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+'''
 if 'android.intent.action.SEND' not in s:
     i=s.index('</activity>')
-    s=s[:i]+filt+'        '+s[i:]
+    s=s[:i]+filt+filt2+'        '+s[i:]
     open(f,'w',encoding='utf-8').write(s)
     print('share ok')
 j=glob.glob('android/app/src/main/java/**/MainActivity.java',recursive=True)[0]
 t=open(j,encoding='utf-8').read()
 t=t.replace('public class MainActivity extends BridgeActivity {','''public class MainActivity extends BridgeActivity {
     private String pend = "";
+    private java.util.ArrayList<String[]> inbox = new java.util.ArrayList<String[]>();
+    private void copyIn(android.net.Uri u, String mime) {
+        try {
+            String name = null;
+            android.database.Cursor c = getContentResolver().query(u, null, null, null, null);
+            if (c != null) {
+                if (c.moveToFirst()) {
+                    int ix = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                    if (ix >= 0) name = c.getString(ix);
+                }
+                c.close();
+            }
+            if (name == null || name.length() == 0) name = "arquivo";
+            java.io.File dir = new java.io.File(getCacheDir(), "inbox");
+            dir.mkdirs();
+            java.io.File f = new java.io.File(dir, System.currentTimeMillis() + "_" + name.replaceAll("[^A-Za-z0-9._-]", "_"));
+            java.io.InputStream in = getContentResolver().openInputStream(u);
+            java.io.FileOutputStream out = new java.io.FileOutputStream(f);
+            byte[] b = new byte[65536];
+            int n;
+            long tot = 0;
+            while ((n = in.read(b)) > 0) {
+                out.write(b, 0, n);
+                tot += n;
+                if (tot > 25L * 1024 * 1024) break;
+            }
+            in.close();
+            out.close();
+            String mm = mime != null ? mime : getContentResolver().getType(u);
+            if (mm == null) mm = "application/octet-stream";
+            inbox.add(new String[]{f.getAbsolutePath(), name, mm});
+        } catch (Exception e) {}
+    }
     private void grab(android.content.Intent i) {
         try {
-            if (i != null && android.content.Intent.ACTION_SEND.equals(i.getAction())) {
+            if (i == null) return;
+            String act = i.getAction();
+            if (android.content.Intent.ACTION_SEND.equals(act)) {
                 String x = i.getStringExtra(android.content.Intent.EXTRA_TEXT);
                 if (x != null && x.length() > 0) pend = x;
+                android.net.Uri u = (android.net.Uri) i.getParcelableExtra(android.content.Intent.EXTRA_STREAM);
+                if (u != null) copyIn(u, i.getType());
+            } else if (android.content.Intent.ACTION_SEND_MULTIPLE.equals(act)) {
+                java.util.ArrayList<android.net.Uri> l = i.getParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM);
+                if (l != null) {
+                    int k = 0;
+                    for (android.net.Uri u : l) {
+                        if (k++ >= 5) break;
+                        copyIn(u, null);
+                    }
+                }
             }
         } catch (Exception e) {}
     }
@@ -130,6 +188,38 @@ t=t.replace('public class MainActivity extends BridgeActivity {','''public class
     }
 ''',1)
 t=t.replace('        public void set(final String top','''        public String shared() { String x = pend; pend = ""; return x; }
+
+        @JavascriptInterface
+        public void openUrl(final String u) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    try { startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(u))); } catch (Exception e) {}
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public String sharedFile() {
+            try {
+                if (inbox.size() == 0) return "";
+                String[] it = inbox.remove(0);
+                java.io.File f = new java.io.File(it[0]);
+                java.io.FileInputStream in = new java.io.FileInputStream(f);
+                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                byte[] b = new byte[65536];
+                int n;
+                while ((n = in.read(b)) > 0) bo.write(b, 0, n);
+                in.close();
+                f.delete();
+                org.json.JSONObject o = new org.json.JSONObject();
+                o.put("name", it[1]);
+                o.put("mime", it[2]);
+                o.put("b64", android.util.Base64.encodeToString(bo.toByteArray(), android.util.Base64.NO_WRAP));
+                return o.toString();
+            } catch (Exception e) {
+                return "";
+            }
+        }
 
         @JavascriptInterface
         public void shareFile(String b64, String mime, String name, String text) {
