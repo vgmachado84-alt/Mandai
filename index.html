@@ -25,7 +25,7 @@ try{var _t=localStorage.getItem('mandai.theme');if(_t===null)_t='dark';if(_t)doc
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5113">
+<meta name="mandai-build" content="20261025-5114">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -3652,7 +3652,7 @@ function viewerMenu(anchor,own){
 function closePop2(){const e=$('#pbg2');if(e)e.remove()}
 function openCam(cb,m0,opts){
   const LIMIT=(opts&&opts.max)||0;
-  const el=$('#camv');let mode=m0||'foto',facing='environment',stream=null,mr=null,rec=false,tk=0,flash=false,mic=null;
+  const el=$('#camv');let shotAt=0,mode=m0||'foto',facing='environment',stream=null,mr=null,rec=false,tk=0,flash=false,mic=null;
   const dropMic=()=>{try{if(mic)mic.stop()}catch(e){}mic=null};
   async function getMic(){if(mic&&mic.readyState==='live')return mic;try{const a=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}});mic=a.getAudioTracks()[0]||null}catch(e){mic=null}return mic}
   const stopS=()=>{if(stream)stream.getTracks().forEach(k=>k.stop());stream=null};
@@ -3676,7 +3676,7 @@ function openCam(cb,m0,opts){
   }
   async function shutter(force){
     const v=$('#cv');
-    if(mode==='foto'&&!force){if(!stream)return;const vw=v.videoWidth||640,vh=v.videoHeight||480,rr=v.getBoundingClientRect(),ar=(rr.width/rr.height)||(vw/vh);let sw=vw,sh=vh,sx=0,sy=0;if(vw/vh>ar){sw=vh*ar;sx=(vw-sw)/2}else{sh=vw/ar;sy=(vh-sh)/2}const k=Math.min(1,2560/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);const cx=c.getContext('2d');if(facing==='user'){cx.translate(c.width,0);cx.scale(-1,1)}cx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);c.toBlob(b=>review({k:'img',src:URL.createObjectURL(b),name:'foto.jpg',size:fmtSize(b.size)}),'image/jpeg',.92);return}
+    if(mode==='foto'&&!force){if(!stream)return;shotAt=Date.now();const vw=v.videoWidth||640,vh=v.videoHeight||480,rr=v.getBoundingClientRect(),ar=(rr.width/rr.height)||(vw/vh);let sw=vw,sh=vh,sx=0,sy=0;if(vw/vh>ar){sw=vh*ar;sx=(vw-sw)/2}else{sh=vw/ar;sy=(vh-sh)/2}const k=Math.min(1,2560/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);const cx=c.getContext('2d');if(facing==='user'){cx.translate(c.width,0);cx.scale(-1,1)}cx.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);c.toBlob(b=>review({k:'img',src:URL.createObjectURL(b),name:'foto.jpg',size:fmtSize(b.size)}),'image/jpeg',.92);return}
     if(rec){mr.stop();return}
     if(!stream)return;
     if(mode==='foto'&&!window.Capacitor){try{const k0=stream.getVideoTracks()[0];if(k0&&k0.applyConstraints)await k0.applyConstraints({width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}});await new Promise(r=>setTimeout(r,350))}catch(e){}}
@@ -3717,10 +3717,10 @@ function openCam(cb,m0,opts){
     el.hidden=false;el.classList.toggle('note',mode==='note');
     el.innerHTML='<div class="cvid"><video id="cv" autoplay muted playsinline></video><p id="cerr" hidden>Câmera indisponível aqui. Use a galeria.</p></div><button class="cx" id="cc" aria-label="Fechar">'+ico('x',22)+'</button><button class="cfl" id="cf" aria-label="Flash">'+ico('bolt',20)+'</button><b class="crt" id="ct2" hidden>0:00</b><div class="cbar"><button class="cg" id="cg" aria-label="Galeria">'+ico('image',22)+'</button><button class="shut" id="sh" aria-label="Capturar"></button><button class="cg" id="cflip" aria-label="Virar câmera">'+ico('flipcam',22)+'</button></div><div class="cmodes"><button data-m="vid">Vídeo</button><button data-m="foto" class="on">Foto</button>'+(LIMIT?'':'<button data-m="note">Recado de vídeo</button>')+'</div>';
     $('#cc').onclick=close;{const sh=$('#sh');let held=false,tmr=0;sh.style.touchAction='none';sh.style.userSelect='none';sh.style.webkitUserSelect='none';sh.oncontextmenu=e=>e.preventDefault();
-      sh.onclick=()=>{if(mode!=='foto')shutter()};
+      sh.onclick=()=>{if(mode!=='foto')shutter();else if(!rec&&!held&&!tmr&&Date.now()-shotAt>900)shutter()};
       sh.onpointerdown=e=>{if(mode!=='foto'||rec)return;held=true;try{sh.setPointerCapture(e.pointerId)}catch(_){}try{const k1=!window.Capacitor&&stream&&stream.getVideoTracks()[0];if(k1&&k1.applyConstraints)k1.applyConstraints({width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}).catch(()=>{})}catch(_){}tmr=setTimeout(async()=>{tmr=0;await shutter(true);if(!held&&mr&&mr.state!=='inactive')mr.stop()},350)};
       const up=()=>{if(mode!=='foto')return;const was=held;held=false;if(tmr){clearTimeout(tmr);tmr=0;if(was)shutter();return}if(rec&&mr&&mr.state!=='inactive')mr.stop()};
-      sh.onpointerup=up;sh.onpointercancel=()=>{held=false;if(tmr){clearTimeout(tmr);tmr=0}else if(rec&&mr&&mr.state!=='inactive')mr.stop()}}document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
+      sh.onpointerup=up;sh.onpointercancel=()=>{const was=held;held=false;if(tmr){clearTimeout(tmr);tmr=0;if(was)shutter()}else if(rec&&mr&&mr.state!=='inactive')mr.stop()}}document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
     document.querySelectorAll('.cmodes button').forEach(b=>b.onclick=()=>{if(rec)return;const mode0=mode;mode=b.dataset.m;try{const t0=stream&&stream.getVideoTracks()[0];if(t0&&t0.applyConstraints)t0.applyConstraints(camC()).catch(()=>{})}catch(e){}const wasF=mode0==='foto';if((mode==='foto')!==wasF){dropMic();start()}el.classList.toggle('note',mode==='note');document.querySelectorAll('.cmodes button').forEach(x=>x.classList.toggle('on',x===b))});
     $('#cflip').onclick=flip;{let lt=0;const cv0=el.querySelector('.cvid');if(cv0)cv0.addEventListener('click',()=>{const n=Date.now();if(n-lt<350){lt=0;flip()}else lt=n})}
     $('#cf').onclick=e=>{flash=!flash;e.currentTarget.classList.toggle('on',flash);torch(flash)};
@@ -6032,40 +6032,84 @@ function imgEdit(src,done,opt){
   const ov=document.createElement('div');ov.id='ied';ov.className='ied';
   ov.innerHTML='<div class="iet"><button class="gl" id="iex" aria-label="Fechar">'+ico('x',22)+'</button><div class="iec"><button class="gl" id="iecr" aria-label="Cortar e girar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button class="gl" id="ietx" aria-label="Texto">Aa</button><button class="gl on" id="iepn" aria-label="Desenhar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button class="gl" id="ieun" aria-label="Desfazer"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div></div><div class="iew" id="iew"><canvas id="iecv"></canvas><div class="iecr" id="iecrp" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div><div class="iebt"><div class="iecol" id="iecol"></div><div class="ieac" id="ieac"><button class="btn ghost" id="ierot" hidden>Girar</button><button class="btn" id="iok">Concluir</button></div></div>';
   document.body.appendChild(ov);
+  if(!document.getElementById('iecss')){const st=document.createElement('style');st.id='iecss';st.textContent=`
+.ied .iebt{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px 12px;padding:8px 14px calc(16px + env(safe-area-inset-bottom,0px))}
+.ied .iebt>#iefr,.ied .iebt>#ietb{grid-column:1/-1}
+.ied .iecol{justify-content:flex-start;gap:12px;overflow-x:auto;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);scrollbar-width:none}
+.ied .iecol::-webkit-scrollbar{display:none}
+.ied .ieco{flex:none;width:28px;height:28px;border:2px solid rgba(255,255,255,.85);transform:none;transition:box-shadow .15s}
+.ied .ieco.on{border-color:#fff;transform:none;box-shadow:0 0 0 3px rgba(0,0,0,.9),0 0 0 5px #fff}
+.ied .ieac{gap:10px;align-items:center}
+.ied #iok{flex:none;width:54px;height:54px;border-radius:50%;padding:0;margin:0;background:#fff;color:#111;border:0;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.ied #ierot{flex:none;width:auto;padding:0 18px;height:44px;border-radius:999px;margin:0;background:rgba(255,255,255,.14);color:#fff;border:0}
+.ied #ietb button{backdrop-filter:blur(10px)}
+.ietx2{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;color:#fff}
+.ietx2 .tp{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 8px}
+.ietx2 .tp button{border:0;font:700 15px system-ui,sans-serif;color:#fff;background:rgba(255,255,255,.16);height:44px;min-width:44px;border-radius:999px;padding:0 16px}
+.ietx2 .tp .dn{background:#fff;color:#111}
+.ietx2 .md{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 24px;overflow:hidden}
+.ietx2 .te{display:inline-block;max-width:100%;min-width:40px;font:800 34px/1.25 system-ui,sans-serif;text-align:center;outline:0;white-space:pre-wrap;word-break:break-word;caret-color:#fff;padding:4px 14px;border-radius:14px}
+.ietx2 .te:empty:before{content:'Digite o texto';opacity:.5}
+.ietx2 .bt{padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px))}
+.ietx2 .bt .iecol{display:flex}`;document.head.appendChild(st)}
+  ov.querySelector('#iok').innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';ov.querySelector('#iok').setAttribute('aria-label','Concluir');
   const $$=q=>ov.querySelector(q),cv=$$('#iecv'),cx=cv.getContext('2d');
   let base=document.createElement('canvas'),ink=document.createElement('canvas'),texts=[],strokes=[],mode='draw',col='#ff3b30',W=1,H=1,cr=null,sel=-1,filt='';
   const COLS=['#ffffff','#000000','#ff3b30','#ffcc00','#34c759','#0a84ff','#bf5af2'];
-  const cb=$$('#iecol');COLS.forEach(c=>{const b=document.createElement('button');b.className='ieco'+(c===col?' on':'');b.style.background=c;b.setAttribute('aria-label','Cor');b.onclick=()=>{col=c;if(mode==='text'&&sel>=0&&texts[sel]){texts[sel].col=c;paint()}cb.querySelectorAll('.ieco').forEach(x=>x.classList.toggle('on',x===b))};cb.appendChild(b)});
+  const cb=$$('#iecol');COLS.forEach(c=>{const b=document.createElement('button');b.dataset.c=c;b.className='ieco'+(c===col?' on':'');b.style.background=c;b.setAttribute('aria-label','Cor');b.onclick=()=>{col=c;if(mode==='text'&&sel>=0&&texts[sel]){texts[sel].col=c;paint()}cb.querySelectorAll('.ieco').forEach(x=>x.classList.toggle('on',x===b))};cb.appendChild(b)});
   const sizeOf=()=>Math.max(4,W*.012);
   const lumH=h=>{const m=/^#?([0-9a-f]{6})$/i.exec(h||'');if(!m)return .5;const n=parseInt(m[1],16);return(.299*(n>>16&255)+.587*(n>>8&255)+.114*(n&255))/255};
   const draw=(c2,withUi)=>{const x=c2.getContext('2d');x.clearRect(0,0,c2.width,c2.height);try{x.filter=filt||'none'}catch(e){}x.drawImage(base,0,0);try{x.filter='none'}catch(e){}x.drawImage(ink,0,0);
-    texts.forEach((t,i)=>{x.font='800 '+t.s+'px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';t._w=x.measureText(t.t).width;
-      if(t.st===1){const p=t.s*.38,w=t._w+p*2,h=t.s*1.3;x.fillStyle=t.col;x.beginPath();if(x.roundRect)x.roundRect(t.x-w/2,t.y-h/2,w,h,t.s*.24);else x.rect(t.x-w/2,t.y-h/2,w,h);x.fill();x.fillStyle=lumH(t.col)>.6?'#000':'#fff';x.fillText(t.t,t.x,t.y)}
-      else{x.lineWidth=t.s*.14;x.strokeStyle=t.col==='#000000'?'#fff':'#000';x.strokeText(t.t,t.x,t.y);x.fillStyle=t.col;x.fillText(t.t,t.x,t.y)}
-      if(withUi&&i===sel&&mode==='text'){const w=t._w+t.s*.9,h=t.s*1.5;x.save();x.setLineDash([W*.012,W*.01]);x.lineWidth=Math.max(2,W*.004);x.strokeStyle='rgba(255,255,255,.95)';x.shadowColor='#000';x.shadowBlur=4;x.strokeRect(t.x-w/2,t.y-h/2,w,h);x.restore()}})};
+    texts.forEach((t,i)=>{x.font='800 '+t.s+'px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+      const L=String(t.t).split('\n'),lh=t.s*1.25,ws=L.map(l=>x.measureText(l).width);t._w=Math.max(...ws,1);t._h=L.length*lh;const y0=t.y-t._h/2+lh/2;
+      if(t.st===1){const p=t.s*.34,txc=lumH(t.col)>.6?'#000':'#fff';L.forEach((l,k)=>{if(!l)return;const w=ws[k]+p*2,h=lh*.98,yy=y0+k*lh;x.fillStyle=t.col;x.beginPath();if(x.roundRect)x.roundRect(t.x-w/2,yy-h/2,w,h,t.s*.26);else x.rect(t.x-w/2,yy-h/2,w,h);x.fill()});x.fillStyle=txc;L.forEach((l,k)=>x.fillText(l,t.x,y0+k*lh))}
+      else{x.lineWidth=t.s*.14;x.strokeStyle=lumH(t.col)<.15?'#fff':'#000';L.forEach((l,k)=>x.strokeText(l,t.x,y0+k*lh));x.fillStyle=t.col;L.forEach((l,k)=>x.fillText(l,t.x,y0+k*lh))}
+      if(withUi&&i===sel&&mode==='text'){const w=t._w+t.s*.9,h=t._h+t.s*.4;x.save();x.setLineDash([W*.012,W*.01]);x.lineWidth=Math.max(2,W*.004);x.strokeStyle='rgba(255,255,255,.95)';x.shadowColor='#000';x.shadowBlur=4;x.strokeRect(t.x-w/2,t.y-h/2,w,h);x.restore()}})};
   const paint=()=>draw(cv,true);
   const setBase=img=>{filt='';sel=-1;try{if(typeof fr!=='undefined'&&fr._paint)fr._paint()}catch(e){}W=img.width;H=img.height;base.width=cv.width=ink.width=W;base.height=cv.height=ink.height=H;base.getContext('2d').drawImage(img,0,0);ink.getContext('2d').clearRect(0,0,W,H);texts=[];strokes=[];paint()};
   const im=new Image();im.onload=()=>{const k=Math.min(1,1800/Math.max(im.width,im.height)),c2=document.createElement('canvas');c2.width=Math.round(im.width*k);c2.height=Math.round(im.height*k);c2.getContext('2d').drawImage(im,0,0,c2.width,c2.height);setBase(c2)};im.onerror=()=>{ov.remove();snack('Não consegui abrir a foto.')};im.src=src;
   const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]};
   const flat=()=>{const f=document.createElement('canvas');f.width=W;f.height=H;draw(f);return f};
-  const setMode=m=>{mode=m;$$('#iepn').classList.toggle('on',m==='draw');$$('#ietx').classList.toggle('on',m==='text');$$('#iecr').classList.toggle('on',m==='crop');$$('#iecrp').hidden=m!=='crop';$$('#ierot').hidden=m!=='crop';$$('#iecol').style.visibility=(m==='crop')?'hidden':'visible';$$('#iok').textContent=m==='crop'?'Aplicar corte':'Concluir';if(m!=='text')sel=-1;updTx();paint()};
+  const setMode=m=>{mode=m;$$('#iepn').classList.toggle('on',m==='draw');$$('#ietx').classList.toggle('on',m==='text');$$('#iecr').classList.toggle('on',m==='crop');$$('#iecrp').hidden=m!=='crop';$$('#ierot').hidden=m!=='crop';$$('#iecol').style.visibility=(m==='crop')?'hidden':'visible';$$('#iok').setAttribute('aria-label',m==='crop'?'Aplicar corte':'Concluir');if(m!=='text')sel=-1;updTx();paint()};
   // desenhar / mover texto
-  let drag=null;
-  cv.onpointerdown=e=>{if(mode==='crop')return;e.preventDefault();cv.setPointerCapture(e.pointerId);const[x,y]=pt(e);
-    {let hi=-1;for(let i=texts.length-1;i>=0;i--){const t=texts[i],w=(t._w||t.s*t.t.length*.6)+t.s*.9,h=t.s*1.6;if(Math.abs(x-t.x)<=w/2&&Math.abs(y-t.y)<=h/2){hi=i;break}}
-      if(hi>=0&&(mode==='text'||mode==='draw')){sel=hi;if(mode==='draw')setMode('text');else updTx();drag={i:hi,dx:texts[hi].x-x,dy:texts[hi].y-y};paint();return}
-      if(mode==='text'){sel=-1;updTx();paint();return}}
-    if(mode==='draw'){const g=ink.getContext('2d');g.lineCap='round';g.lineJoin='round';g.strokeStyle=col;g.lineWidth=sizeOf();g.beginPath();g.moveTo(x,y);g.lineTo(x+.01,y+.01);g.stroke();drag={d:1,x,y};strokes.push(ink.getContext('2d').getImageData(0,0,1,1));hist.push(null)}};
+  let drag=null,pinch=null,tapSel=false,moved=false;const ptrs={};
   const hist=[];
-  cv.onpointermove=e=>{if(!drag)return;const[x,y]=pt(e);if(drag.d){const g=ink.getContext('2d');g.beginPath();g.moveTo(drag.x,drag.y);g.lineTo(x,y);g.stroke();drag.x=x;drag.y=y;paint()}else{const t=texts[drag.i];t.x=x+drag.dx;t.y=y+drag.dy;paint()}};
-  cv.onpointerup=cv.onpointercancel=()=>{drag=null};
+  const hitT=(x,y)=>{for(let i=texts.length-1;i>=0;i--){const t=texts[i],w=(t._w||t.s*t.t.length*.6)+t.s*.9,h=(t._h||t.s*1.25)+t.s*.5;if(Math.abs(x-t.x)<=w/2&&Math.abs(y-t.y)<=h/2)return i}return -1};
+  cv.onpointerdown=e=>{if(mode==='crop')return;e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs[e.pointerId]=[e.clientX,e.clientY];
+    const ks=Object.keys(ptrs);if(ks.length===2&&sel>=0&&texts[sel]){const[a2,b2]=ks.map(k=>ptrs[k]);pinch={d0:Math.hypot(a2[0]-b2[0],a2[1]-b2[1])||1,s0:texts[sel].s};drag=null;return}
+    const[x,y]=pt(e);moved=false;
+    {const hi=hitT(x,y);
+      if(hi>=0&&(mode==='text'||mode==='draw')){tapSel=(mode==='text'&&hi===sel);sel=hi;if(mode==='draw')setMode('text');else updTx();drag={i:hi,dx:texts[hi].x-x,dy:texts[hi].y-y};paint();return}
+      if(mode==='text'){sel=-1;updTx();paint();return}}
+    if(mode==='draw'){snap();texts._last=0;const g=ink.getContext('2d');g.lineCap='round';g.lineJoin='round';g.strokeStyle=col;g.lineWidth=sizeOf();g.beginPath();g.moveTo(x,y);g.lineTo(x+.01,y+.01);g.stroke();drag={d:1,x,y};hist.push(null)}};
+  cv.onpointermove=e=>{if(ptrs[e.pointerId])ptrs[e.pointerId]=[e.clientX,e.clientY];
+    if(pinch&&sel>=0&&texts[sel]){const ks=Object.keys(ptrs);if(ks.length>=2){const[a2,b2]=ks.slice(0,2).map(k=>ptrs[k]),d=Math.hypot(a2[0]-b2[0],a2[1]-b2[1])||1;texts[sel].s=Math.max(14,Math.min(W*.35,pinch.s0*d/pinch.d0));paint()}return}
+    if(!drag)return;const[x,y]=pt(e);if(drag.d){const g=ink.getContext('2d');g.beginPath();g.moveTo(drag.x,drag.y);g.lineTo(x,y);g.stroke();drag.x=x;drag.y=y;paint()}else{const t=texts[drag.i];const nx=x+drag.dx,ny=y+drag.dy;if(Math.hypot(nx-t.x,ny-t.y)>W*.006)moved=true;t.x=nx;t.y=ny;paint()}};
+  const pend=e=>{delete ptrs[e.pointerId];if(Object.keys(ptrs).length<2)pinch=null;const was=drag;drag=null;if(was&&was.i!==undefined&&tapSel&&!moved&&e.type==='pointerup')openTxt(was.i);tapSel=false};
+  cv.onpointerup=cv.onpointercancel=pend;
   // desfazer: guarda cópias do ink a cada traço
   const snaps=[];const snap=()=>{const c2=document.createElement('canvas');c2.width=W;c2.height=H;c2.getContext('2d').drawImage(ink,0,0);snaps.push(c2);if(snaps.length>20)snaps.shift()};
-  const pd=cv.onpointerdown;cv.onpointerdown=e=>{if(mode==='draw'){snap();texts._last=0}pd(e)};
   $$('#ieun').onclick=()=>{if(texts.length&&(!snaps.length||texts._last)){texts.pop();sel=-1;updTx();paint();return}const c2=snaps.pop();if(!c2){snack('Nada para desfazer');return}const g=ink.getContext('2d');g.clearRect(0,0,W,H);g.drawImage(c2,0,0);paint()};
   $$('#iepn').onclick=()=>setMode('draw');
-  $$('#ietx').onclick=()=>{const ed0=(mode==='text'&&sel>=0)?sel:-1;setMode('text');if(ed0>=0)sel=ed0;const old=$$('#ietin');if(old){old.remove();return}const w=document.createElement('div');w.id='ietin';w.className='ietin';w.innerHTML='<input id="iett" maxlength="60" autocomplete="off" placeholder="Digite o texto"><button class="btn" id="ietk" type="button">OK</button>';ov.appendChild(w);const i=w.querySelector('#iett');if(ed0>=0&&texts[ed0])i.value=texts[ed0].t;setTimeout(()=>i.focus(),80);
-    const go=()=>{const v=i.value.trim();w.remove();if(v){if(ed0>=0&&texts[ed0]){texts[ed0].t=v;sel=ed0}else{texts.push({t:v,x:W/2,y:H/2,s:Math.max(24,W*.07),col,st:0});sel=texts.length-1}texts._last=1;updTx();paint()}else setMode('draw')};w.querySelector('#ietk').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}};
+  // editor de texto estilo Instagram
+  const TXC=COLS;
+  function openTxt(idx){
+    const ed=(idx>=0&&texts[idx])?texts[idx]:null;let tcol=ed?ed.col:col,tst=ed?ed.st:1;
+    const w=document.createElement('div');w.className='ietx2';w.innerHTML='<div class="tp"><button type="button" id="txs" aria-label="Estilo do texto">Tarja</button><button type="button" id="txd" class="dn">Concluir</button></div><div class="md"><div class="te" id="txe" contenteditable="true" role="textbox" spellcheck="false" autocapitalize="sentences"></div></div><div class="bt"><div class="iecol" id="txc"></div></div>';
+    ov.appendChild(w);const te=w.querySelector('#txe'),sb=w.querySelector('#txs'),cc=w.querySelector('#txc');
+    if(ed)te.textContent=ed.t;
+    const look=()=>{sb.textContent=tst===1?'Tarja':'Contorno';sb.style.background=tst===1?'#fff':'rgba(255,255,255,.16)';sb.style.color=tst===1?'#111':'#fff';
+      if(tst===1){te.style.background=tcol;te.style.color=lumH(tcol)>.6?'#000':'#fff';te.style.textShadow='none'}else{te.style.background='transparent';te.style.color=tcol;te.style.textShadow=lumH(tcol)<.15?'0 0 6px #fff,0 0 2px #fff':'0 2px 8px rgba(0,0,0,.7)'}
+      cc.querySelectorAll('.ieco').forEach(b=>b.classList.toggle('on',b.dataset.c===tcol))};
+    TXC.forEach(c=>{const b=document.createElement('button');b.className='ieco';b.dataset.c=c;b.style.background=c;b.setAttribute('aria-label','Cor');b.onclick=()=>{tcol=c;look();te.focus()};cc.appendChild(b)});
+    sb.onclick=()=>{tst=tst===1?0:1;look();te.focus()};
+    te.onpaste=e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)};
+    const fit=()=>{const vv=window.visualViewport;if(vv)w.style.height=vv.height+'px'};fit();if(window.visualViewport)window.visualViewport.addEventListener('resize',fit);
+    const close=()=>{if(window.visualViewport)window.visualViewport.removeEventListener('resize',fit);w.remove()};
+    w.querySelector('#txd').onclick=()=>{const v=(te.innerText||'').replace(/\u00a0/g,' ').replace(/\n{3,}/g,'\n\n').trim();close();
+      if(v){if(ed){ed.t=v;ed.col=tcol;ed.st=tst;sel=idx}else{texts.push({t:v,x:W/2,y:H/2,s:Math.max(24,W*.07),col:tcol,st:tst});sel=texts.length-1;texts._last=1}col=tcol;cb.querySelectorAll('.ieco').forEach(x=>x.classList.toggle('on',x.style.background&&x.dataset.c===col));setMode('text');updTx();paint()}else setMode(ed?'text':'draw')};
+    look();setTimeout(()=>{te.focus();try{const r=document.createRange();r.selectNodeContents(te);r.collapse(false);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}catch(e){}},60)}
+  $$('#ietx').onclick=()=>{if(mode==='text'&&sel>=0)openTxt(sel);else openTxt(-1)};
   // barra do texto (estilo, tamanho, apagar) e filtros
   const tb=document.createElement('div');tb.id='ietb';tb.style.cssText='display:none;gap:8px;justify-content:center;margin:0 0 8px';
   const mkb=(id,t)=>{const b=document.createElement('button');b.type='button';b.id=id;b.textContent=t;b.style.cssText='border:0;border-radius:999px;padding:9px 16px;font:700 14px system-ui,sans-serif;background:rgba(255,255,255,.16);color:#fff';tb.appendChild(b);return b};
