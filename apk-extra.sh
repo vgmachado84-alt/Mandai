@@ -645,6 +645,29 @@ if 'volatile boolean visible' not in t:
     open(j,'w',encoding='utf-8').write(t)
     print('mainactivity push ok')
 PY
+  # nao deixa o login (token) do app ir para o backup do Google
+  mkdir -p android/app/src/main/res/xml
+  cat > android/app/src/main/res/xml/bippy_backup.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="sharedpref" path="bippy_auth.xml"/>
+    <exclude domain="sharedpref" path="bippy_push.xml"/>
+</full-backup-content>
+XML
+  cat > android/app/src/main/res/xml/bippy_extract.xml <<'XML'
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="bippy_auth.xml"/>
+        <exclude domain="sharedpref" path="bippy_push.xml"/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="bippy_auth.xml"/>
+        <exclude domain="sharedpref" path="bippy_push.xml"/>
+    </device-transfer>
+</data-extraction-rules>
+XML
+  grep -q fullBackupContent android/app/src/main/AndroidManifest.xml || sed -i 's#<application #<application android:fullBackupContent="@xml/bippy_backup" android:dataExtractionRules="@xml/bippy_extract" #' android/app/src/main/AndroidManifest.xml
   echo "firebase ok"; grep -n "google-services" android/build.gradle android/app/build.gradle || true
 fi
 
