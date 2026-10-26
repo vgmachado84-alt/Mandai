@@ -419,8 +419,33 @@ final class BippyNotif {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setColor(0xFF7C4DFF);
+            android.graphics.Bitmap lb = logo(c);
+            if (lb != null) b.setLargeIcon(lb);
             nm.notify(cid, 1, b.build());
         } catch (Exception e) {}
+    }
+
+    static android.graphics.Bitmap logoBmp = null;
+
+    static android.graphics.Bitmap logo(Context c) {
+        try {
+            if (logoBmp != null) return logoBmp;
+            android.graphics.drawable.Drawable d = c.getPackageManager().getApplicationIcon(c.getPackageName());
+            int sz = 192;
+            android.graphics.Bitmap src = android.graphics.Bitmap.createBitmap(sz, sz, android.graphics.Bitmap.Config.ARGB_8888);
+            d.setBounds(0, 0, sz, sz);
+            d.draw(new android.graphics.Canvas(src));
+            android.graphics.Bitmap out = android.graphics.Bitmap.createBitmap(sz, sz, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas c2 = new android.graphics.Canvas(out);
+            android.graphics.Paint p = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            c2.drawCircle(sz / 2f, sz / 2f, sz / 2f, p);
+            p.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+            c2.drawBitmap(src, 0, 0, p);
+            logoBmp = out;
+            return out;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static void clear(Context c, String cid) {
@@ -432,7 +457,7 @@ final class BippyNotif {
         } catch (Exception e) {}
     }
 
-    static boolean send(Context c, String cid, String txt) {
+    static boolean send(Context c, String cid, String txt, String mid) {
         try {
             SharedPreferences a = c.getSharedPreferences("bippy_auth", 0);
             String url = a.getString("url", "");
@@ -441,10 +466,11 @@ final class BippyNotif {
             String uid = a.getString("uid", "");
             if (url.length() == 0 || tok.length() == 0 || uid.length() == 0) return false;
             JSONObject j = new JSONObject();
+            if (mid != null && mid.length() > 0) j.put("id", mid);
             j.put("conversa_id", cid);
             j.put("remetente_id", uid);
             j.put("texto", txt);
-            HttpURLConnection h = (HttpURLConnection) new URL(url + "/rest/v1/mensagens").openConnection();
+            HttpURLConnection h = (HttpURLConnection) new URL(url + "/rest/v1/mensagens?on_conflict=id").openConnection();
             h.setRequestMethod("POST");
             h.setConnectTimeout(10000);
             h.setReadTimeout(15000);
@@ -452,7 +478,7 @@ final class BippyNotif {
             h.setRequestProperty("apikey", key);
             h.setRequestProperty("Authorization", "Bearer " + tok);
             h.setRequestProperty("Content-Type", "application/json");
-            h.setRequestProperty("Prefer", "return=minimal");
+            h.setRequestProperty("Prefer", "resolution=ignore-duplicates,return=minimal");
             OutputStream o = h.getOutputStream();
             o.write(j.toString().getBytes("UTF-8"));
             o.close();
@@ -464,15 +490,29 @@ final class BippyNotif {
         }
     }
 
-    static void queue(Context c, String cid, String txt) {
+    static void queue(Context c, String cid, String txt, String mid) {
         try {
             SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
             JSONArray q = new JSONArray(sp.getString("q", "[]"));
             JSONObject o = new JSONObject();
+            o.put("id", mid);
             o.put("cid", cid);
             o.put("txt", txt);
             q.put(o);
-            sp.edit().putString("q", q.toString()).apply();
+            sp.edit().putString("q", q.toString()).commit();
+        } catch (Exception e) {}
+    }
+
+    static void dequeue(Context c, String mid) {
+        try {
+            SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
+            JSONArray q = new JSONArray(sp.getString("q", "[]"));
+            JSONArray n = new JSONArray();
+            for (int k = 0; k < q.length(); k++) {
+                JSONObject o = q.getJSONObject(k);
+                if (!mid.equals(o.optString("id"))) n.put(o);
+            }
+            sp.edit().putString("q", n.toString()).commit();
         } catch (Exception e) {}
     }
 }
@@ -516,15 +556,19 @@ public class BippyReplyReceiver extends BroadcastReceiver {
             if (t == null || cid == null) return;
             final String txt = t.toString().trim();
             if (txt.length() == 0) return;
+            final String mid = java.util.UUID.randomUUID().toString();
+            // 1) fecha a notificacao na hora (senao o Android deixa o "girando")
+            BippyNotif.clear(c, cid);
+            // 2) guarda a resposta antes de enviar: se o celular congelar o app, ela e enviada ao abrir (sem repetir)
+            BippyNotif.queue(c, cid, txt, mid);
             final PendingResult pr = goAsync();
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        boolean ok = BippyNotif.send(c, cid, txt);
+                        boolean ok = BippyNotif.send(c, cid, txt, mid);
                         if (ok) {
-                            BippyNotif.clear(c, cid);
+                            BippyNotif.dequeue(c, mid);
                         } else {
-                            BippyNotif.queue(c, cid, txt);
                             BippyNotif.show(c, cid, title, "Resposta nao enviada. Toque para abrir o Bippy e enviar.");
                         }
                     } catch (Exception e) {}
