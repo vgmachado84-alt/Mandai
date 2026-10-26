@@ -313,6 +313,19 @@ cat > android/app/src/main/res/xml/file_paths.xml <<'XML'
 XML
 echo "file_paths ok"
 
+# Notificacoes com o app fechado (Firebase / FCM)
+if [ -f google-services.json ]; then
+  npm i @capacitor/push-notifications@6 >/dev/null 2>&1 && echo "plugin push ok" || echo "ERRO: plugin push nao instalou"
+  npx cap sync android >/dev/null 2>&1 || true
+  cp google-services.json android/app/google-services.json
+  grep -q "com.google.gms:google-services" android/build.gradle || sed -i "0,/dependencies {/s//dependencies {\n        classpath 'com.google.gms:google-services:4.4.2'/" android/build.gradle
+  grep -q "com.google.gms.google-services" android/app/build.gradle || cat >> android/app/build.gradle <<'EOF'
+
+apply plugin: 'com.google.gms.google-services'
+EOF
+  echo "firebase ok"; grep -n "google-services" android/build.gradle android/app/build.gradle || true
+fi
+
 # Chave fixa do Bippy: faz o Gradle assinar sempre com o debug.keystore do repositorio
 if [ -f debug.keystore ]; then
   KS="$(pwd)/debug.keystore"

@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261026-5153">
+<meta name="mandai-build" content="20261026-5154">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -7366,6 +7366,7 @@ const VAPID_PUB='BNxkWzdlxfcKtN27GllOCoyKKHx7P7Luq1Ae3DCqfwo6M1rt8C6Yai7qOfGPQvs
 const _u8=b=>{const p='='.repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))};
 const _b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 async function pushSync(ask){
+  if(fcmNative())return fcmSync(ask);
   try{
     if(!rtOn()||!('serviceWorker' in navigator)||!('PushManager' in window)||!window.Notification)return false;
     const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
@@ -7377,7 +7378,27 @@ async function pushSync(ask){
     const r=await SB.from('push_subs').upsert({usuario_id:RT.uid,endpoint:j.endpoint,p256dh:k.p256dh,auth:k.auth,prev:!!notifS.prev},{onConflict:'endpoint'});
     if(r&&r.error)throw r.error;return true
   }catch(e){try{rtErr(e)}catch(_){}return false}}
-async function pushOff(){try{if(!('serviceWorker' in navigator))return;const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){const ep=sub.endpoint;try{await SB.from('push_subs').delete().eq('endpoint',ep)}catch(e){}try{await sub.unsubscribe()}catch(e){}}}catch(e){}}
+
+/* notificações com o app fechado no APK (Firebase / FCM) */
+let _fcmInit=false,_fcmTok='';
+function fcmNative(){try{const C=window.Capacitor;return !!(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.PushNotifications)}catch(e){return false}}
+function fcmOpen(cid){if(!cid)return;let n=0;const iv=setInterval(()=>{n++;const c=(typeof chats!=='undefined'&&chats||[]).find(x=>String(x.rid)===String(cid));if(c){clearInterval(iv);try{closePages()}catch(_){}try{openChat(c.id)}catch(_){}}else if(n>40)clearInterval(iv)},500)}
+async function fcmSync(ask){
+  try{
+    if(!rtOn())return false;const PN=window.Capacitor.Plugins.PushNotifications;
+    if(!notifS.on){await fcmOff();return false}
+    if(!_fcmInit){_fcmInit=true;
+      PN.addListener('registration',async t=>{_fcmTok=t&&t.value||'';if(!_fcmTok||!rtOn())return;try{await SB.rpc('push_fcm_registrar',{p_token:_fcmTok,p_prev:!!notifS.prev})}catch(e){}});
+      PN.addListener('registrationError',e=>{try{rtErr(e)}catch(_){}});
+      PN.addListener('pushNotificationActionPerformed',a=>{try{const d=a&&a.notification&&a.notification.data;fcmOpen(d&&d.cid)}catch(e){}});
+      try{await PN.createChannel({id:'mensagens',name:'Mensagens',description:'Novas mensagens',importance:5,visibility:1,vibration:true})}catch(e){}}
+    let p=await PN.checkPermissions();
+    if(p.receive!=='granted')p=await PN.requestPermissions();
+    if(p.receive!=='granted'){if(ask)snack('Ative as notificações do Bippy nas configurações do celular');return false}
+    await PN.register();return true
+  }catch(e){try{rtErr(e)}catch(_){}return false}}
+async function fcmOff(){try{if(_fcmTok&&SB)await SB.from('push_fcm').delete().eq('token',_fcmTok)}catch(e){}}
+async function pushOff(){try{if(fcmNative())return fcmOff();if(!('serviceWorker' in navigator))return;const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){const ep=sub.endpoint;try{await SB.from('push_subs').delete().eq('endpoint',ep)}catch(e){}try{await sub.unsubscribe()}catch(e){}}}catch(e){}}
 try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.t==='snooze'){const c=chats.find(x=>laterKey(x)===d.lk);if(c)laterSnooze(c,60);return}if(d.t==='open'&&d.cid){const c=chats.find(x=>x.rid===d.cid);if(c){try{closePages()}catch(_){}openChat(c.id)}}})}catch(e){}
 function gifPick(cb){nxFile('image/gif,image/webp,image/png',f=>{if(f.size>900*1024){snack('GIF muito grande (máximo 900 KB)');return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)})}
 function buildQr(c){
