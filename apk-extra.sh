@@ -126,6 +126,7 @@ j=glob.glob('android/app/src/main/java/**/MainActivity.java',recursive=True)[0]
 t=open(j,encoding='utf-8').read()
 t=t.replace('public class MainActivity extends BridgeActivity {','''public class MainActivity extends BridgeActivity {
     private String pend = "";
+    private String pcid = "";
     private java.util.ArrayList<String[]> inbox = new java.util.ArrayList<String[]>();
     private void copyIn(android.net.Uri u, String mime) {
         try {
@@ -162,6 +163,7 @@ t=t.replace('public class MainActivity extends BridgeActivity {','''public class
     private void grab(android.content.Intent i) {
         try {
             if (i == null) return;
+            try { String pc = i.getStringExtra("cid"); if (pc != null && pc.length() > 0) pcid = pc; } catch (Exception e) {}
             String act = i.getAction();
             if (android.content.Intent.ACTION_SEND.equals(act)) {
                 String x = i.getStringExtra(android.content.Intent.EXTRA_TEXT);
@@ -195,6 +197,9 @@ t=t.replace('public class MainActivity extends BridgeActivity {','''public class
     }
 ''',1)
 t=t.replace('        public void set(final String top','''        public String shared() { String x = pend; pend = ""; return x; }
+
+        @JavascriptInterface
+        public String pushCid() { String x = pcid; pcid = ""; return x; }
 
         @JavascriptInterface
         public void openUrl(final String u) {
@@ -323,6 +328,279 @@ if [ -f google-services.json ]; then
 
 apply plugin: 'com.google.gms.google-services'
 EOF
+  mkdir -p android/app/src/main/res/drawable
+  cat > android/app/src/main/res/drawable/ic_stat_bippy.xml <<'XML'
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M20,2H4C2.9,2 2,2.9 2,4v18l4,-4h14c1.1,0 2,-0.9 2,-2V4C22,2.9 21.1,2 20,2z"/>
+</vector>
+XML
+  grep -q default_notification_icon android/app/src/main/AndroidManifest.xml || sed -i 's#</application>#<meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_bippy"/><meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@android:color/holo_purple"/></application>#' android/app/src/main/AndroidManifest.xml
+  # --- notificacao nativa com campo "Responder" (so dados vindos do Firebase) ---
+  PD=$(dirname $(find android/app/src/main/java -name MainActivity.java | head -1))
+  PKG=$(grep -h "^package" $PD/MainActivity.java | sed 's/package \(.*\);/\1/')
+  cat > $PD/BippyNotif.java <<'JAVA2'
+package PKGNAME;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.RemoteInput;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+final class BippyNotif {
+    static final String CH = "mensagens";
+
+    static void show(Context c, String cid, String title, String body) {
+        try {
+            if (cid == null || cid.length() == 0) return;
+            if (title == null || title.length() == 0) title = "Bippy";
+            if (body == null) body = "";
+            body = body.replace("\n", " ");
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CH) == null) {
+                NotificationChannel ch = new NotificationChannel(CH, "Mensagens", NotificationManager.IMPORTANCE_HIGH);
+                ch.setDescription("Novas mensagens");
+                nm.createNotificationChannel(ch);
+            }
+            SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
+            String old = sp.getString("l_" + cid, "");
+            String all = old.length() > 0 ? old + "\n" + body : body;
+            String[] parts = all.split("\n");
+            if (parts.length > 6) {
+                StringBuilder sb = new StringBuilder();
+                for (int k = parts.length - 6; k < parts.length; k++) {
+                    if (sb.length() > 0) sb.append("\n");
+                    sb.append(parts[k]);
+                }
+                all = sb.toString();
+            }
+            sp.edit().putString("l_" + cid, all).apply();
+
+            int ic = c.getResources().getIdentifier("ic_stat_bippy", "drawable", c.getPackageName());
+            if (ic == 0) ic = c.getApplicationInfo().icon;
+            int rq = cid.hashCode();
+
+            Intent open = new Intent(c, MainActivity.class);
+            open.putExtra("cid", cid);
+            open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pi = PendingIntent.getActivity(c, rq, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            Intent rep = new Intent(c, BippyReplyReceiver.class);
+            rep.putExtra("cid", cid);
+            rep.putExtra("title", title);
+            int fl = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+            PendingIntent rpi = PendingIntent.getBroadcast(c, rq, rep, fl);
+            RemoteInput ri = new RemoteInput.Builder("reply").setLabel("Responder").build();
+            NotificationCompat.Action act = new NotificationCompat.Action.Builder(ic, "Responder", rpi)
+                .addRemoteInput(ri)
+                .setAllowGeneratedReplies(true)
+                .setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_REPLY)
+                .setShowsUserInterface(false)
+                .build();
+
+            NotificationCompat.Builder b = new NotificationCompat.Builder(c, CH)
+                .setSmallIcon(ic)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(all))
+                .setAutoCancel(true)
+                .setContentIntent(pi)
+                .addAction(act)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setColor(0xFF7C4DFF);
+            nm.notify(cid, 1, b.build());
+        } catch (Exception e) {}
+    }
+
+    static void clear(Context c, String cid) {
+        try {
+            if (cid == null) return;
+            c.getSharedPreferences("bippy_push", 0).edit().remove("l_" + cid).apply();
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.cancel(cid, 1);
+        } catch (Exception e) {}
+    }
+
+    static boolean send(Context c, String cid, String txt) {
+        try {
+            SharedPreferences a = c.getSharedPreferences("bippy_auth", 0);
+            String url = a.getString("url", "");
+            String key = a.getString("key", "");
+            String tok = a.getString("tok", "");
+            String uid = a.getString("uid", "");
+            if (url.length() == 0 || tok.length() == 0 || uid.length() == 0) return false;
+            JSONObject j = new JSONObject();
+            j.put("conversa_id", cid);
+            j.put("remetente_id", uid);
+            j.put("texto", txt);
+            HttpURLConnection h = (HttpURLConnection) new URL(url + "/rest/v1/mensagens").openConnection();
+            h.setRequestMethod("POST");
+            h.setConnectTimeout(10000);
+            h.setReadTimeout(15000);
+            h.setDoOutput(true);
+            h.setRequestProperty("apikey", key);
+            h.setRequestProperty("Authorization", "Bearer " + tok);
+            h.setRequestProperty("Content-Type", "application/json");
+            h.setRequestProperty("Prefer", "return=minimal");
+            OutputStream o = h.getOutputStream();
+            o.write(j.toString().getBytes("UTF-8"));
+            o.close();
+            int code = h.getResponseCode();
+            h.disconnect();
+            return code >= 200 && code < 300;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    static void queue(Context c, String cid, String txt) {
+        try {
+            SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
+            JSONArray q = new JSONArray(sp.getString("q", "[]"));
+            JSONObject o = new JSONObject();
+            o.put("cid", cid);
+            o.put("txt", txt);
+            q.put(o);
+            sp.edit().putString("q", q.toString()).apply();
+        } catch (Exception e) {}
+    }
+}
+JAVA2
+  cat > $PD/BippyMsgService.java <<'JAVA2'
+package PKGNAME;
+
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+
+public class BippyMsgService extends FirebaseMessagingService {
+    @Override
+    public void onMessageReceived(RemoteMessage m) {
+        try {
+            java.util.Map<String, String> d = m.getData();
+            if (d == null || !"1".equals(d.get("bippy"))) return;
+            if (MainActivity.visible) return;
+            BippyNotif.show(this, d.get("cid"), d.get("t"), d.get("b"));
+        } catch (Exception e) {}
+    }
+}
+JAVA2
+  cat > $PD/BippyReplyReceiver.java <<'JAVA2'
+package PKGNAME;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import androidx.core.app.RemoteInput;
+
+public class BippyReplyReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(final Context c, final Intent i) {
+        try {
+            Bundle r = RemoteInput.getResultsFromIntent(i);
+            if (r == null) return;
+            CharSequence t = r.getCharSequence("reply");
+            final String cid = i.getStringExtra("cid");
+            final String title = i.getStringExtra("title");
+            if (t == null || cid == null) return;
+            final String txt = t.toString().trim();
+            if (txt.length() == 0) return;
+            final PendingResult pr = goAsync();
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        boolean ok = BippyNotif.send(c, cid, txt);
+                        if (ok) {
+                            BippyNotif.clear(c, cid);
+                        } else {
+                            BippyNotif.queue(c, cid, txt);
+                            BippyNotif.show(c, cid, title, "Resposta nao enviada. Toque para abrir o Bippy e enviar.");
+                        }
+                    } catch (Exception e) {}
+                    pr.finish();
+                }
+            }).start();
+        } catch (Exception e) {}
+    }
+}
+JAVA2
+  sed -i "s/PKGNAME/$PKG/" $PD/BippyNotif.java $PD/BippyMsgService.java $PD/BippyReplyReceiver.java
+  # manifesto: servico e receptor (e tira o servico padrao do plugin, para o nosso ser o unico)
+  grep -q 'xmlns:tools' android/app/src/main/AndroidManifest.xml || sed -i 's#<manifest #<manifest xmlns:tools="http://schemas.android.com/tools" #' android/app/src/main/AndroidManifest.xml
+  grep -q BippyMsgService android/app/src/main/AndroidManifest.xml || sed -i "s#</application>#<service android:name=\"$PKG.BippyMsgService\" android:exported=\"false\"><intent-filter android:priority=\"100\"><action android:name=\"com.google.firebase.MESSAGING_EVENT\"/></intent-filter></service><service android:name=\"com.capacitorjs.plugins.pushnotifications.MessagingService\" tools:node=\"remove\"/><receiver android:name=\"$PKG.BippyReplyReceiver\" android:exported=\"false\"/></application>#" android/app/src/main/AndroidManifest.xml
+  # dependencias do app (o plugin nao expoe o firebase-messaging para o app)
+  cat >> android/app/build.gradle <<'EOF'
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'androidx.core:core:1.12.0'
+}
+EOF
+  # MainActivity: saber se o app esta aberto, limpar a notificacao ao abrir, guardar login para responder
+  python3 - <<'PY'
+import glob
+j=glob.glob('android/app/src/main/java/**/MainActivity.java',recursive=True)[0]
+t=open(j,encoding='utf-8').read()
+if 'volatile boolean visible' not in t:
+    t=t.replace('public class MainActivity extends BridgeActivity {','public class MainActivity extends BridgeActivity {\n    static volatile boolean visible = false;',1)
+    cb='''grab(getIntent());
+        try {
+            getApplication().registerActivityLifecycleCallbacks(new android.app.Application.ActivityLifecycleCallbacks() {
+                public void onActivityResumed(android.app.Activity a) { visible = true; }
+                public void onActivityPaused(android.app.Activity a) { visible = false; }
+                public void onActivityCreated(android.app.Activity a, Bundle b) {}
+                public void onActivityStarted(android.app.Activity a) {}
+                public void onActivityStopped(android.app.Activity a) {}
+                public void onActivitySaveInstanceState(android.app.Activity a, Bundle b) {}
+                public void onActivityDestroyed(android.app.Activity a) {}
+            });
+        } catch (Exception e) {}'''
+    assert t.count('grab(getIntent());')==1
+    t=t.replace('grab(getIntent());',cb,1)
+    a='try { String pc = i.getStringExtra("cid"); if (pc != null && pc.length() > 0) pcid = pc; } catch (Exception e) {}'
+    assert a in t
+    t=t.replace(a,'try { String pc = i.getStringExtra("cid"); if (pc != null && pc.length() > 0) { pcid = pc; BippyNotif.clear(this, pc); } } catch (Exception e) {}',1)
+    b='        @JavascriptInterface\n        public String pushCid()'
+    assert b in t
+    t=t.replace(b,'''        @JavascriptInterface
+        public void saveAuth(String url, String key, String tok, String uid) {
+            try {
+                MainActivity.this.getSharedPreferences("bippy_auth", 0).edit()
+                    .putString("url", url).putString("key", key).putString("tok", tok).putString("uid", uid).apply();
+            } catch (Exception e) {}
+        }
+
+        @JavascriptInterface
+        public void clearAuth() {
+            try { MainActivity.this.getSharedPreferences("bippy_auth", 0).edit().clear().apply(); } catch (Exception e) {}
+        }
+
+        @JavascriptInterface
+        public String takeReplies() {
+            try {
+                android.content.SharedPreferences sp = MainActivity.this.getSharedPreferences("bippy_push", 0);
+                String q = sp.getString("q", "[]");
+                sp.edit().remove("q").apply();
+                return q;
+            } catch (Exception e) { return "[]"; }
+        }
+
+'''+b,1)
+    open(j,'w',encoding='utf-8').write(t)
+    print('mainactivity push ok')
+PY
   echo "firebase ok"; grep -n "google-services" android/build.gradle android/app/build.gradle || true
 fi
 
