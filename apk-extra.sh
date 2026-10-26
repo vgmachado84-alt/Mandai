@@ -1003,7 +1003,7 @@ XML
   echo "firebase ok"; grep -n "google-services" android/build.gradle android/app/build.gradle || true
 fi
 
-# Chave fixa do Bippy: faz o Gradle assinar sempre com o debug.keystore do repositorio
+# Chave do Bippy: se existir a chave privada (segredo do GitHub) usa ela; senao usa o debug.keystore do repositorio
 if [ -f debug.keystore ]; then
   KS="$(pwd)/debug.keystore"
   mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
@@ -1012,10 +1012,18 @@ if [ -f debug.keystore ]; then
 android {
     signingConfigs {
         debug {
-            storeFile file("$KS")
-            storePassword "android"
-            keyAlias "androiddebugkey"
-            keyPassword "android"
+            def privKs = System.getenv("BIPPY_KS")
+            if (privKs) {
+                storeFile file(privKs)
+                storePassword System.getenv("BIPPY_KS_PASS")
+                keyAlias "bippy"
+                keyPassword System.getenv("BIPPY_KS_PASS")
+            } else {
+                storeFile file("$KS")
+                storePassword "android"
+                keyAlias "androiddebugkey"
+                keyPassword "android"
+            }
         }
     }
 }
