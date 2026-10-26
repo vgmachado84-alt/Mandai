@@ -30,6 +30,10 @@ jobs:
       - name: Ajustes extras (arquivo apk-extra.sh do repositorio)
         run: |
           if [ -f apk-extra.sh ]; then bash apk-extra.sh; fi
+      - name: Usar a chave fixa do Bippy (para atualizar sem desinstalar)
+        run: |
+          mkdir -p ~/.android
+          cp debug.keystore ~/.android/debug.keystore
       - name: Gerar APK
         working-directory: android
         run: ./gradlew assembleDebug
