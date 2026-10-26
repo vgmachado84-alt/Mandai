@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261025-5147">
+<meta name="mandai-build" content="20261026-5148">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -5505,7 +5505,7 @@ function mediaPrep(md0,done){
   const old=document.getElementById('mprep');if(old)old.remove();
   const isV=md0.k==='vid',ov=document.createElement('div');ov.id='mprep';
   ov.style.cssText='position:fixed;inset:0;z-index:100000;background:#000;color:#fff;display:flex;flex-direction:column';
-  const cur={src:md0.src,ch:false,hd:false,from:0,to:0,D:0};
+  const cur={src:md0.src,ch:false,hd:false,mute:false,from:0,to:0,D:0};
   const bar=document.createElement('div');bar.style.cssText='display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 8px';
   const gb=(h,l)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',l);b.innerHTML=h;b.style.cssText='min-width:44px;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.16);color:#fff;font:700 15px system-ui;display:grid;place-items:center;padding:0 12px';return b};
   const bx=gb(ico('x',22),'Fechar'),bd=gb(ico('download',22),'Baixar'),sp=document.createElement('span');sp.style.flex='1';
@@ -5524,6 +5524,7 @@ function mediaPrep(md0,done){
     el=document.createElement('video');el.src=cur.src;el.controls=true;el.playsInline=true;el.style.cssText='width:100%;max-height:100%;object-fit:contain';body.append(el);
     const bh=gb('HD','Qualidade HD');bh.style.opacity='.6';bh.onclick=()=>{cur.hd=!cur.hd;bh.style.opacity=cur.hd?'1':'.6';bh.style.background=cur.hd?'#8a55ff':'rgba(255,255,255,.16)';snack(cur.hd?'HD: mantém a qualidade original':'Qualidade normal: vídeos grandes são reduzidos')};
     bar.insertBefore(bh,bd);
+    const bm=gb('🔊','Som');bm.onclick=()=>{cur.mute=!cur.mute;bm.textContent=cur.mute?'🔇':'🔊';bm.style.background=cur.mute?'#8a55ff':'rgba(255,255,255,.16)';el.muted=cur.mute;snack(cur.mute?'Vídeo sem som':'Som ligado')};bar.insertBefore(bm,bh);
     trim=document.createElement('div');trim.style.cssText='padding:10px 16px calc(6px + env(safe-area-inset-bottom,0px))';
     const lab=document.createElement('div');lab.style.cssText='font-size:13px;text-align:center;opacity:.8;margin-bottom:6px';
     const strip=document.createElement('div');strip.style.cssText='position:relative;height:52px;border-radius:8px;display:flex;overflow:hidden;background:#222;touch-action:none';
@@ -5545,10 +5546,10 @@ function mediaPrep(md0,done){
     if(!isV){close();done(cur.ch?Object.assign({},md0,{src:cur.src,name:'foto-recortada.jpg'}):null);return}
     const trimmed=cur.D&&(cur.from>.3||cur.to<cur.D-.3);let size=0;
     try{size=(await (await fetch(cur.src)).blob()).size}catch(e){}
-    const need=trimmed||(!cur.hd&&size>10*1048576);
+    const need=trimmed||cur.mute||(!cur.hd&&size>10*1048576);
     if(!need){close();done(null);return}
     bok.disabled=true;snack('Preparando vídeo…');
-    try{const r=await vidProcess(cur.src,{st:trimmed?cur.from:0,en:trimmed?cur.to:0,q:cur.hd?0:720},()=>{},()=>!document.getElementById('mprep'));
+    try{const r=await vidProcess(cur.src,{st:trimmed?cur.from:0,en:trimmed?cur.to:0,q:cur.hd?0:720,mute:cur.mute},()=>{},()=>!document.getElementById('mprep'));
       if(!r||!r.blob){snack('Não consegui preparar o vídeo');bok.disabled=false;return}
       const n=Object.assign({},md0,{src:URL.createObjectURL(r.blob),name:'video.mp4',size:fmtSize(r.blob.size),th:undefined});delete n.remote;delete n.path;delete n._path;
       close();done(n)}
