@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261026-5152">
+<meta name="mandai-build" content="20261026-5153">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -2369,6 +2369,34 @@ body.dragt .ced .ccap,body.dragt .ced .cbot2,body.dragt .ced .edhint{visibility:
 #app.open #main{background:linear-gradient(var(--panel),var(--panel)) top/100% 90px no-repeat,var(--bg)}
 #main .msgs{border-radius:22px 22px 0 0}
 #prp.pro2 .sg{border-radius:22px!important;margin:0 12px 12px!important;overflow:hidden!important;background:var(--panel)!important;border:1px solid var(--line)!important}
+
+/* Reels (demonstração) */
+#pr{background:#0b0b14;color:#fff;overflow:hidden}
+.rlf{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain}.rlf::-webkit-scrollbar{display:none}
+.rlc{position:relative;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
+.rlc svg.sc{position:absolute;inset:0;width:100%;height:100%}
+.rlc .sun{animation:rlf 6s ease-in-out infinite alternate}@keyframes rlf{to{transform:translateY(-14px)}}
+.rlc.ps .sun,.rlc.ps .rlpg i{animation-play-state:paused}
+.rlsh{position:absolute;left:0;right:0;bottom:0;height:55%;background:linear-gradient(180deg,rgba(10,6,20,0),rgba(10,6,20,.85));pointer-events:none}
+.rltop{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;justify-content:center;gap:22px;padding:12px 56px 22px;background:linear-gradient(180deg,rgba(10,6,20,.55),rgba(10,6,20,0))}
+.rltop button{background:none;border:0;color:#fff;opacity:.65;font-size:16px;font-weight:600;padding:8px 2px;min-height:44px}.rltop button.on{opacity:1;font-weight:700;border-bottom:3px solid #fff}
+.rltop .rls{position:absolute;right:6px;top:8px;width:44px;height:44px;display:grid;place-items:center;opacity:1;padding:0;border:0}
+.rldm{position:absolute;left:14px;top:62px;z-index:3;font-size:11px;font-weight:700;letter-spacing:.3px;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(8px)}
+.rlact{position:absolute;right:8px;bottom:26px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:16px}
+.rlact button{background:none;border:0;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;min-height:48px;font-size:12px;font-weight:600;padding:0}
+.rlact button.lk svg{fill:#ff4d6d;stroke:#ff4d6d}
+.rlav{width:46px;height:46px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.rlin{position:absolute;left:14px;right:78px;bottom:24px;z-index:3}
+.rlin .rn{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.rlin .fo{border:1.5px solid #fff;background:none;color:#fff;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;min-height:32px}.rlin .fo.on{background:rgba(255,255,255,.22);border-color:transparent}
+.rlin p{margin:8px 0 6px;font-size:14px;line-height:1.35}.rlin .sd{font-size:12px;opacity:.9;display:flex;gap:6px;align-items:center}
+.rlpg{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.25);z-index:3}.rlpg i{display:block;height:100%;width:0;background:#fff;animation:rlp 9s linear infinite}@keyframes rlp{to{width:100%}}
+.rlheart{position:absolute;left:50%;top:45%;z-index:4;margin:-48px 0 0 -48px;pointer-events:none;opacity:0}.rlheart.go{animation:rlh .7s ease-out}@keyframes rlh{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1)}}
+.rlcm{position:absolute;left:0;right:0;bottom:0;height:62%;z-index:6;background:#14121f;border-radius:22px 22px 0 0;display:flex;flex-direction:column;animation:up .2s ease-out}.rlcm[hidden]{display:none}
+.rlcm .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 8px 8px 18px;font-weight:700}
+.rlcm .bd{flex:1;overflow-y:auto;padding:0 18px;display:flex;flex-direction:column;gap:14px}
+.rlcm .cm{display:flex;gap:10px;font-size:14px;line-height:1.35}.rlcm .cm b{display:block;font-size:12px;opacity:.7;font-weight:500}.rlcm .cm .a{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700}
+.rlcm .in{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.1)}.rlcm .in input{flex:1;height:44px;border-radius:22px;border:0;background:rgba(255,255,255,.1);color:#fff;padding:0 16px;font-size:15px}.rlcm .in button{width:44px;height:44px;border-radius:50%;border:0;background:#8a55ff;color:#fff;display:grid;place-items:center}
 </style>
 </head>
 <body>
@@ -2379,7 +2407,7 @@ body.dragt .ced .ccap,body.dragt .ced .cbot2,body.dragt .ced .edhint{visibility:
     <div class="stories" id="stories"></div>
     <div class="sbar" id="sbar"><button class="sbk" id="sbk" aria-label="Voltar" hidden></button><input class="search" id="q" placeholder="Pesquisar conversas..." aria-label="Pesquisar conversas"><button class="sxc" id="sxc" aria-label="Limpar" hidden></button></div><div class="sfc" id="sfc" hidden></div>
     <div class="chips"><button class="chip on" data-f="all">Todas</button><button class="chip" data-f="unread">Não lidas</button><button class="chip" data-f="groups">Grupos</button></div>
-    <div class="list" id="list"></div><button class="fab" id="fab" aria-label="Nova conversa"></button></div><div class="pane" id="pm" hidden></div><div class="pane" id="pk" hidden></div><div class="pane" id="ps" hidden><div class="top"><h1>Status</h1><div class="tact"><button id="pss" aria-label="Buscar"></button><button id="psm" aria-label="Mais opções"></button></div></div><input class="search" id="psq" placeholder="Buscar status…" hidden><div id="pslist" class="slist"></div><div class="sfabs"><button class="sf1" id="pstxt" aria-label="Status de texto"></button><button class="sf2" id="pscam" aria-label="Câmera"></button></div></div><div class="pane" id="pl" hidden></div><div class="pane" id="pf" hidden></div><nav class="tabs" id="tabs"><button class="tb on" data-t="c"><i></i>Conversas</button><button class="tb" data-t="s"><i></i>Status</button><button class="tb" data-t="l"><i></i>Ligações</button><button class="tb" data-t="f"><i></i>Ferramentas</button></nav>
+    <div class="list" id="list"></div><button class="fab" id="fab" aria-label="Nova conversa"></button></div><div class="pane" id="pm" hidden></div><div class="pane" id="pk" hidden></div><div class="pane" id="ps" hidden><div class="top"><h1>Status</h1><div class="tact"><button id="pss" aria-label="Buscar"></button><button id="psm" aria-label="Mais opções"></button></div></div><input class="search" id="psq" placeholder="Buscar status…" hidden><div id="pslist" class="slist"></div><div class="sfabs"><button class="sf1" id="pstxt" aria-label="Status de texto"></button><button class="sf2" id="pscam" aria-label="Câmera"></button></div></div><div class="pane" id="pl" hidden></div><div class="pane" id="pf" hidden></div><div class="pane" id="pr" hidden></div><nav class="tabs" id="tabs"><button class="tb on" data-t="c"><i></i>Conversas</button><button class="tb" data-t="s"><i></i>Status</button><button class="tb" data-t="r"><i></i>Reels</button><button class="tb" data-t="l"><i></i>Ligações</button><button class="tb" data-t="f"><i></i>Ferramentas</button></nav>
   </section>
   <section class="main" id="main"></section>
   <div class="viewer" id="viewer" hidden></div>
@@ -5246,7 +5274,7 @@ const EI={'📞':'phone','📄':'file','🎤':'mic','🔗':'link','🎨':'palett
 function si(ic){const s=mk('span','si'),k=EI[ic];if(k&&P[k])s.innerHTML=ico(k,20);else s.textContent=ic;return s}
 function iconsInit(){
   $('.top h1').innerHTML=logo(38,'lgt');$('#fab').innerHTML=ico('fabnew',28);$('#sbk').innerHTML=ico('back',24);$('#sxc').innerHTML=ico('x',22);$('#tcam').innerHTML=ico('fcam',28);$('#tlft').innerHTML=ico('ltag',26);$('#tmore').innerHTML=ico('dots',28);
-  const TI={c:'chat',s:'statusring',l:'phone',k:'users',f:'brief'};document.querySelectorAll('.tb').forEach(b=>{b.querySelector('i').innerHTML=ico(TI[b.dataset.t],22)});
+  const TI={c:'chat',s:'statusring',r:'reels',l:'phone',k:'users',f:'brief'};document.querySelectorAll('.tb').forEach(b=>{b.querySelector('i').innerHTML=ico(TI[b.dataset.t],22)});
 }
 function emojiMenu(){
   const E=['😀','😂','😍','🥰','😘','😉','😎','🤔','😢','😭','😡','👍','👎','👏','🙏','💪','🎉','❤️','🔥','✨','😅','🙌','🤝','👀','😴','🤗','😇','🥳','😬','🙄','💯','✅'];
@@ -6711,11 +6739,63 @@ function tab(n){
   if(n!=='c')exitSel();const hi=(n==='m'||n==='a')?'f':n;
   if(n==='a'){openSettings()}
   else{_tab=(n==='m')?'f':n;$('#set').hidden=true;
-    $('#pc').hidden=n!=='c';$('#ps').hidden=n!=='s';$('#pl').hidden=n!=='l';$('#pk').hidden=n!=='k';$('#pf').hidden=n!=='f';$('#pm').hidden=n!=='m';
+    $('#pc').hidden=n!=='c';$('#ps').hidden=n!=='s';$('#pl').hidden=n!=='l';$('#pk').hidden=n!=='k';$('#pf').hidden=n!=='f';$('#pm').hidden=n!=='m';$('#pr').hidden=n!=='r';if(n==='r')renderReels();
     if(n==='l')renderCalls();if(n==='k')renderComm();if(n==='f')renderTools();
     if(n==='m'){renderMem();if(!$('#pm .mbk')){const b=bkb('mbk');b.onclick=()=>tab('f');b.style.cssText='position:absolute;top:14px;left:14px;z-index:2;background:rgba(255,255,255,.14);color:#fff';$('#pm').appendChild(b)}}}
   document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.dataset.t===hi));
 }
+
+/* ===== Reels (demonstração visual) ===== */
+P.reels='<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/>';
+const RL=[
+ {u:'vida.simples',n:'Vida Simples',c:'Grandes momentos não são só planejados... são vividos! #trilha #vidasimples',m:'Som original · Vida Simples',l:12400,k:3,g:['#1b1740','#5a2f86','#d9628a','#f4a259'],s:'sun',f:0,col:['#8a55ff','#2f7df6']},
+ {u:'mar.azul',n:'Mar Azul',c:'Fim de tarde na praia, só paz. #praia #sol',m:'Ondas · Mar Azul',l:8700,k:3,g:['#06304a','#0f6f8f','#5fc7c9','#ffe9b0'],s:'sea',f:1,col:['#2fbf8f','#2f7df6']},
+ {u:'cidade.noite',n:'Cidade à Noite',c:'A cidade nunca dorme. #noite #cidade',m:'Night Drive · Cidade',l:21300,k:3,g:['#07071a','#1d1b4f','#5a2f86','#ff4d6d'],s:'city',f:0,col:['#ff7a59','#ff4d6d']},
+ {u:'mata.verde',n:'Mata Verde',c:'Respire fundo, a natureza cura. #natureza #paz',m:'Som da floresta',l:5300,k:3,g:['#08261c','#14532d','#4d9a4a','#d6f5a0'],s:'forest',f:1,col:['#f4a259','#d9628a']}
+];
+const RLC=[['ana.maria','Que lugar lindo! Onde fica?'],['julio.filho','Salvei pra fazer no fim de semana.'],['julia_01','Amei demais!'],['carlos.dev','Parabéns pelo conteúdo!']];
+function rlScene(r){const g=r.g,d='<defs><linearGradient id="rg'+r.u+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+g[0]+'"/><stop offset=".45" stop-color="'+g[1]+'"/><stop offset=".72" stop-color="'+g[2]+'"/><stop offset="1" stop-color="'+g[3]+'"/></linearGradient></defs><rect width="400" height="800" fill="url(#rg'+r.u+')"/>';
+ let b='';
+ if(r.s==='sun')b='<g class="sun"><circle cx="270" cy="420" r="60" fill="#ffd9a0"/><circle cx="270" cy="420" r="115" fill="#ffd9a0" opacity=".14"/></g><path d="M0 520L70 450L130 500L210 400L290 495L350 440L400 480V800H0Z" fill="#2b1646" opacity=".92"/><path d="M0 610L90 555L170 600L260 530L340 595L400 570V800H0Z" fill="#1a0e30"/>';
+ else if(r.s==='sea')b='<g class="sun"><circle cx="200" cy="430" r="54" fill="#fff3c4"/></g><path d="M0 470Q50 455 100 470T200 470T300 470T400 470V800H0Z" fill="#0f6f8f" opacity=".85"/><path d="M0 540Q50 525 100 540T200 540T300 540T400 540V800H0Z" fill="#0a4b66"/><path d="M0 640Q60 622 120 640T240 640T360 640T400 636V800H0Z" fill="#06304a"/>';
+ else if(r.s==='city'){let x='';for(let i=0;i<9;i++){const h=120+((i*53)%170),w=42;x+='<rect x="'+(i*44)+'" y="'+(620-h)+'" width="'+w+'" height="'+(h+200)+'" fill="#0b0a22"/>';for(let j=0;j<5;j++)x+='<rect x="'+(i*44+8)+'" y="'+(640-h+j*34)+'" width="8" height="10" fill="#ffd27a" opacity="'+(((i+j)%3)?.9:.25)+'"/><rect x="'+(i*44+24)+'" y="'+(640-h+j*34)+'" width="8" height="10" fill="#ffd27a" opacity="'+(((i*j)%2)?.8:.2)+'"/>'}b='<g class="sun"><circle cx="300" cy="300" r="38" fill="#ffe9f0" opacity=".9"/></g>'+x}
+ else b='<g class="sun"><circle cx="300" cy="360" r="46" fill="#f3ffc4" opacity=".85"/></g><path d="M0 560L60 440L120 560Z M80 580L170 400L260 580Z M220 570L310 430L400 570Z" fill="#0d3b25"/><path d="M0 700L80 560L160 700Z M120 720L230 520L340 720Z M300 710L370 590L440 710Z" fill="#082a1a"/>';
+ return '<svg class="sc" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+d+b+'</svg>'}
+const rlNum=n=>n>=1000?(n/1000).toFixed(1).replace('.',',').replace(',0','')+' mil':String(n);
+function rlCard(r,i){return `<div class="rlc" data-i="${i}">${rlScene(r)}<div class="rlsh"></div>
+ <svg class="rlheart" width="96" height="96" viewBox="0 0 24 24" fill="#ff4d6d" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9-9.6C2 7.4 4.2 5 7 5c1.9 0 3.5 1 5 3 1.5-2 3.1-3 5-3 2.8 0 5 2.4 4 5.9-1.5 5-9 9.6-9 9.6z"/></svg>
+ <div class="rlact"><div class="rlav" style="background:linear-gradient(135deg,${r.col[0]},${r.col[1]})">${r.n.split(' ').map(x=>x[0]).join('').slice(0,2)}</div>
+ <button class="rlk" aria-label="Curtir">${ico('heart',32)}<span>${rlNum(r.l)}</span></button>
+ <button class="rlm" aria-label="Comentar">${ico('chat',30)}<span>${r.k}</span></button>
+ <button class="rls2" aria-label="Compartilhar">${ico('send',30)}<span>Enviar</span></button>
+ <button class="rld" aria-label="Mais opções">${ico('more',26)}</button></div>
+ <div class="rlin"><div class="rn">@${r.u}<button class="fo">Seguir</button></div><p>${r.c}</p><div class="sd">${ico('mic',15)}<span>${r.m}</span></div></div>
+ <div class="rlpg"><i></i></div></div>`}
+let _rlTab='y';
+function renderReels(){const p=$('#pr');
+ if(!p.dataset.r){p.dataset.r='1';
+  p.innerHTML='<div class="rltop"><button data-v="f">Seguindo</button><button data-v="y" class="on">Para você</button><button class="rls" aria-label="Buscar">'+ico('search',22)+'</button></div><div class="rldm">DEMONSTRAÇÃO</div><div class="rlf" id="rlf"></div><div class="rlcm" id="rlcm" hidden><div class="hd"><span id="rlct"></span><button class="ib" id="rlcx" aria-label="Fechar">'+ico('x',22)+'</button></div><div class="bd" id="rlcb"></div><div class="in"><input id="rlci" placeholder="Adicione um comentário..." aria-label="Comentário" autocomplete="off"><button id="rlcs" aria-label="Enviar comentário">'+ico('send',20)+'</button></div></div>';
+  p.querySelectorAll('.rltop button[data-v]').forEach(b=>b.onclick=()=>{_rlTab=b.dataset.v;p.querySelectorAll('.rltop button[data-v]').forEach(x=>x.classList.toggle('on',x===b));rlFeed()});
+  p.querySelector('.rls').onclick=()=>snack('Busca de vídeos: em breve');
+  $('#rlcx').onclick=()=>{$('#rlcm').hidden=true};
+  const send=()=>{const i=$('#rlci'),t=i.value.trim();if(!t)return;const cm=document.createElement('div');cm.className='cm';cm.innerHTML='<div class="a" style="background:#8a55ff">EU</div><div><b>@voce · agora</b></div>';cm.lastChild.appendChild(document.createTextNode(t));$('#rlcb').appendChild(cm);i.value='';$('#rlcb').scrollTop=1e5};
+  $('#rlcs').onclick=send;$('#rlci').onkeydown=e=>{if(e.key==='Enter')send()};
+  try{new ResizeObserver(()=>{const f=$('#rlf');f.querySelectorAll('.rlc').forEach(c=>c.style.height=f.clientHeight+'px')}).observe($('#rlf'))}catch(e){}
+  rlFeed()}
+ const f=$('#rlf');f.querySelectorAll('.rlc').forEach(c=>c.style.height=f.clientHeight+'px')}
+function rlFeed(){const f=$('#rlf'),list=RL.map((r,i)=>[r,i]).filter(([r])=>_rlTab==='y'||r.f);
+ f.innerHTML=list.length?list.map(([r,i])=>rlCard(r,i)).join(''):'<div style="margin:auto;padding:30px;text-align:center;opacity:.8">Você ainda não segue ninguém.<br>Toque em Seguir nos vídeos de Para você.</div>';
+ f.scrollTop=0;f.querySelectorAll('.rlc').forEach(c=>{c.style.height=f.clientHeight+'px';const r=RL[+c.dataset.i];
+  const heart=()=>{const h=c.querySelector('.rlheart');h.classList.remove('go');void h.getBoundingClientRect();h.classList.add('go')};
+  const lk=c.querySelector('.rlk'),setLk=on=>{if(on===!!r.on)return;r.on=on;r.l+=on?1:-1;lk.classList.toggle('lk',on);lk.querySelector('span').textContent=rlNum(r.l)};
+  if(r.on)lk.classList.add('lk');
+  lk.onclick=()=>{setLk(!r.on);if(r.on)heart()};
+  let lt=0;c.onclick=e=>{if(e.target.closest('button'))return;const n=Date.now();if(n-lt<320){setLk(true);heart();c.classList.remove('ps')}else{c.classList.toggle('ps')}lt=n};
+  const fo=c.querySelector('.fo');if(r.f)fo.classList.add('on'),fo.textContent='Seguindo';
+  fo.onclick=()=>{r.f=r.f?0:1;fo.classList.toggle('on',!!r.f);fo.textContent=r.f?'Seguindo':'Seguir'};
+  c.querySelector('.rlm').onclick=()=>{$('#rlct').textContent=(r.k+RLC.length-3)+' comentários';$('#rlcb').innerHTML=RLC.map(x=>'<div class="cm"><div class="a" style="background:linear-gradient(135deg,#8a55ff,#2f7df6)">'+x[0].slice(0,2).toUpperCase()+'</div><div><b>@'+x[0]+'</b>'+x[1]+'</div></div>').join('');$('#rlcm').hidden=false};
+  c.querySelector('.rls2').onclick=()=>snack('Na versão final você envia o vídeo para seus contatos aqui mesmo');
+  c.querySelector('.rld').onclick=()=>snack('Denunciar, silenciar e salvar: em breve')})}
 (function(){var ps=document.getElementById('ps'),st=document.getElementById('stories');if(ps&&st)ps.appendChild(st)})();
 setTimeout(function(){const set=(id,ic,fn)=>{const b=document.getElementById(id);if(b){b.innerHTML=ico(ic,id==='psq'?20:22);b.onclick=fn}};set('pss','search',()=>{const i=$('#psq');i.hidden=!i.hidden;if(!i.hidden)i.focus();else{i.value='';renderStatusList()}});set('psm','dots',()=>{S.stVis=S.stVis||{mode:'all',list:[]};const V=S.stVis,dm=dropMenu(document.getElementById('psm'),null);
   const md=(m,t)=>({t,on:V.mode===m,fn:()=>{V.mode=m;if(m!=='all'&&!V.list.length)pickVis();else snack('Privacidade atualizada')}});
