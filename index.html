@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261026-5159">
+<meta name="mandai-build" content="20261026-5161">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -549,6 +549,7 @@ body{font-family:'Roboto','Bricolage Grotesque',system-ui,-apple-system,'Segoe U
 .sbk{left:20px}.sxc{right:20px}
 .srch .sbk{display:grid}.srch .sxc:not([hidden]){display:grid}
 .srch .sbk[hidden]{display:none}
+.srch .search{box-sizing:border-box;height:44px;padding-top:0;padding-bottom:0}
 .srch .top,.srch .stories,.srch .chips,.srch .fab{display:none}
 .srch .sbar{padding-top:calc(env(safe-area-inset-top,0px) + 6px)}.srch .search{padding-left:52px;margin-top:4px}
 .srching .tabs{display:none}.srch .search{background-image:none}
@@ -2919,7 +2920,7 @@ function compose(){
 let sMode=false,sKind=null;
 const SK=[['img','Fotos'],['vid','Vídeos'],['link','Links'],['aud','Áudio'],['file','Documentos'],['poll','Enquetes'],['contact','Contatos'],['unread','Não lidas'],['groups','Grupos']];
 function enterSearch(){
-  if(sMode)return;sMode=true;$('#app').classList.add('srching');$('#pc').classList.add('srch');
+  if(sMode)return;sMode=true;$('#app').classList.add('srching');$('#pc').classList.add('srch');try{requestAnimationFrame(sbkAlign);setTimeout(sbkAlign,120)}catch(e){}
   $('#sbk').hidden=false;$('#sfc').hidden=false;paintSF();$('#sxc').hidden=!$('#q').value;
 }
 function exitSearch(){
@@ -7966,6 +7967,8 @@ function rtConvUpd(r){if(!r)return;const c=chats.find(x=>x.rid===r.id);if(!c){if
   if(c.group){rtGroupSoon(r.id);return}
   const h=r.mensagens_temporarias_seg?r.mensagens_temporarias_seg/3600:0;
   if(h!==(c.dis||0)){c.dis=h;c.disAll=true;c.disMine=false;c._srv=rtGSnap(c);const sm=['sys',h?'Mensagens temporárias ativadas.':'Mensagens temporárias desativadas.'];c.msgs.push(sm);if(cur===c){const bx=$('#msgs');if(bx){bx.appendChild(bubble(sm,true));scroll()}}renderList()}}
+function sbkAlign(){try{const q=document.getElementById('q');if(!q||!q.offsetHeight)return;const t=q.offsetTop+'px',h=q.offsetHeight+'px';['sbk','sxc'].forEach(i=>{const e=document.getElementById(i);if(e){e.style.top=t;e.style.height=h;e.style.marginTop='0';e.style.transform='none'}})}catch(e){}}
+try{addEventListener('resize',()=>{if(document.querySelector('#pc.srch'))sbkAlign()})}catch(e){}
 function rtDrop(id){let ch=false;chats.forEach(c=>{const n=c.msgs.length;c.msgs=c.msgs.filter(m=>!(m[5]&&m[5].rid===id));if(c.msgs.length!==n){ch=true;if(cur===c&&typeof paintMsgs==='function')try{paintMsgs()}catch(e){}}});if(ch)renderList()}
 /* lido / entregue */
 function rtRcptApply(row,idx){
@@ -8180,7 +8183,7 @@ async function rtSendMedia0(chat,txt,m){
     const meta={};Object.keys(md).forEach(k=>{if(k==='src'&&path)return;if(k==='src'&&String(md[k]).startsWith('blob:'))return;if(k.startsWith('_')||k==='remote'||k==='path'||k==='opened')return;meta[k]=md[k]});if(bl0)meta.mime=(bl0.type||'').split(';')[0];const rp=rtRp(m);if(rp)Object.assign(meta,rp);
     if(md.k==='poll'){meta.opts=md.opts.map(o=>({t:o.t,em:o.em,st:o.st}));delete meta.own;delete meta.mine;delete meta.vk}
     const r=await SB.from('mensagens').insert({conversa_id:chat.rid,remetente_id:RT.uid,tipo:md.k==='poll'||md.k==='contact'?md.k:md.k,texto:txt,arquivo_url:path,midia:meta,expira_em:m[3]?new Date(m[3]).toISOString():null}).select('id,criado_em').single();
-    if(r.error)throw r.error;if(md.k==='poll'){md.vk=r.data.id;RT.polls=RT.polls||{};RT.polls[md.vk]=md}m[5].rid=r.data.id;m[5].at=r.data.criado_em;if(!RT.last||r.data.criado_em>RT.last)RT.last=r.data.criado_em;
+    if(r.error)throw r.error;if(md.k==='poll'){md.vk=r.data.id;RT.polls=RT.polls||{};RT.polls[md.vk]=md}m[5].rid=r.data.id;m[5].at=r.data.criado_em;try{setTimeout(rtRcptLoad,1500);setTimeout(rtRcptLoad,5000);setTimeout(rtRcptLoad,12000)}catch(e){}if(!RT.last||r.data.criado_em>RT.last)RT.last=r.data.criado_em;
   }catch(e){if(CANC.has(m))return;rtErr(e);m[5].st='fail';snack('Não foi possível enviar. Verifique a internet e se o banco foi atualizado (arquivo 5).');renderList()}
 }
 async function rtOnceMark(m){const md=m[4];if(!md||!m[5]||!m[5].rid)return;
@@ -8194,7 +8197,7 @@ async function rtSend(chat,txt,m){
   if(m[4]&&m[4].k)return rtSendMedia(chat,txt,m);
   const _t0=performance.now();
   try{const rp=rtRp(m);const r=await SB.from('mensagens').insert(Object.assign({conversa_id:chat.rid,remetente_id:RT.uid,texto:txt},rp?{midia:rp}:{},m[3]?{expira_em:new Date(m[3]).toISOString()}:{})).select('id,criado_em').single();
-    if(r.error)throw r.error;m[5].rid=r.data.id;m[5].at=r.data.criado_em;if(!RT.last||r.data.criado_em>RT.last)RT.last=r.data.criado_em;try{if(window._net){window._net.send.push(performance.now()-_t0);if(window._net.send.length>20)window._net.send.shift()}}catch(e){}}
+    if(r.error)throw r.error;m[5].rid=r.data.id;m[5].at=r.data.criado_em;try{setTimeout(rtRcptLoad,1500);setTimeout(rtRcptLoad,5000);setTimeout(rtRcptLoad,12000)}catch(e){}if(!RT.last||r.data.criado_em>RT.last)RT.last=r.data.criado_em;try{if(window._net){window._net.send.push(performance.now()-_t0);if(window._net.send.length>20)window._net.send.shift()}}catch(e){}}
   catch(e){rtErr(e);m[5].st='fail';snack('Não foi possível enviar. Verifique a internet.');renderList()}
 }
 async function rtEdit(m,v){
