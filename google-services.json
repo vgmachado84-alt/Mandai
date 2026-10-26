@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "939517636611",
+    "project_id": "bippy-b136d",
+    "storage_bucket": "bippy-b136d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:939517636611:android:16dbdd35d564ce03e41e36",
+        "android_client_info": {
+          "package_name": "br.com.bippy.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3OLNTO053TNw4tBuDTrrrkLAijmsWJ8A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
