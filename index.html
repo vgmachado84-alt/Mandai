@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261026-5158">
+<meta name="mandai-build" content="20261026-5159">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -7401,7 +7401,7 @@ function fcmPhotos(){try{const B=window.BippyBars;if(!B||!B.savePhoto||typeof ch
 function bippyAuthSync(){try{fcmPhotos()}catch(e){}try{const B=window.Capacitor&&window.BippyBars;if(!B||!B.saveAuth||!SB||!SB.auth)return;SB.auth.getSession().then(r=>{const s=r&&r.data&&r.data.session;if(s&&s.access_token&&s.user)B.saveAuth('https://aqzpqqefjrllhghioklh.supabase.co','sb_publishable_X9VsZiJUOzKGg_SxHC8p5g_TSBElMgi',s.access_token,s.user.id)}).catch(()=>{})}catch(e){}}
 let _authHook=false;
 async function fcmFlush(q){try{const L=JSON.parse(q||'[]');if(!L.length)return;let n=0;while(!rtOn()&&n<60){await new Promise(r=>setTimeout(r,250));n++}if(!rtOn())return;
-  for(const x of L){if(!x||!x.cid||!x.txt)continue;const row={conversa_id:x.cid,remetente_id:RT.uid,texto:String(x.txt)};if(x.id)row.id=x.id;const r=x.id?await SB.from('mensagens').upsert(row,{onConflict:'id',ignoreDuplicates:true}):await SB.from('mensagens').insert(row);if(r&&r.error){snack('Não foi possível enviar sua resposta');return}}
+  for(const x of L){if(x&&x.cid&&x.mute){try{const c0=(chats||[]).find(y=>String(y.rid)===String(x.cid));if(c0){c0.mute=Date.now()+(+x.mute||8)*36e5;renderList();try{muteSync()}catch(e){}}}catch(e){}continue}if(!x||!x.cid||!x.txt)continue;const row={conversa_id:x.cid,remetente_id:RT.uid,texto:String(x.txt)};if(x.id)row.id=x.id;const r=x.id?await SB.from('mensagens').upsert(row,{onConflict:'id',ignoreDuplicates:true}):await SB.from('mensagens').insert(row);if(r&&r.error){snack('Não foi possível enviar sua resposta');return}}
   await fcmFetch(L[0].cid)}catch(e){}}
 async function fcmSync(ask){
   try{

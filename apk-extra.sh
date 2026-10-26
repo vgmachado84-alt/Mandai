@@ -328,12 +328,8 @@ if [ -f google-services.json ]; then
 
 apply plugin: 'com.google.gms.google-services'
 EOF
-  mkdir -p android/app/src/main/res/drawable
-  cat > android/app/src/main/res/drawable/ic_stat_bippy.xml <<'XML'
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
-    <path android:fillColor="#FFFFFFFF" android:pathData="M20,2H4C2.9,2 2,2.9 2,4v18l4,-4h14c1.1,0 2,-0.9 2,-2V4C22,2.9 21.1,2 20,2z"/>
-</vector>
-XML
+  mkdir -p android/app/src/main/res/drawable-nodpi
+  echo "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" | base64 -d > android/app/src/main/res/drawable-nodpi/ic_stat_bippy.png
   grep -q default_notification_icon android/app/src/main/AndroidManifest.xml || sed -i 's#</application>#<meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_bippy"/><meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@android:color/holo_purple"/></application>#' android/app/src/main/AndroidManifest.xml
   # --- notificacao nativa com campo "Responder" (so dados vindos do Firebase) ---
   PD=$(dirname $(find android/app/src/main/java -name MainActivity.java | head -1))
@@ -358,19 +354,29 @@ import org.json.JSONObject;
 
 final class BippyNotif {
     static final String CH = "mensagens";
+    static android.graphics.Bitmap logoBmp = null;
 
-    static void show(Context c, String cid, String title, String body) {
+    static void channel(Context c) {
         try {
-            if (cid == null || cid.length() == 0) return;
-            if (title == null || title.length() == 0) title = "Bippy";
-            if (body == null) body = "";
-            body = body.replace("\n", " ");
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CH) == null) {
                 NotificationChannel ch = new NotificationChannel(CH, "Mensagens", NotificationManager.IMPORTANCE_HIGH);
                 ch.setDescription("Novas mensagens");
                 nm.createNotificationChannel(ch);
             }
+        } catch (Exception e) {}
+    }
+
+    static void show(Context c, String cid, String title, String body) {
+        show(c, cid, title, body, null);
+    }
+
+    static void show(Context c, String cid, String title, String body, String au) {
+        try {
+            if (cid == null || cid.length() == 0) return;
+            if (title == null || title.length() == 0) title = "Bippy";
+            if (body == null) body = "";
+            body = body.replace("\n", " ");
             SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
             String old = sp.getString("l_" + cid, "");
             String all = old.length() > 0 ? old + "\n" + body : body;
@@ -384,7 +390,14 @@ final class BippyNotif {
                 all = sb.toString();
             }
             sp.edit().putString("l_" + cid, all).apply();
+            post(c, cid, title, body, all, au, false);
+        } catch (Exception e) {}
+    }
 
+    static void post(Context c, String cid, String title, String body, String all, String au, boolean quiet) {
+        try {
+            channel(c);
+            NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             int ic = c.getResources().getIdentifier("ic_stat_bippy", "drawable", c.getPackageName());
             if (ic == 0) ic = c.getApplicationInfo().icon;
             int rq = cid.hashCode();
@@ -418,14 +431,143 @@ final class BippyNotif {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setColor(0xFF7C4DFF);
+                .setColor(0xFF0B63FF);
             android.graphics.Bitmap lb = photo(c, cid);
             if (lb != null) b.setLargeIcon(lb);
+
+            boolean aud = au != null && au.length() > 0;
+            if (aud) {
+                Intent pl = new Intent(c, BippyAudioService.class);
+                pl.putExtra("url", au);
+                PendingIntent ppi;
+                if (Build.VERSION.SDK_INT >= 26) {
+                    ppi = PendingIntent.getForegroundService(c, rq + 1, pl, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                } else {
+                    ppi = PendingIntent.getService(c, rq + 1, pl, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                }
+                b.addAction(new NotificationCompat.Action.Builder(ic, "Ouvir", ppi).build());
+            }
+            if (!quiet) {
+                b.addAction(new NotificationCompat.Action.Builder(ic, "Marcar como lida", actPi(c, cid, title, "read", rq + 2)).build());
+                if (!aud) b.addAction(new NotificationCompat.Action.Builder(ic, "Silenciar", actPi(c, cid, title, "mute", rq + 3)).build());
+            }
+            b.setGroup(GRP);
+            b.setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN);
+            if (quiet) {
+                b.setOnlyAlertOnce(true).setDefaults(0).setTimeoutAfter(6000);
+            }
             nm.notify(cid, 1, b.build());
+            summary(c, nm, ic);
         } catch (Exception e) {}
     }
 
-    static android.graphics.Bitmap logoBmp = null;
+    static final String GRP = "bippy_msgs";
+
+    static PendingIntent actPi(Context c, String cid, String title, String act, int rq) {
+        Intent it = new Intent(c, BippyReplyReceiver.class);
+        it.putExtra("cid", cid);
+        it.putExtra("title", title);
+        it.putExtra("act", act);
+        return PendingIntent.getBroadcast(c, rq, it, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    // resumo do grupo (como no WhatsApp: um cabecalho e cada conversa separada, que sai com um deslize)
+    static void summary(Context c, NotificationManager nm, int ic) {
+        try {
+            Intent open = new Intent(c, MainActivity.class);
+            open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pi = PendingIntent.getActivity(c, 7, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            NotificationCompat.Builder g = new NotificationCompat.Builder(c, CH)
+                .setSmallIcon(ic)
+                .setContentTitle("Bippy")
+                .setContentText("Novas mensagens")
+                .setGroup(GRP)
+                .setGroupSummary(true)
+                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+                .setAutoCancel(true)
+                .setContentIntent(pi)
+                .setColor(0xFF0B63FF);
+            nm.notify("sum", 0, g.build());
+        } catch (Exception e) {}
+    }
+
+    static boolean temFilhas(NotificationManager nm) {
+        try {
+            if (Build.VERSION.SDK_INT >= 23) {
+                for (android.service.notification.StatusBarNotification n : nm.getActiveNotifications()) {
+                    if (n.getId() == 1) return true;
+                }
+                return false;
+            }
+        } catch (Exception e) {}
+        return true;
+    }
+
+    // chamada REST com o login guardado (marcar como lida / silenciar)
+    static boolean rest(Context c, String path, String body, String prefer) {
+        try {
+            SharedPreferences a = c.getSharedPreferences("bippy_auth", 0);
+            String url = a.getString("url", "");
+            String key = a.getString("key", "");
+            String tok = a.getString("tok", "");
+            if (url.length() == 0 || tok.length() == 0) return false;
+            HttpURLConnection h = (HttpURLConnection) new URL(url + path).openConnection();
+            h.setRequestMethod("POST");
+            h.setConnectTimeout(10000);
+            h.setReadTimeout(15000);
+            h.setDoOutput(true);
+            h.setRequestProperty("apikey", key);
+            h.setRequestProperty("Authorization", "Bearer " + tok);
+            h.setRequestProperty("Content-Type", "application/json");
+            if (prefer != null) h.setRequestProperty("Prefer", prefer);
+            OutputStream o = h.getOutputStream();
+            o.write(body.getBytes("UTF-8"));
+            o.close();
+            int code = h.getResponseCode();
+            h.disconnect();
+            return code >= 200 && code < 300;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    static boolean markRead(Context c, String cid) {
+        return rest(c, "/rest/v1/rpc/marcar_lidas", "{\"cid\":\"" + cid + "\"}", null);
+    }
+
+    static boolean mute(Context c, String cid, int horas) {
+        try {
+            String uid = c.getSharedPreferences("bippy_auth", 0).getString("uid", "");
+            if (uid.length() == 0) return false;
+            java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US);
+            f.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+            String ate = f.format(new java.util.Date(System.currentTimeMillis() + horas * 3600000L));
+            JSONObject j = new JSONObject();
+            j.put("usuario_id", uid);
+            j.put("conversa_id", cid);
+            j.put("ate", ate);
+            // avisa o app para refletir o silencio quando abrir
+            SharedPreferences sp = c.getSharedPreferences("bippy_push", 0);
+            JSONArray q = new JSONArray(sp.getString("q", "[]"));
+            JSONObject o = new JSONObject();
+            o.put("cid", cid);
+            o.put("mute", horas);
+            q.put(o);
+            sp.edit().putString("q", q.toString()).commit();
+            return rest(c, "/rest/v1/conversa_mudo?on_conflict=usuario_id,conversa_id", j.toString(), "resolution=merge-duplicates,return=minimal");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // depois de responder: atualiza a notificacao na hora (acaba o "girando") e ela some sozinha
+    static void replied(Context c, String cid, String title, String txt) {
+        try {
+            c.getSharedPreferences("bippy_push", 0).edit().remove("l_" + cid).apply();
+            String t = "Você: " + txt;
+            post(c, cid, (title == null || title.length() == 0) ? "Bippy" : title, t, t, null, true);
+        } catch (Exception e) {}
+    }
 
     static android.graphics.Bitmap logo(Context c) {
         try {
@@ -485,6 +627,7 @@ final class BippyNotif {
             c.getSharedPreferences("bippy_push", 0).edit().remove("l_" + cid).apply();
             NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
             nm.cancel(cid, 1);
+            if (!temFilhas(nm)) nm.cancel("sum", 0);
         } catch (Exception e) {}
     }
 
@@ -561,8 +704,135 @@ public class BippyMsgService extends FirebaseMessagingService {
             java.util.Map<String, String> d = m.getData();
             if (d == null || !"1".equals(d.get("bippy"))) return;
             if (MainActivity.visible) return;
-            BippyNotif.show(this, d.get("cid"), d.get("t"), d.get("b"));
+            BippyNotif.show(this, d.get("cid"), d.get("t"), d.get("b"), d.get("au"));
         } catch (Exception e) {}
+    }
+}
+JAVA2
+  cat > $PD/BippyAudioService.java <<'JAVA2'
+package PKGNAME;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.IBinder;
+import androidx.core.app.NotificationCompat;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class BippyAudioService extends Service {
+    private MediaPlayer mp;
+
+    @Override
+    public IBinder onBind(Intent i) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent i, int flags, int startId) {
+        final String url = i == null ? null : i.getStringExtra("url");
+        try {
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel("audio") == null) {
+                nm.createNotificationChannel(new NotificationChannel("audio", "Audio", NotificationManager.IMPORTANCE_LOW));
+            }
+            int ic = getResources().getIdentifier("ic_stat_bippy", "drawable", getPackageName());
+            if (ic == 0) ic = getApplicationInfo().icon;
+            Notification n = new NotificationCompat.Builder(this, "audio")
+                .setSmallIcon(ic)
+                .setContentTitle("Bippy")
+                .setContentText("Tocando mensagem de voz")
+                .setOngoing(true)
+                .build();
+            if (Build.VERSION.SDK_INT >= 29) {
+                startForeground(7001, n, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } else {
+                startForeground(7001, n);
+            }
+        } catch (Exception e) {}
+        if (url == null || url.length() == 0) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+        new Thread(new Runnable() {
+            public void run() {
+                play(url);
+            }
+        }).start();
+        return START_NOT_STICKY;
+    }
+
+    private void fail() {
+        try {
+            new android.os.Handler(getMainLooper()).post(new Runnable() {
+                public void run() {
+                    android.widget.Toast.makeText(BippyAudioService.this, "Nao consegui tocar. Abra o Bippy para ouvir.", android.widget.Toast.LENGTH_LONG).show();
+                }
+            });
+        } catch (Exception e) {}
+        stopSelf();
+    }
+
+    private void play(String url) {
+        try {
+            File f = new File(getCacheDir(), "aud_notif");
+            HttpURLConnection h = (HttpURLConnection) new URL(url).openConnection();
+            h.setConnectTimeout(10000);
+            h.setReadTimeout(20000);
+            if (h.getResponseCode() != 200) {
+                fail();
+                return;
+            }
+            InputStream in = h.getInputStream();
+            FileOutputStream out = new FileOutputStream(f);
+            byte[] buf = new byte[8192];
+            int r;
+            while ((r = in.read(buf)) > 0) out.write(buf, 0, r);
+            out.close();
+            in.close();
+            h.disconnect();
+            mp = new MediaPlayer();
+            mp.setAudioAttributes(new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build());
+            mp.setDataSource(f.getPath());
+            mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                public void onCompletion(MediaPlayer m) {
+                    stopSelf();
+                }
+            });
+            mp.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                public boolean onError(MediaPlayer m, int what, int extra) {
+                    fail();
+                    return true;
+                }
+            });
+            mp.prepare();
+            mp.start();
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        try {
+            if (mp != null) {
+                mp.release();
+                mp = null;
+            }
+            stopForeground(true);
+        } catch (Exception e) {}
+        super.onDestroy();
     }
 }
 JAVA2
@@ -579,6 +849,23 @@ public class BippyReplyReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context c, final Intent i) {
         try {
+            final String act = i.getStringExtra("act");
+            if (act != null) {
+                final String c0 = i.getStringExtra("cid");
+                if (c0 == null) return;
+                BippyNotif.clear(c, c0);
+                final PendingResult pr0 = goAsync();
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            if ("read".equals(act)) BippyNotif.markRead(c, c0);
+                            else if ("mute".equals(act)) BippyNotif.mute(c, c0, 8);
+                        } catch (Exception e) {}
+                        pr0.finish();
+                    }
+                }).start();
+                return;
+            }
             Bundle r = RemoteInput.getResultsFromIntent(i);
             if (r == null) return;
             CharSequence t = r.getCharSequence("reply");
@@ -588,8 +875,8 @@ public class BippyReplyReceiver extends BroadcastReceiver {
             final String txt = t.toString().trim();
             if (txt.length() == 0) return;
             final String mid = java.util.UUID.randomUUID().toString();
-            // 1) fecha a notificacao na hora (senao o Android deixa o "girando")
-            BippyNotif.clear(c, cid);
+            // 1) atualiza a notificacao na hora (senao o Android deixa o "girando")
+            BippyNotif.replied(c, cid, title, txt);
             // 2) guarda a resposta antes de enviar: se o celular congelar o app, ela e enviada ao abrir (sem repetir)
             BippyNotif.queue(c, cid, txt, mid);
             final PendingResult pr = goAsync();
@@ -610,10 +897,12 @@ public class BippyReplyReceiver extends BroadcastReceiver {
     }
 }
 JAVA2
-  sed -i "s/PKGNAME/$PKG/" $PD/BippyNotif.java $PD/BippyMsgService.java $PD/BippyReplyReceiver.java
+  sed -i "s/PKGNAME/$PKG/" $PD/BippyNotif.java $PD/BippyMsgService.java $PD/BippyReplyReceiver.java $PD/BippyAudioService.java
   # manifesto: servico e receptor (e tira o servico padrao do plugin, para o nosso ser o unico)
   grep -q 'xmlns:tools' android/app/src/main/AndroidManifest.xml || sed -i 's#<manifest #<manifest xmlns:tools="http://schemas.android.com/tools" #' android/app/src/main/AndroidManifest.xml
   grep -q BippyMsgService android/app/src/main/AndroidManifest.xml || sed -i "s#</application>#<service android:name=\"$PKG.BippyMsgService\" android:exported=\"false\"><intent-filter android:priority=\"100\"><action android:name=\"com.google.firebase.MESSAGING_EVENT\"/></intent-filter></service><service android:name=\"com.capacitorjs.plugins.pushnotifications.MessagingService\" tools:node=\"remove\"/><receiver android:name=\"$PKG.BippyReplyReceiver\" android:exported=\"false\"/></application>#" android/app/src/main/AndroidManifest.xml
+  grep -q FOREGROUND_SERVICE_MEDIA_PLAYBACK android/app/src/main/AndroidManifest.xml || sed -i 's#<application #<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/><uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/><application #' android/app/src/main/AndroidManifest.xml
+  grep -q BippyAudioService android/app/src/main/AndroidManifest.xml || sed -i "s#</application>#<service android:name=\"$PKG.BippyAudioService\" android:exported=\"false\" android:foregroundServiceType=\"mediaPlayback\"/></application>#" android/app/src/main/AndroidManifest.xml
   # dependencias do app (o plugin nao expoe o firebase-messaging para o app)
   cat >> android/app/build.gradle <<'EOF'
 
