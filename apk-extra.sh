@@ -312,3 +312,24 @@ cat > android/app/src/main/res/xml/file_paths.xml <<'XML'
 </paths>
 XML
 echo "file_paths ok"
+
+# Chave fixa do Bippy: faz o Gradle assinar sempre com o debug.keystore do repositorio
+if [ -f debug.keystore ]; then
+  KS="$(pwd)/debug.keystore"
+  mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
+  cat >> android/app/build.gradle <<EOF
+
+android {
+    signingConfigs {
+        debug {
+            storeFile file("$KS")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+}
+EOF
+  echo "chave fixa ok: $KS"
+  keytool -list -keystore debug.keystore -storepass android 2>/dev/null | grep -i fingerprint || true
+fi
