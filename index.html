@@ -25,7 +25,7 @@ try{if(!localStorage.getItem('mandai.th2')){localStorage.setItem('mandai.th2','1
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="pt-BR">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="mandai-build" content="20261026-5157">
+<meta name="mandai-build" content="20261026-5158">
 <meta name="apple-mobile-web-app-title" content="Bippy">
 <meta name="application-name" content="Bippy">
 <title>Bippy – mensageiro</title>
@@ -3091,7 +3091,17 @@ function dangerBtns(c){
   $('#fd').onclick=()=>confirmDel(c);if(c.group)$('#fl').onclick=()=>inviteLink(c);
 }
 function blkDrop(c,iso){try{if(!c||c.group)return false;const t=Date.parse(iso)||Date.now(),b=c.blockAt||0;if(c.blocked)return t>=b;if(c.blockAt&&c.unblockAt)return t>=c.blockAt&&t<c.unblockAt}catch(e){}return false}
-function syncBlock(c){if(c.blocked){c.blockAt=Date.now();c.unblockAt=undefined}else if(c.blockAt)c.unblockAt=Date.now();renderList();renderStories();if(cur===c)paintCompose()}
+function syncBlock(c){if(c.blocked){c.blockAt=Date.now();c.unblockAt=undefined}else if(c.blockAt)c.unblockAt=Date.now();renderList();renderStories();if(cur===c)paintCompose();try{blkPush(c)}catch(e){}}
+function blkPush(c){if(!rtOn()||!c||!c.uid||c.group)return;
+  if(c.blocked)SB.from('bloqueios').upsert({dono_id:RT.uid,alvo_id:c.uid},{onConflict:'dono_id,alvo_id',ignoreDuplicates:true}).then(()=>{},()=>{});
+  else SB.from('bloqueios').delete().eq('dono_id',RT.uid).eq('alvo_id',c.uid).then(()=>{},()=>{})}
+async function blkSync(){try{if(!rtOn())return;const r=await SB.from('bloqueios').select('alvo_id');if(!r||r.error)return;const srv=new Set((r.data||[]).map(x=>x.alvo_id));
+  const loc=chats.filter(c=>c.uid&&!c.group);
+  const up=loc.filter(c=>c.blocked&&!srv.has(c.uid)).map(c=>({dono_id:RT.uid,alvo_id:c.uid}));
+  if(up.length)await SB.from('bloqueios').upsert(up,{onConflict:'dono_id,alvo_id',ignoreDuplicates:true});
+  for(const c of loc.filter(c=>!c.blocked&&c.unblockAt&&srv.has(c.uid)))await SB.from('bloqueios').delete().eq('dono_id',RT.uid).eq('alvo_id',c.uid);
+  let ch=false;loc.forEach(c=>{if(!c.blocked&&!c.unblockAt&&srv.has(c.uid)){c.blocked=true;c.blockAt=c.blockAt||Date.now();ch=true}});
+  if(ch){renderList();try{persist()}catch(e){}}}catch(e){}}
 function paintCompose(){
   const cp=$('.compose');if(!cp||!cur)return;
   let b=$('#blk');if(!b){b=document.createElement('div');b.id='blk';b.className='blk';cp.after(b)}
@@ -7386,7 +7396,9 @@ function fcmOpen(cid){if(!cid)return;let n=0,got=false;const iv=setInterval(()=>
 async function fcmFetch(cid){try{let n=0;while(!rtOn()&&n<50){await new Promise(r=>setTimeout(r,200));n++}if(!rtOn())return;
   const r=await SB.from('mensagens').select('*').eq('conversa_id',cid).order('criado_em',{ascending:false}).limit(15);
   if(r&&r.data&&r.data.length){r.data.reverse().forEach(x=>{try{rtPush(x,false)}catch(e){}});try{if(typeof paintMsgs==='function'&&cur&&cur.rid===cid)paintMsgs()}catch(e){}try{renderList()}catch(e){}}}catch(e){}}
-function bippyAuthSync(){try{const B=window.Capacitor&&window.BippyBars;if(!B||!B.saveAuth||!SB||!SB.auth)return;SB.auth.getSession().then(r=>{const s=r&&r.data&&r.data.session;if(s&&s.access_token&&s.user)B.saveAuth('https://aqzpqqefjrllhghioklh.supabase.co','sb_publishable_X9VsZiJUOzKGg_SxHC8p5g_TSBElMgi',s.access_token,s.user.id)}).catch(()=>{})}catch(e){}}
+const _phSent={};
+function fcmPhotos(){try{const B=window.BippyBars;if(!B||!B.savePhoto||typeof chats==='undefined')return;chats.forEach(c=>{if(c.group||!c.rid||!c.photo||!String(c.photo).startsWith('data:'))return;const k=String(c.photo).length+':'+String(c.photo).slice(-24);if(_phSent[c.rid]===k)return;_phSent[c.rid]=k;try{B.savePhoto(String(c.rid),String(c.photo))}catch(e){}})}catch(e){}}
+function bippyAuthSync(){try{fcmPhotos()}catch(e){}try{const B=window.Capacitor&&window.BippyBars;if(!B||!B.saveAuth||!SB||!SB.auth)return;SB.auth.getSession().then(r=>{const s=r&&r.data&&r.data.session;if(s&&s.access_token&&s.user)B.saveAuth('https://aqzpqqefjrllhghioklh.supabase.co','sb_publishable_X9VsZiJUOzKGg_SxHC8p5g_TSBElMgi',s.access_token,s.user.id)}).catch(()=>{})}catch(e){}}
 let _authHook=false;
 async function fcmFlush(q){try{const L=JSON.parse(q||'[]');if(!L.length)return;let n=0;while(!rtOn()&&n<60){await new Promise(r=>setTimeout(r,250));n++}if(!rtOn())return;
   for(const x of L){if(!x||!x.cid||!x.txt)continue;const row={conversa_id:x.cid,remetente_id:RT.uid,texto:String(x.txt)};if(x.id)row.id=x.id;const r=x.id?await SB.from('mensagens').upsert(row,{onConflict:'id',ignoreDuplicates:true}):await SB.from('mensagens').insert(row);if(r&&r.error){snack('Não foi possível enviar sua resposta');return}}
@@ -8001,7 +8013,7 @@ async function rtVoteSave(md){try{const d=await SB.from('votos_enquete').delete(
   if(rows.length){const r=await SB.from('votos_enquete').insert(rows);if(r.error)throw r.error}}catch(e){snack('Seu voto não foi enviado. Verifique a internet.')}}
 /* rotinas */
 function rtBoot(){
-  rtDeliverSoon();rtRcptLoad();rtSeenPing();rtSeenLoad();
+  try{blkSync()}catch(e){}rtDeliverSoon();rtRcptLoad();rtSeenPing();rtSeenLoad();
   if(!RT.boot){RT.boot=1;
     setInterval(()=>{if(!document.hidden)rtGroupWatch()},2000);setInterval(()=>{if(!document.hidden)offLoad()},45000);offLoad();
     setInterval(()=>{if(rtOn()&&!document.hidden){rtSeenPing();rtSeenLoad();try{SB.rpc('limpar_expiradas').then(()=>{},()=>{})}catch(e){}}},60000);

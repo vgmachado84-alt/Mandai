@@ -419,7 +419,7 @@ final class BippyNotif {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setColor(0xFF7C4DFF);
-            android.graphics.Bitmap lb = logo(c);
+            android.graphics.Bitmap lb = photo(c, cid);
             if (lb != null) b.setLargeIcon(lb);
             nm.notify(cid, 1, b.build());
         } catch (Exception e) {}
@@ -446,6 +446,37 @@ final class BippyNotif {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    static android.graphics.Bitmap circle(android.graphics.Bitmap src) {
+        try {
+            int w = src.getWidth(), h = src.getHeight(), m = Math.min(w, h), sz = 192;
+            android.graphics.Bitmap sq = android.graphics.Bitmap.createBitmap(src, (w - m) / 2, (h - m) / 2, m, m);
+            sq = android.graphics.Bitmap.createScaledBitmap(sq, sz, sz, true);
+            android.graphics.Bitmap out = android.graphics.Bitmap.createBitmap(sz, sz, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas cv = new android.graphics.Canvas(out);
+            android.graphics.Paint p = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            cv.drawCircle(sz / 2f, sz / 2f, sz / 2f, p);
+            p.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+            cv.drawBitmap(sq, 0, 0, p);
+            return out;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    static android.graphics.Bitmap photo(Context c, String cid) {
+        try {
+            java.io.File f = new java.io.File(c.getFilesDir(), "ph_" + Math.abs(cid.hashCode()) + ".jpg");
+            if (f.exists()) {
+                android.graphics.Bitmap b = android.graphics.BitmapFactory.decodeFile(f.getPath());
+                if (b != null) {
+                    android.graphics.Bitmap r = circle(b);
+                    if (r != null) return r;
+                }
+            }
+        } catch (Exception e) {}
+        return logo(c);
     }
 
     static void clear(Context c, String cid) {
@@ -623,6 +654,18 @@ if 'volatile boolean visible' not in t:
             try {
                 MainActivity.this.getSharedPreferences("bippy_auth", 0).edit()
                     .putString("url", url).putString("key", key).putString("tok", tok).putString("uid", uid).apply();
+            } catch (Exception e) {}
+        }
+
+        @JavascriptInterface
+        public void savePhoto(String cid, String dataUrl) {
+            try {
+                int k = dataUrl.indexOf(',');
+                byte[] by = android.util.Base64.decode(dataUrl.substring(k + 1), android.util.Base64.DEFAULT);
+                java.io.File f = new java.io.File(MainActivity.this.getFilesDir(), "ph_" + Math.abs(cid.hashCode()) + ".jpg");
+                java.io.FileOutputStream o = new java.io.FileOutputStream(f);
+                o.write(by);
+                o.close();
             } catch (Exception e) {}
         }
 
