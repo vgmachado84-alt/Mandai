@@ -30,10 +30,21 @@ jobs:
       - name: Ajustes extras (arquivo apk-extra.sh do repositorio)
         run: |
           if [ -f apk-extra.sh ]; then bash apk-extra.sh; fi
-      - name: Usar a chave fixa do Bippy (para atualizar sem desinstalar)
+      - name: Chave de assinatura (privada se existir, senao a antiga)
+        env:
+          KS_B64: ${{ secrets.BIPPY_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.BIPPY_KEYSTORE_PASS }}
         run: |
           mkdir -p ~/.android
           cp debug.keystore ~/.android/debug.keystore
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/bippy-release.jks"
+            echo "BIPPY_KS=$RUNNER_TEMP/bippy-release.jks" >> "$GITHUB_ENV"
+            echo "BIPPY_KS_PASS=$KS_PASS" >> "$GITHUB_ENV"
+            echo "ASSINANDO COM A CHAVE PRIVADA"
+          else
+            echo "ASSINANDO COM A CHAVE ANTIGA (publica)"
+          fi
       - name: Gerar APK
         working-directory: android
         run: ./gradlew assembleDebug
